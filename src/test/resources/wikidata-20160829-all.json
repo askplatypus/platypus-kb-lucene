@@ -1,0 +1,200 @@
+[
+  {
+    "lastrevid": 12,
+    "type": "item",
+    "id": "Q42",
+    "labels": {
+      "fr": {
+        "language": "fr",
+        "value": "le super de test"
+      },
+      "en": {
+        "language": "en",
+        "value": "the Foo bar"
+      }
+    },
+    "descriptions": {
+      "fr": {
+        "language": "fr",
+        "value": "Un test"
+      }
+    },
+    "aliases": [],
+    "claims": {
+      "P31": [
+        {
+          "mainsnak": {
+            "snaktype": "value",
+            "property": "P31",
+            "datavalue": {
+              "value": {
+                "entity-type": "item",
+                "numeric-id": 5,
+                "id": "Q5"
+              },
+              "type": "wikibase-entityid"
+            },
+            "datatype": "wikibase-item"
+          },
+          "type": "statement",
+          "rank": "normal"
+        }
+      ],
+      "P856": [
+        {
+          "mainsnak": {
+            "snaktype": "value",
+            "property": "P856",
+            "datavalue": {
+              "value": "http://bad.com/",
+              "type": "string"
+            }
+          },
+          "type": "statement",
+          "rank": "normal"
+        },
+        {
+          "mainsnak": {
+            "snaktype": "value",
+            "property": "P856",
+            "datavalue": {
+              "value": "http://foobar.com",
+              "type": "string"
+            }
+          },
+          "type": "statement",
+          "rank": "preferred"
+        }
+      ],
+      "P2002": [
+        {
+          "mainsnak": {
+            "snaktype": "value",
+            "property": "P2002",
+            "datavalue": {
+              "value": "BarackObama",
+              "type": "string"
+            }
+          },
+          "type": "statement",
+          "rank": "normal"
+        },
+        {
+          "mainsnak": {
+            "snaktype": "somevalue",
+            "property": "P2002"
+          },
+          "type": "statement",
+          "rank": "normal"
+        }
+      ],
+      "P2003": [
+        {
+          "mainsnak": {
+            "snaktype": "value",
+            "property": "P2003",
+            "datavalue": {
+              "value": "barackobama",
+              "type": "string"
+            }
+          },
+          "type": "statement",
+          "rank": "normal"
+        }
+      ],
+      "P2013": [
+        {
+          "mainsnak": {
+            "snaktype": "value",
+            "property": "P2013",
+            "datavalue": {
+              "value": "barackobama",
+              "type": "string"
+            }
+          },
+          "type": "statement",
+          "rank": "normal"
+        }
+      ],
+      "P2397": [
+        {
+          "mainsnak": {
+            "snaktype": "value",
+            "property": "P2397",
+            "datavalue": {
+              "value": "UCdn86UYrf54lXfVli9CB6Aw",
+              "type": "string"
+            }
+          },
+          "type": "statement",
+          "rank": "normal"
+        }
+      ],
+      "P2847": [
+        {
+          "mainsnak": {
+            "snaktype": "value",
+            "property": "P2847",
+            "datavalue": {
+              "value": "+BarackObama",
+              "type": "string"
+            }
+          },
+          "type": "statement",
+          "rank": "normal"
+        }
+      ]
+    },
+    "sitelinks": {
+      "frwiki": {
+        "site": "frwiki",
+        "title": "Douglas Adams"
+      }
+    }
+  },
+  {
+    "lastrevid": 12,
+    "type": "item",
+    "id": "Q111",
+    "labels": {
+      "fr": {
+        "language": "fr",
+        "value": "vide"
+      },
+      "en": {
+        "language": "en",
+        "value": "dummy"
+      }
+    },
+    "descriptions": [],
+    "aliases": {
+      "fr": [
+        {
+          "language": "en",
+          "value": "the fooo bar"
+        }
+      ]
+    },
+    "claims": [],
+    "sitelinks": []
+  },
+  {
+    "lastrevid": 24,
+    "type": "property",
+    "id": "P42",
+    "datatype": "string",
+    "labels": {
+      "fr": {
+        "language": "fr",
+        "value": "Foo-Bar"
+      },
+      "en": {
+        "language": "en",
+        "value": "Foo-Bar"
+      }
+    },
+    "descriptions": [],
+    "aliases": [],
+    "claims": []
+  }
+]
