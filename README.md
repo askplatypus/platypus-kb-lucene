@@ -34,8 +34,9 @@ Example: `/search/simple?query=John&lang=fr&type=Person&limit100`
 
 ## Install
 
-This service depends on Java 8 and some maven dependencies. To run it you should have Java 8 and maven installed on your machine then in the root directory of the project run the command:
+This service depends on Java 8 and some maven dependencies. To run it you should have Java 8 and maven installed on your machine then in the root directory of the project run the commands:
 ```
+mvn compile
 mvn exec:java
 ```
 
