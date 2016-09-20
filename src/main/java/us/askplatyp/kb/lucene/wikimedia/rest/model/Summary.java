@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Optional;
+
 /**
  * @author Thomas Pellissier Tanon
  */
@@ -39,8 +41,8 @@ public class Summary {
         return extract;
     }
 
-    public Thumbnail getThumbnail() {
-        return thumbnail;
+    public Optional<Thumbnail> getThumbnail() {
+        return Optional.ofNullable(thumbnail);
     }
 
     public String getLanguageCode() {

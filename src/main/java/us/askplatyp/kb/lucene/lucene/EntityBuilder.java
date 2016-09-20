@@ -9,7 +9,6 @@ import us.askplatyp.kb.lucene.model.Entity;
 import us.askplatyp.kb.lucene.model.Image;
 import us.askplatyp.kb.lucene.wikimedia.rest.WikimediaREST;
 import us.askplatyp.kb.lucene.wikimedia.rest.model.Summary;
-import us.askplatyp.kb.lucene.wikimedia.rest.model.Thumbnail;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -55,7 +54,7 @@ class EntityBuilder {
                 document.getValues("alternateName@" + locale.getLanguage()),
                 document.get("url"),
                 document.getValues("sameAs"),
-                wikipediaArticleIRI.map(this::buildWikipediaImage).orElseGet(() -> null),
+                wikipediaArticleIRI.flatMap(this::buildWikipediaImage).orElseGet(() -> null),
                 wikipediaArticleIRI.map(this::buildWikipediaArticle).orElseGet(() -> null),
                 valuesIfType(document, "rangeIncludes", "Property", types)
         );
@@ -102,10 +101,11 @@ class EntityBuilder {
         }
     }
 
-    private Image buildWikipediaImage(String articleIRI) {
+    private Optional<Image> buildWikipediaImage(String articleIRI) {
         try {
-            Thumbnail thumbnail = WikimediaREST.getInstance().getSummary(articleIRI).getThumbnail();
-            return new Image(thumbnail.getSource()); //TODO: license
+            return WikimediaREST.getInstance().getSummary(articleIRI).getThumbnail().map(thumbnail ->
+                    new Image(thumbnail.getSource()) //TODO: license
+            );
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
             return null;
