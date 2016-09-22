@@ -38,9 +38,11 @@ public class SearchActionsTest extends JerseyTest {
         JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
                 target("/search/simple").request().get(RESULT_TYPE);
         Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
-        assertElementCount(result.getContent(), 2);
+        assertElementCount(result.getContent(), 3);
         assertEnglishIndividual(result.getContent().getElements().get(0).getResult());
-        assertEnglishDummy(result.getContent().getElements().get(1).getResult());
+        assertEnglishSmallFoo(result.getContent().getElements().get(1).getResult());
+        assertEnglishDummy(result.getContent().getElements().get(2).getResult());
+
     }
 
     @Test
@@ -48,8 +50,9 @@ public class SearchActionsTest extends JerseyTest {
         JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
                 target("/search/simple").queryParam("q", "Foo Bar").request().get(RESULT_TYPE);
         Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
-        assertElementCount(result.getContent(), 1);
+        assertElementCount(result.getContent(), 2);
         assertEnglishIndividual(result.getContent().getElements().get(0).getResult());
+        assertEnglishSmallFoo(result.getContent().getElements().get(1).getResult());
     }
 
     @Test
@@ -84,8 +87,9 @@ public class SearchActionsTest extends JerseyTest {
         JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
                 target("/search/simple").queryParam("q", "Foo Bar").request().acceptLanguage(Locale.FRANCE).get(RESULT_TYPE);
         Assert.assertEquals(Locale.FRANCE, result.getContext().getLocale());
-        assertElementCount(result.getContent(), 1);
+        assertElementCount(result.getContent(), 2);
         assertFrenchIndividual(result.getContent().getElements().get(0).getResult());
+        assertFrenchSmallFoo(result.getContent().getElements().get(1).getResult());
     }
 
     @Test
@@ -145,6 +149,25 @@ public class SearchActionsTest extends JerseyTest {
 
     private void assertNotLanguageBaseDummy(Entity result) {
         Assert.assertEquals("wd:Q111", result.getIRI());
+    }
+
+    private void assertEnglishSmallFoo(Entity result) {
+        Assert.assertEquals("Foo bar", result.getName());
+        Assert.assertNull(result.getDescription());
+        assertNotLanguageBaseSmallFoo(result);
+    }
+
+    private void assertFrenchSmallFoo(Entity result) {
+        Assert.assertNull(result.getName());
+        Assert.assertNull(result.getDescription());
+        assertNotLanguageBaseSmallFoo(result);
+    }
+
+    private void assertNotLanguageBaseSmallFoo(Entity result) {
+        Assert.assertEquals("wd:Q222", result.getIRI());
+        Assert.assertArrayEquals(new String[]{"Thing"}, result.getTypes());
+        Assert.assertNull(result.getOfficialWebsiteIRI());
+        Assert.assertArrayEquals(new String[]{}, result.getSameAsIRIs());
     }
 
     private void assertEnglishProperty(Entity result) {

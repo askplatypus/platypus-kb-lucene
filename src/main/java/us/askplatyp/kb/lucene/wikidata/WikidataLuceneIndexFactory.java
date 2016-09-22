@@ -39,7 +39,6 @@ public class WikidataLuceneIndexFactory implements Factory<LuceneIndex> {
         DumpProcessingController dumpProcessingController = new DumpProcessingController("wikidatawiki");
         dumpProcessingController.setDownloadDirectory(Configuration.getInstance().getWikidataDirectory());
         dumpProcessingController.setLanguageFilter(Main.SUPPORTED_LANGUAGES);
-        dumpProcessingController.setSiteLinkFilter(Main.SUPPORTED_SITELINKS);
         dumpProcessingController.registerEntityDocumentProcessor(
                 new LuceneUpdateProcessor(index, dumpProcessingController.getSitesInformation()),
                 null,

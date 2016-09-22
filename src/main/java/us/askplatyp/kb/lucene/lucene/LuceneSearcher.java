@@ -1,6 +1,9 @@
 package us.askplatyp.kb.lucene.lucene;
 
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queries.CustomScoreQuery;
+import org.apache.lucene.queries.function.FunctionQuery;
+import org.apache.lucene.queries.function.valuesource.LongFieldSource;
 import org.apache.lucene.search.*;
 import us.askplatyp.kb.lucene.model.*;
 
@@ -66,18 +69,18 @@ public class LuceneSearcher {
     private Query buildQueryForPhraseAndOrType(Locale locale, String label, String type, int fuziness) throws ApiException {
         if (type == null) {
             if (label == null) {
-                return new MatchAllDocsQuery();
+                return addScoreBoostToQuery(new MatchAllDocsQuery());
             } else {
-                return buildFuzzyQueryForTerm(locale, label, fuziness);
+                return addScoreBoostToQuery(buildFuzzyQueryForTerm(locale, label, fuziness));
             }
         } else {
             if (label == null) {
-                return buildTermQuery("@type", type);
+                return addScoreBoostToQuery(buildTermQuery("@type", type));
             } else {
-                return new BooleanQuery.Builder()
+                return addScoreBoostToQuery(new BooleanQuery.Builder()
                         .add(buildFuzzyQueryForTerm(locale, label, fuziness), BooleanClause.Occur.MUST)
                         .add(buildTermQuery("@type", type), BooleanClause.Occur.FILTER)
-                        .build();
+                        .build());
             }
         }
     }
@@ -94,6 +97,10 @@ public class LuceneSearcher {
 
     private Query buildTermQuery(String field, String label) {
         return new TermQuery(new Term(field, label));
+    }
+
+    private Query addScoreBoostToQuery(Query query) {
+        return new CustomScoreQuery(query, new FunctionQuery(new LongFieldSource("score")));
     }
 
     private JsonLdRoot<Collection<EntitySearchResult<Entity>>> buildSearchResults(

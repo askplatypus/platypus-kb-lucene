@@ -1,13 +1,11 @@
 package us.askplatyp.kb.lucene.wikidata;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StoredField;
-import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
 import org.wikidata.wdtk.datamodel.interfaces.*;
+import us.askplatyp.kb.lucene.http.Main;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
 import us.askplatyp.kb.lucene.wikidata.mapping.InvalidWikibaseValueException;
 import us.askplatyp.kb.lucene.wikidata.mapping.MapperRegistry;
@@ -45,6 +43,7 @@ public class LuceneUpdateProcessor implements EntityDocumentProcessor {
         addTermsToDocument(itemDocument, document);
         addSiteLinksToDocument(itemDocument, document);
         addStatementsToDocument(itemDocument, document);
+        addScoreToDocument(itemDocument, document);
         writeDocument(document);
     }
 
@@ -90,9 +89,9 @@ public class LuceneUpdateProcessor implements EntityDocumentProcessor {
     }
 
     private void addSiteLinksToDocument(ItemDocument itemDocument, Document document) {
-        for (SiteLink siteLink : itemDocument.getSiteLinks().values()) {
-            document.add(new StoredField("sameAs", sites.getSiteLinkUrl(siteLink).replace("https://", "http://")));
-        }
+        itemDocument.getSiteLinks().values().stream()
+                .filter(siteLink -> Main.SUPPORTED_SITELINKS.contains(siteLink.getSiteKey()))
+                .forEach(siteLink -> document.add(new StoredField("sameAs", sites.getSiteLinkUrl(siteLink).replace("https://", "http://"))));
     }
 
     private void addStatementsToDocument(StatementDocument statementDocument, Document document) {
@@ -145,6 +144,10 @@ public class LuceneUpdateProcessor implements EntityDocumentProcessor {
                 name + "@" + WikimediaLanguageCodes.getLanguageCode(value.getLanguageCode()),
                 value.getText()
         );
+    }
+
+    private void addScoreToDocument(ItemDocument itemDocument, Document document) {
+        document.add(new NumericDocValuesField("score", itemDocument.getSiteLinks().size()));
     }
 
     private void writeDocument(Document document) {
