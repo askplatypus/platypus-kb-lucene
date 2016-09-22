@@ -6,11 +6,11 @@
     "labels": {
       "fr": {
         "language": "fr",
-        "value": "le super de test"
+        "value": "super de test"
       },
       "en": {
         "language": "en",
-        "value": "the Foo bar"
+        "value": "Foo bar"
       }
     },
     "descriptions": {

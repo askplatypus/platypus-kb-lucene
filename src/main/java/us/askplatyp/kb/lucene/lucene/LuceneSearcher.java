@@ -84,7 +84,7 @@ public class LuceneSearcher {
 
     private Query buildFuzzyQueryForTerm(Locale locale, String label, int fuziness) throws ApiException {
         String name = "label@" + locale.getLanguage(); //TODO: variants
-        Term term = new Term(name, entitiesReader.getAnalyzer().aggressiveNormalize(name, label));
+        Term term = new Term(name, label);
         if (fuziness == 0) {
             return new TermQuery(term);
         } else {

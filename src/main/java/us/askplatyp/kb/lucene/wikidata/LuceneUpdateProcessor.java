@@ -133,10 +133,9 @@ public class LuceneUpdateProcessor implements EntityDocumentProcessor {
     }
 
     private StringField toLabelField(MonolingualTextValue value) {
-        String fieldName = "label@" + WikimediaLanguageCodes.getLanguageCode(value.getLanguageCode());
         return new StringField(
-                fieldName,
-                index.getAnalyzer().aggressiveNormalize(fieldName, value.getText()),
+                "label@" + WikimediaLanguageCodes.getLanguageCode(value.getLanguageCode()),
+                value.getText(),
                 Field.Store.NO
         );
     }

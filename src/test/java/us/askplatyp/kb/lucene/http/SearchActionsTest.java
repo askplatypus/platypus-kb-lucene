@@ -112,13 +112,13 @@ public class SearchActionsTest extends JerseyTest {
     }
 
     private void assertEnglishIndividual(Entity result) {
-        Assert.assertEquals("the Foo bar", result.getName());
+        Assert.assertEquals("Foo bar", result.getName());
         Assert.assertNull(result.getDescription());
         assertNotLanguageBaseIndividual(result);
     }
 
     private void assertFrenchIndividual(Entity result) {
-        Assert.assertEquals("le super de test", result.getName());
+        Assert.assertEquals("super de test", result.getName());
         Assert.assertEquals("Un test", result.getDescription());
         assertNotLanguageBaseIndividual(result);
     }
