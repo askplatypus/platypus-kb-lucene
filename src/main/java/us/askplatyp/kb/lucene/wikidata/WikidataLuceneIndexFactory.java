@@ -56,7 +56,6 @@ public class WikidataLuceneIndexFactory implements Factory<LuceneIndex> {
             LAST_PROCESSED_DUMP_INFO.setDateStamp(dump.getDateStamp());
             index.refreshReaders();
         }
-        //TODO: test
 
         registerAtThreePM(() -> {
             try {
@@ -81,8 +80,8 @@ public class WikidataLuceneIndexFactory implements Factory<LuceneIndex> {
         return Stream.concat(
                 Stream.of(jsonDump),
                 dumpFileManager.findAllRelevantRevisionDumps(true).stream()
-                        .filter(dump -> Integer.parseInt(dump.getDateStamp()) > Integer.parseInt(jsonDump.getDateStamp())
-                        )).sorted(new MwDumpFile.DateComparator());
+                        .filter(dump -> Integer.parseInt(dump.getDateStamp()) > Integer.parseInt(jsonDump.getDateStamp()))
+        ).sorted(new MwDumpFile.DateComparator());
     }
 
     private static void registerAtThreePM(Runnable runnable) {
