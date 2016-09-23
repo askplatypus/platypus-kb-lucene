@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import us.askplatyp.kb.lucene.Configuration;
 import us.askplatyp.kb.lucene.model.ApiException;
 
 import javax.ws.rs.core.MediaType;
@@ -25,7 +26,7 @@ class ActionUtils {
     static Response jsonContentNegotiation(Request request, JsonResultBuilder<Object> resultBuilder) {
         List<Variant> variants = Variant
                 .mediaTypes(MediaType.APPLICATION_JSON_TYPE, APPLICATION_JSON_LD_TYPE)
-                .languages(Main.SUPPORTED_LOCALES)
+                .languages(Configuration.SUPPORTED_LOCALES)
                 .add().build(); //TODO lang parameter
         Variant bestResponseVariant = request.selectVariant(variants);
         if (bestResponseVariant == null) {

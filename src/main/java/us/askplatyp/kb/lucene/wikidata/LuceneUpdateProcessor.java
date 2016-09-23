@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
 import org.wikidata.wdtk.datamodel.interfaces.*;
-import us.askplatyp.kb.lucene.http.Main;
+import us.askplatyp.kb.lucene.Configuration;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
 import us.askplatyp.kb.lucene.wikidata.mapping.InvalidWikibaseValueException;
 import us.askplatyp.kb.lucene.wikidata.mapping.MapperRegistry;
@@ -19,7 +19,7 @@ import java.util.Optional;
 /**
  * @author Thomas Pellissier Tanon
  */
-public class LuceneUpdateProcessor implements EntityDocumentProcessor {
+class LuceneUpdateProcessor implements EntityDocumentProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LuceneUpdateProcessor.class);
 
@@ -28,7 +28,7 @@ public class LuceneUpdateProcessor implements EntityDocumentProcessor {
     private LuceneIndex index;
     private Sites sites;
 
-    public LuceneUpdateProcessor(LuceneIndex index, Sites sites) {
+    LuceneUpdateProcessor(LuceneIndex index, Sites sites) {
         this.index = index;
         this.sites = sites;
     }
@@ -90,7 +90,7 @@ public class LuceneUpdateProcessor implements EntityDocumentProcessor {
 
     private void addSiteLinksToDocument(ItemDocument itemDocument, Document document) {
         itemDocument.getSiteLinks().values().stream()
-                .filter(siteLink -> Main.SUPPORTED_SITELINKS.contains(siteLink.getSiteKey()))
+                .filter(siteLink -> Configuration.SUPPORTED_SITELINKS.contains(siteLink.getSiteKey()))
                 .forEach(siteLink -> document.add(new StoredField("sameAs", sites.getSiteLinkUrl(siteLink).replace("https://", "http://"))));
     }
 

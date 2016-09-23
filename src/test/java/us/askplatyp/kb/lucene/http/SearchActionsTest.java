@@ -5,12 +5,12 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Assert;
 import org.junit.Test;
-import us.askplatyp.kb.lucene.FakeWikidataLuceneIndexFactory;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
 import us.askplatyp.kb.lucene.model.Collection;
 import us.askplatyp.kb.lucene.model.Entity;
 import us.askplatyp.kb.lucene.model.EntitySearchResult;
 import us.askplatyp.kb.lucene.model.JsonLdRoot;
+import us.askplatyp.kb.lucene.wikidata.FakeWikidataLuceneIndexFactory;
 
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;

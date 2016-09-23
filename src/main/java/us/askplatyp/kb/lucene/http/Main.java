@@ -1,7 +1,6 @@
 package us.askplatyp.kb.lucene.http;
 
 import com.sun.net.httpserver.HttpServer;
-import jersey.repackaged.com.google.common.collect.Sets;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.message.DeflateEncoder;
@@ -18,24 +17,12 @@ import us.askplatyp.kb.lucene.wikidata.WikidataLuceneIndexFactory;
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author Thomas Pellissier Tanon
  */
 public class Main extends ResourceConfig {
 
-    public static final Set<String> SUPPORTED_SITELINKS = Sets.newHashSet("enwiki", "frwiki");
-    static final Locale[] SUPPORTED_LOCALES = {
-            Locale.ENGLISH, Locale.FRENCH,
-            Locale.CANADA, Locale.CANADA_FRENCH, Locale.FRANCE, Locale.UK, Locale.US //TODO: bad
-    };
-    public static final Set<String> SUPPORTED_LANGUAGES = Arrays.stream(SUPPORTED_LOCALES)
-            .map(Locale::getLanguage)
-            .collect(Collectors.toSet());
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     private Main() {

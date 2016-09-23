@@ -8,7 +8,6 @@ import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
 import org.wikidata.wdtk.dumpfiles.MwDumpFile;
 import org.wikidata.wdtk.dumpfiles.wmf.WmfDumpFileManager;
 import us.askplatyp.kb.lucene.Configuration;
-import us.askplatyp.kb.lucene.http.Main;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
 
 import java.io.IOException;
@@ -45,7 +44,7 @@ public class WikidataLuceneIndexFactory implements Factory<LuceneIndex> {
     private static void loadData() throws IOException {
         DumpProcessingController dumpProcessingController = new DumpProcessingController("wikidatawiki");
         dumpProcessingController.setDownloadDirectory(Configuration.getInstance().getWikidataDirectory());
-        dumpProcessingController.setLanguageFilter(Main.SUPPORTED_LANGUAGES);
+        dumpProcessingController.setLanguageFilter(Configuration.SUPPORTED_LANGUAGES);
         dumpProcessingController.registerEntityDocumentProcessor(
                 new LuceneUpdateProcessor(index, dumpProcessingController.getSitesInformation()),
                 null,

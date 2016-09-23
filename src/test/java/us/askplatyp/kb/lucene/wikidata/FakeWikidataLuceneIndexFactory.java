@@ -1,4 +1,4 @@
-package us.askplatyp.kb.lucene;
+package us.askplatyp.kb.lucene.wikidata;
 
 import org.apache.commons.compress.utils.IOUtils;
 import org.glassfish.hk2.api.Factory;
@@ -6,7 +6,6 @@ import org.junit.rules.TemporaryFolder;
 import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
 import org.wikidata.wdtk.dumpfiles.MwLocalDumpFile;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
-import us.askplatyp.kb.lucene.wikidata.LuceneUpdateProcessor;
 
 import java.io.*;
 import java.util.zip.GZIPOutputStream;
