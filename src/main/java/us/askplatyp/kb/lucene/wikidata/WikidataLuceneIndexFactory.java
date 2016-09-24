@@ -122,7 +122,7 @@ public class WikidataLuceneIndexFactory implements Factory<LuceneIndex> {
             try {
                 Files.write(STORAGE_FILE, Collections.singletonList(dateStamp));
             } catch (IOException e) {
-                //TODO: do something?
+                LOGGER.warn("Saving of last parsed dump date stamp failed", e);
             }
         }
     }
