@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
 import org.wikidata.wdtk.datamodel.interfaces.DatatypeIdValue;
 import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
+import us.askplatyp.kb.lucene.model.Locales;
 
 import java.util.*;
 
@@ -14,8 +15,8 @@ import java.util.*;
  */
 public class WikidataTypes {
 
+    static final Map<Locale, String> WIKIMEDIA_LANGUAGE_CODES = new HashMap<>();
     private static final Logger LOGGER = LoggerFactory.getLogger(LuceneUpdateProcessor.class);
-
     private static final Map<ItemIdValue, List<String>> SCHEMA_TYPES = new HashMap<>();
     //TODO: retrieve them with the SPARQL query "?item wdt:P279* wd:Q17379835"?
     private static final Set<ItemIdValue> FILTERED_TYPES = Sets.newHashSet(
@@ -91,6 +92,67 @@ public class WikidataTypes {
         XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_MONOLINGUAL_TEXT, Collections.singletonList("rdf:langString"));
         XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_EXTERNAL_ID, Collections.singletonList("xsd:string"));
         XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_MATH, Collections.singletonList("xsd:string"));
+    }
+
+    static {
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.ARABIC, "ar");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.AMHARIC, "am");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.BULGARIAN, "bg");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.BENGALI, "bn");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.CATALAN, "ca");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.CZECH, "cs");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.DANISH, "da");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locale.GERMAN, "de");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.GREEK, "el");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locale.ENGLISH, "en");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locale.CANADA, "en-ca");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locale.UK, "en-gb");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.SPANISH, "es");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.ESTONIAN, "et");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.PERSIAN, "fa");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.FINNISH, "fi");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locale.FRENCH, "fr");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.FILIPINO, "tl");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.GUJARATI, "gu");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.HEBREW, "he");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.HINDI, "hi");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.CROATIAN, "hr");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.HUNGARIAN, "hu");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.INDONESIAN, "id");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locale.ITALIAN, "it");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locale.JAPANESE, "ja");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.KANNADA, "kn");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locale.KOREAN, "ko");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.LATIN, "la");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.LITHUANIAN, "lt");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.LATVIAN, "lv");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.MALAYALAM, "ml");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.MARATHI, "mr");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.MALAY, "ms");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.DUTCH, "nl");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.NORWEGIAN, "no");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.POLISH, "pl");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.PORTUGUESE, "pt");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.BRAZIL, "pt-br");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.ROMANIAN, "ro");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.RUSSIAN, "ru");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.SLOVAK, "sk");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.SLOVENIAN, "sl");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.SERBIAN, "sr");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.SWEDISH, "sv");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.SWAHILI, "sw");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.TAMIL, "ta");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.TELUGU, "te");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.TAGALOG, "tl");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.THAI, "th");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.TURKISH, "tr");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.UKRAINIAN, "uk");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.VIETNAMESE, "vi");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locale.CHINESE, "zh");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locale.CHINA, "zh-hans");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locale.TAIWAN, "zh-hant");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.SIMPLIFIED_CHINESE, "zh-hans");
+        WIKIMEDIA_LANGUAGE_CODES.put(Locales.TRADITIONAL_CHINESE, "zh-hant");
     }
 
     public static List<String> getSchemaOrgTypes(ItemIdValue itemIdValue) {

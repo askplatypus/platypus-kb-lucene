@@ -5,22 +5,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
 import org.wikidata.wdtk.datamodel.interfaces.*;
-import us.askplatyp.kb.lucene.Configuration;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
 import us.askplatyp.kb.lucene.wikidata.mapping.InvalidWikibaseValueException;
 import us.askplatyp.kb.lucene.wikidata.mapping.MapperRegistry;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author Thomas Pellissier Tanon
  */
 class LuceneUpdateProcessor implements EntityDocumentProcessor {
 
+    private static final Set<String> SUPPORTED_LANGUAGES = new TreeSet<>(WikidataTypes.WIKIMEDIA_LANGUAGE_CODES.values());
     private static final Logger LOGGER = LoggerFactory.getLogger(LuceneUpdateProcessor.class);
 
     private static final PropertyIdValue P31 = Datamodel.makeWikidataPropertyIdValue("P31");
@@ -90,7 +87,10 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
 
     private void addSiteLinksToDocument(ItemDocument itemDocument, Document document) {
         itemDocument.getSiteLinks().values().stream()
-                .filter(siteLink -> Configuration.SUPPORTED_SITELINKS.contains(siteLink.getSiteKey()))
+                .filter(siteLink ->
+                        sites.getGroup(siteLink.getSiteKey()).equals("wikipedia") &&
+                                SUPPORTED_LANGUAGES.contains(sites.getLanguageCode(siteLink.getSiteKey()))
+                )
                 .forEach(siteLink -> document.add(new StoredField("sameAs", sites.getSiteLinkUrl(siteLink).replace("https://", "http://"))));
     }
 

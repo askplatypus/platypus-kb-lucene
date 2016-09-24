@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
+import java.util.TreeSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -44,7 +45,7 @@ public class WikidataLuceneIndexFactory implements Factory<LuceneIndex> {
     private static void loadData() throws IOException {
         DumpProcessingController dumpProcessingController = new DumpProcessingController("wikidatawiki");
         dumpProcessingController.setDownloadDirectory(Configuration.getInstance().getWikidataDirectory());
-        dumpProcessingController.setLanguageFilter(Configuration.SUPPORTED_LANGUAGES);
+        dumpProcessingController.setLanguageFilter(new TreeSet<>(WikidataTypes.WIKIMEDIA_LANGUAGE_CODES.values()));
         dumpProcessingController.registerEntityDocumentProcessor(
                 new LuceneUpdateProcessor(index, dumpProcessingController.getSitesInformation()),
                 null,
