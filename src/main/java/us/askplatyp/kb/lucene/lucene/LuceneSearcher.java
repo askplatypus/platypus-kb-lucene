@@ -128,7 +128,7 @@ public class LuceneSearcher {
             return null;
         }
 
-        String[] parts = str.split("|", 3);
+        String[] parts = str.split("\\|", 3);
         return (parts.length == 3) ? new Continue(Integer.parseInt(parts[0]), Float.parseFloat(parts[1]), Integer.parseInt(parts[2])) : null;
     }
 
