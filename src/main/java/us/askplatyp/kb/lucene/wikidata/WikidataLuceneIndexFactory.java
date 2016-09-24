@@ -51,6 +51,7 @@ public class WikidataLuceneIndexFactory implements Factory<LuceneIndex> {
                 true
         );
         for (MwDumpFile dump : getNewDumpsToProcess(dumpProcessingController.getWmfDumpFileManager()).toArray(MwDumpFile[]::new)) {
+            LOGGER.info("Processing " + dump.getProjectName() + " " + dump.getDumpContentType() + " of the " + dump.getDateStamp());
             dumpProcessingController.processDump(dump);
             LAST_PROCESSED_DUMP_INFO.setDateStamp(dump.getDateStamp());
             index.refreshReaders();
@@ -111,7 +112,7 @@ public class WikidataLuceneIndexFactory implements Factory<LuceneIndex> {
                 try {
                     dateStamp = Files.readAllLines(STORAGE_FILE).get(0);
                 } catch (IOException e) {
-                    //TODO: do something
+                    dateStamp = "20120101";
                 }
             }
             return dateStamp;
