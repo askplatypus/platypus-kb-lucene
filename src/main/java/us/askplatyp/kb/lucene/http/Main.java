@@ -33,7 +33,6 @@ import java.security.NoSuchAlgorithmException;
                 title = "Platypus knowledge base",
                 description = "API for the Platypus knowledge base based on Wikidata",
                 version = "dev",
-                termsOfService = "http://theweatherapi.io/terms.html",
                 license = @License(
                         name = "Creative Commons Attribution-ShareAlike 3.0",
                         url = "https://creativecommons.org/licenses/by-sa/3.0/"
