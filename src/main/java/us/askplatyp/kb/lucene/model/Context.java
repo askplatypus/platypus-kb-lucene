@@ -1,9 +1,6 @@
 package us.askplatyp.kb.lucene.model;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 
 import java.util.Collections;
 import java.util.Locale;
@@ -49,9 +46,14 @@ public class Context {
         this.locale = locale;
     }
 
-    @JsonProperty("@language")
+    @JsonIgnore
     public Locale getLocale() {
         return this.locale;
+    }
+
+    @JsonProperty("@language")
+    public String getLanguageCode() {
+        return this.locale.toString();
     }
 
     @JsonAnyGetter

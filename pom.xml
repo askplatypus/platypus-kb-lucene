@@ -12,11 +12,24 @@
         <jerseyVersion>2.23.2</jerseyVersion>
         <junitVersion>4.12</junitVersion>
         <luceneVersion>6.2.1</luceneVersion>
+        <servletVersion>3.1.0</servletVersion>
+        <swaggerVersion>1.5.10</swaggerVersion>
         <slf4jVersion>1.7.21</slf4jVersion>
         <wdtkVersion>0.7.0</wdtkVersion>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-jersey2-jaxrs</artifactId>
+            <version>${swaggerVersion}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>${servletVersion}</version>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

@@ -1,6 +1,12 @@
 package us.askplatyp.kb.lucene.http;
 
 import com.sun.net.httpserver.HttpServer;
+import io.swagger.annotations.Info;
+import io.swagger.annotations.License;
+import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.jaxrs.config.BeanConfig;
+import io.swagger.jaxrs.listing.ApiListingResource;
+import io.swagger.jaxrs.listing.SwaggerSerializers;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.message.DeflateEncoder;
@@ -21,11 +27,28 @@ import java.security.NoSuchAlgorithmException;
 /**
  * @author Thomas Pellissier Tanon
  */
+@SwaggerDefinition(
+        host = "kb.askplatyp.us",
+        info = @Info(
+                title = "Platypus knowledge base",
+                description = "API for the Platypus knowledge base based on Wikidata",
+                version = "dev",
+                termsOfService = "http://theweatherapi.io/terms.html",
+                license = @License(
+                        name = "Creative Commons Attribution-ShareAlike 3.0",
+                        url = "https://creativecommons.org/licenses/by-sa/3.0/"
+                )
+        ),
+        produces = {"application/json", "application/ld+json"},
+        schemes = {SwaggerDefinition.Scheme.HTTP, SwaggerDefinition.Scheme.HTTPS}
+)
 public class Main extends ResourceConfig {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     private Main() {
+        packages("us.askplatyp.kb.lucene.http");
+
         register(EntityFilteringFeature.class);
         register(new AbstractBinder() {
             @Override
@@ -33,10 +56,13 @@ public class Main extends ResourceConfig {
                 bindFactory(WikidataLuceneIndexFactory.class).to(LuceneIndex.class);
             }
         });
-        packages("us.askplatyp.kb.lucene.http");
-
+        register(CORSFilter.class);
+        register(ApiListingResource.class);
+        register(SwaggerSerializers.class);
         EncodingFilter.enableFor(this, GZipEncoder.class);
         EncodingFilter.enableFor(this, DeflateEncoder.class);
+
+        configureSwagger();
     }
 
     public static void main(String[] args) throws IOException {
@@ -67,5 +93,11 @@ public class Main extends ResourceConfig {
             LOGGER.warn("No SSL context found, fallback to no SSL", e.getMessage());
             return null;
         }
+    }
+
+    private void configureSwagger() {
+        BeanConfig beanConfig = new BeanConfig();
+        beanConfig.setResourcePackage("us.askplatyp.kb.lucene.http");
+        beanConfig.setScan(true);
     }
 }

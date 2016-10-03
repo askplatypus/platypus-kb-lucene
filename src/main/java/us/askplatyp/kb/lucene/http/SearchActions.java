@@ -1,13 +1,16 @@
 package us.askplatyp.kb.lucene.http;
 
+import io.swagger.annotations.*;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
 import us.askplatyp.kb.lucene.lucene.LuceneSearcher;
+import us.askplatyp.kb.lucene.model.*;
 
 import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.*;
 import java.util.Locale;
 
@@ -15,9 +18,10 @@ import java.util.Locale;
  * @author Thomas Pellissier Tanon
  */
 @Path("search")
+@Api
 public class SearchActions {
 
-    private static final int LIMIT_DEFAULT = 100;
+    private static final String LIMIT_DEFAULT = "100";
     private static final int LIMIT_MAX = 1000;
 
     @Inject
@@ -25,12 +29,19 @@ public class SearchActions {
 
     @Path("simple")
     @GET
-    public Response search(
-            @QueryParam("q") String query,
-            @QueryParam("type") @DefaultValue("Thing") String type,
-            @QueryParam("lang") @DefaultValue("en") String lang,
-            @QueryParam("continue") String queryContinue,
-            @QueryParam("limit") int limit,
+    @ApiOperation(
+            value = "Allows to do simple queries inside of the knowledge base"
+            //TODO: enable when Swagger 1.511 will be out (support of @JsonUnwrapped) response = SimpleResult.class
+    )
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Content-Language", value = "The language to use for the output", defaultValue = "en", dataType = "string", paramType = "header")
+    })
+    public Response simple(
+            @QueryParam("q") @ApiParam(value = "The query itself. If empty, all entities are returned", example = "Barack Obama") String query,
+            @QueryParam("type") @DefaultValue("Thing") @ApiParam(value = "A type filter (it uses http://schema.org/ as the default namespace)", example = "Person") String type,
+            @QueryParam("lang") @DefaultValue("en") @ApiParam(value = "The query language") String lang,
+            @QueryParam("continue") @ApiParam(value = "Allows to retrieve more results using a pagination system") String queryContinue,
+            @QueryParam("limit") @DefaultValue(LIMIT_DEFAULT) @ApiParam(value = "The number of query results to return") int limit,
             @Context Request request,
             @Context UriInfo uriInfo
     ) {
@@ -62,11 +73,16 @@ public class SearchActions {
         return builder.toString();
     }
 
-    private int cleanLimit(int limit) {
+    private int cleanLimit(int limit) throws ApiException {
         if (limit <= 0) {
-            return LIMIT_DEFAULT;
-        } else {
-            return Math.min(limit, LIMIT_MAX);
+            throw new ApiException("The limit parameter should have a value greater than 0", 400);
+        }
+        return Math.min(limit, LIMIT_MAX);
+    }
+
+    private static class SimpleResult extends JsonLdRoot<Collection<EntitySearchResult<Entity>>> {
+        public SimpleResult(us.askplatyp.kb.lucene.model.Context context, Collection<EntitySearchResult<Entity>> content) {
+            super(context, content);
         }
     }
 }
