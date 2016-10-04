@@ -7,30 +7,7 @@ This repository contains a Lucene-based service for the knowledge base used by P
 
 This knowledge base is currently using Wikidata content.
 
-
-## Usage
-
-This service provides an HTTP REST API.
-
-All method supports content and language negotiation using `Accept` and `Accept-Language` headers.
-The content types currently supported are `application/ld+json` and `application/json`.
-
-### Methods
-
-#### `/entity/`
-
-Allows to retrieve an entity description based on its IRI like `/entity/wd:Q42` with a `GET` request.
-
-#### `/search/simple`
-
-Allows to do simple queries inside of the knowledge base. The `GET` request supports the following query parameters:
-* `q` for the query itself like `Barack Obama`
-* `lang` the language of the query like `en` or `fr`
-* `type` the requested type of entities like `Person`, `Place` or `Property`
-* `limit` the number of query results to return. This value should be lower than 1000 and the default value is 100.
-* `continue` allows to retrieve more results using a pagination system.
-
-Example: `/search/simple?query=John&lang=fr&type=Person&limit100`
+To see the provided API methods go to [http://kb.askplatyp.us/api](http://kb.askplatyp.us/api)
 
 ## Install
 
@@ -41,6 +18,8 @@ mvn exec:java
 ```
 
 The service will run and fill its database with the latest Wikidata dumps.
+
+To see the API documentation (based on Swagger) browse the base URI of your installation.
 
 ### Configuration
 
