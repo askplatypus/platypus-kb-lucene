@@ -34,7 +34,7 @@ public class SearchActions {
             //TODO: enable when Swagger 1.511 will be out (support of @JsonUnwrapped) response = SimpleResult.class
     )
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "Content-Language", value = "The language to use for the output", defaultValue = "en", dataType = "string", paramType = "header")
+            @ApiImplicitParam(name = "Accept-Language", value = "The language to use for the output", defaultValue = "en", dataType = "string", paramType = "header")
     })
     public Response simple(
             @QueryParam("q") @ApiParam(value = "The query itself. If empty, all entities are returned", example = "Barack Obama") String query,

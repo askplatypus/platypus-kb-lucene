@@ -30,7 +30,7 @@ public class EntityActions {
             //TODO: enable when Swagger 1.511 will be out (support of @JsonUnwrapped) response = JsonLdRoot.class
     )
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "Content-Language", value = "The language to use for the output", defaultValue = "en", dataType = "string", paramType = "header")
+            @ApiImplicitParam(name = "Accept-Language", value = "The language to use for the output", defaultValue = "en", dataType = "string", paramType = "header")
     })
     @ApiResponses(value = {
             @ApiResponse(code = 404, message = "Entity not found")
