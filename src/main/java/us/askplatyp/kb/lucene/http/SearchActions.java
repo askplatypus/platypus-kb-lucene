@@ -17,7 +17,7 @@ import java.util.Locale;
 /**
  * @author Thomas Pellissier Tanon
  */
-@Path("search")
+@Path("/api/v1/search")
 @Api
 public class SearchActions {
 

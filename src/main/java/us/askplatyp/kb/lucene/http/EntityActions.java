@@ -17,7 +17,7 @@ import javax.ws.rs.core.Response;
 /**
  * @author Thomas Pellissier Tanon
  */
-@Path("entity/{IRI}")
+@Path("/api/v1/entity/{IRI}")
 @Api
 public class EntityActions {
 

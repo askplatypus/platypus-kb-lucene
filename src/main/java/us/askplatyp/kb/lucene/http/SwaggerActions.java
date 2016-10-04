@@ -18,10 +18,22 @@ public class SwaggerActions {
 
     @GET
     public Response main() throws IOException {
-        return Response.temporaryRedirect(URI.create("/swagger/index.html")).build();
+        return Response.temporaryRedirect(URI.create("/api/v1/swagger/index.html")).build();
     }
 
-    @Path("/swagger/{path:.*}")
+    @Path("/api")
+    @GET
+    public Response api() throws IOException {
+        return Response.temporaryRedirect(URI.create("/api/v1/swagger/index.html")).build();
+    }
+
+    @Path("/api/v1")
+    @GET
+    public Response apiV1() throws IOException {
+        return Response.temporaryRedirect(URI.create("/api/v1/swagger/index.html")).build();
+    }
+
+    @Path("/api/v1/swagger/{path:.*}")
     @GET
     public Response dependencies(@PathParam("path") String path) throws IOException {
         return outputFile("/swagger/" + path);
