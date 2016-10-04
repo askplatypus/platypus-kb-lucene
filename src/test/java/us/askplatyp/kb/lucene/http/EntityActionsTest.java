@@ -33,7 +33,7 @@ public class EntityActionsTest extends JerseyTest {
     @Test
     public void testDefaultShortIRI() {
         JsonLdRoot<Entity> result =
-                target("/entity/wd:Q42").request().get(RESULT_TYPE);
+                target("/api/v1/entity/wd:Q42").request().get(RESULT_TYPE);
         Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
         assertEnglishIndividual(result.getContent());
     }
@@ -41,7 +41,7 @@ public class EntityActionsTest extends JerseyTest {
     @Test
     public void testDefaultFullIRI() {
         JsonLdRoot<Entity> result =
-                target("/entity/http%3A%2F%2Fwww.wikidata.org%2Fentity%2FQ42").request().get(RESULT_TYPE);
+                target("/api/v1/entity/http%3A%2F%2Fwww.wikidata.org%2Fentity%2FQ42").request().get(RESULT_TYPE);
         Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
         assertEnglishIndividual(result.getContent());
     }
@@ -49,7 +49,7 @@ public class EntityActionsTest extends JerseyTest {
     @Test
     public void testFrenchWithContentNegotiation() {
         JsonLdRoot<Entity> result =
-                target("/entity/wd:Q42").request().acceptLanguage(Locale.FRANCE).get(RESULT_TYPE);
+                target("/api/v1/entity/wd:Q42").request().acceptLanguage(Locale.FRANCE).get(RESULT_TYPE);
         Assert.assertEquals(Locale.FRANCE, result.getContext().getLocale());
         assertFrenchIndividual(result.getContent());
     }
@@ -57,7 +57,7 @@ public class EntityActionsTest extends JerseyTest {
     @Test
     public void testDummy() {
         JsonLdRoot<Entity> result =
-                target("/entity/wd:Q111").request().get(RESULT_TYPE);
+                target("/api/v1/entity/wd:Q111").request().get(RESULT_TYPE);
         Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
         assertEnglishDummy(result.getContent());
     }
@@ -65,7 +65,7 @@ public class EntityActionsTest extends JerseyTest {
     @Test
     public void testProperty() {
         JsonLdRoot<Entity> result =
-                target("/entity/wd:P42").request().get(RESULT_TYPE);
+                target("/api/v1/entity/wd:P42").request().get(RESULT_TYPE);
         Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
         assertEnglishProperty(result.getContent());
     }
