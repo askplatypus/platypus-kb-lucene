@@ -21,6 +21,11 @@ The service will run and fill its database with the latest Wikidata dumps.
 
 To see the API documentation (based on Swagger) browse the base URI of your installation.
 
+If you want to create a docker image of the service just run:
+```
+mvn clean package docker:build
+```
+
 ### Configuration
 
 The main configuration file is `src/main/resources/config.properties`.
