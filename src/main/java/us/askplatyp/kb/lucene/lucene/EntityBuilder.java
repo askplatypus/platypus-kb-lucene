@@ -125,7 +125,7 @@ class EntityBuilder {
             );
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
-            return null;
+            return Optional.empty();
         }
     }
 }
