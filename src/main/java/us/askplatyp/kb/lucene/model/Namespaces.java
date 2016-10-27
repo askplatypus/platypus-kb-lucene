@@ -27,6 +27,7 @@ public class Namespaces {
 
     static final String DEFAULT_NAMESPACE = "http://schema.org/";
     static final Map<String, String> NAMESPACES = new TreeMap<>();
+    private static final Map<String, String> SPECIAL_CASES = new TreeMap<>();
 
     static {
         NAMESPACES.put("goog", "http://schema.googleapis.com/");
@@ -36,6 +37,11 @@ public class Namespaces {
         NAMESPACES.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
         NAMESPACES.put("wd", "http://www.wikidata.org/entity/");
         NAMESPACES.put("xsd", "http://www.w3.org/2001/XMLSchema#");
+
+        SPECIAL_CASES.put("rdf:type", "@type");
+        SPECIAL_CASES.put("rdf:Property", "Property");
+        SPECIAL_CASES.put("rdfs:Class", "Class");
+        SPECIAL_CASES.put("owl:Thing", "Thing");
     }
 
     public static String expand(String qualifiedName) {
@@ -57,20 +63,18 @@ public class Namespaces {
     }
 
     public static String reduce(String IRI) {
-        if (IRI.equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) {
-            return "@type";
-        }
-
-        if (IRI.startsWith(DEFAULT_NAMESPACE)) {
-            return IRI.substring(DEFAULT_NAMESPACE.length());
-        }
-
         for (Map.Entry<String, String> namespace : NAMESPACES.entrySet()) {
             if (IRI.startsWith(namespace.getValue())) {
-                return namespace.getKey() + ":" + IRI.substring(namespace.getValue().length());
+                IRI = namespace.getKey() + ":" + IRI.substring(namespace.getValue().length());
+                break;
             }
         }
-
+        if (IRI.startsWith(DEFAULT_NAMESPACE)) {
+            IRI = IRI.substring(DEFAULT_NAMESPACE.length());
+        }
+        if (SPECIAL_CASES.containsKey(IRI)) {
+            IRI = SPECIAL_CASES.get(IRI);
+        }
         return IRI;
     }
 }

@@ -91,6 +91,15 @@ public class SearchActionsTest extends JerseyTest {
     }
 
     @Test
+    public void testFullTypeIRISearch() {
+        JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
+                target("/api/v1/search/simple").queryParam("type", "http://schema.org/Person").request().get(RESULT_TYPE);
+        Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
+        assertElementCount(result.getContent(), 1);
+        assertEnglishIndividual(result.getContent().getElements().get(0).getResult());
+    }
+
+    @Test
     public void testKeywordAndLanguageSearch() {
         JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
                 target("/api/v1/search/simple").queryParam("q", "super de test").queryParam("lang", "fr-FR").request().get(RESULT_TYPE);
@@ -121,7 +130,7 @@ public class SearchActionsTest extends JerseyTest {
     @Test
     public void testKeywordPropertySearch() {
         JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
-                target("/api/v1/search/simple").queryParam("q", "Foo Bar").queryParam("type", "Property").request().get(RESULT_TYPE);
+                target("/api/v1/search/simple").queryParam("q", "Foo Bar").queryParam("type", "rdf:Property").request().get(RESULT_TYPE);
         Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
         assertElementCount(result.getContent(), 1);
         assertEnglishProperty(result.getContent().getElements().get(0).getResult());

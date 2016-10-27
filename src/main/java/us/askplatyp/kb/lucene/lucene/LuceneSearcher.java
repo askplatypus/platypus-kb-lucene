@@ -62,6 +62,7 @@ public class LuceneSearcher {
             String label, String type, Locale inputLocale, Locale outputLocale, String baseURI, String currentContinue, int limit
     ) throws ApiException {
         try {
+            type = Namespaces.reduce(type);
             Continue startAfter = parseContinue(currentContinue);
             TopDocs searchResults = EMPTY_TOP_DOCS;
             int fuziness;
