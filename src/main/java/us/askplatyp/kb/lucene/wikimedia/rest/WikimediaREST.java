@@ -23,6 +23,7 @@ import jersey.repackaged.com.google.common.cache.CacheLoader;
 import jersey.repackaged.com.google.common.cache.LoadingCache;
 import us.askplatyp.kb.lucene.wikimedia.rest.model.Summary;
 
+import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -67,6 +68,9 @@ public class WikimediaREST {
 
     private URL getURLForPageAction(String action, String pageIRI) throws MalformedURLException {
         URL pageURL = new URL(pageIRI);
-        return new URL("https", pageURL.getHost(), "/api/rest_v1/page/" + action + "/" + pageURL.getPath().replaceFirst("/wiki/", ""));
+        return UriBuilder.fromUri("https://host/api/rest_v1/page/")
+                .host(pageURL.getHost())
+                .segment(action, pageURL.getPath().replaceFirst("/wiki/", ""))
+                .build().toURL();
     }
 }
