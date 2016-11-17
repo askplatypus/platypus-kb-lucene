@@ -52,15 +52,13 @@ public class Context {
 
     private Locale locale;
 
+    public Context(Locale locale) {
+        this.locale = locale;
+    }
 
     @JsonCreator
     public Context(@JsonProperty("@language") String languageCode) {
-        this.locale = Locale.forLanguageTag(languageCode);
-    } //TODO: is it useful
-
-    @JsonCreator
-    public Context(@JsonProperty("@language") Locale locale) {
-        this.locale = locale;
+        this(Locale.forLanguageTag(languageCode));
     }
 
     @JsonIgnore
@@ -70,7 +68,7 @@ public class Context {
 
     @JsonProperty("@language")
     public String getLanguageCode() {
-        return this.locale.toString();
+        return this.locale.toLanguageTag();
     }
 
     @JsonAnyGetter
