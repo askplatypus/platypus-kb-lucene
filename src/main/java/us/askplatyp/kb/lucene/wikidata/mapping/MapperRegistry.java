@@ -36,7 +36,12 @@ public class MapperRegistry {
 
     static {
         //TODO: LinkedIn, Myspace, Pinterest, SoundCloud, Tumblr...
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P19"), new ItemIdStatementMapper("birthPlace"));
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P20"), new ItemIdStatementMapper("deathPlace"));
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P27"), new ItemIdStatementMapper("nationality"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P31"), new P31StatementMapper());
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P569"), new TimeStatementMapper("birthDate"));
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P570"), new TimeStatementMapper("deathDate"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P646"), new ExternalIdentifierStatementMapper("sameAs", "kg:$1", "(/m/0[0-9a-z_]{2,6}|/m/01[0123][0-9a-z_]{5})"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P856"), new URIStatementMapper("url"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2002"), new ExternalIdentifierStatementMapper("sameAs", "http://twitter.com/$1", "[A-Za-z0-9_]{1,15}"));

@@ -117,6 +117,8 @@ public class EntityActionsTest extends JerseyTest {
                 "http://www.youtube.com/channel/UCdn86UYrf54lXfVli9CB6Aw",
                 "http://plus.google.com/+BarackObama"
         }, result.getSameAsIRIs());
+        Assert.assertEquals("1952-03-11Z", result.getBirthDate().getValue());
+        Assert.assertEquals("xsd:date", result.getBirthDate().getType());
     }
 
     private void assertEnglishDummy(Entity result) {

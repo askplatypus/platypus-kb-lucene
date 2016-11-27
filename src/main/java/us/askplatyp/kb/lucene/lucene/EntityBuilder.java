@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.interfaces.WikimediaLanguageCodes;
 import us.askplatyp.kb.lucene.model.Article;
+import us.askplatyp.kb.lucene.model.CalendarValue;
 import us.askplatyp.kb.lucene.model.Entity;
 import us.askplatyp.kb.lucene.model.Image;
 import us.askplatyp.kb.lucene.wikimedia.rest.WikimediaREST;
@@ -55,7 +56,12 @@ class EntityBuilder {
                 document.getValues("sameAs"),
                 null,
                 null,
-                valuesIfType(document, "rangeIncludes", "Property", types)
+                valuesIfType(document, "rangeIncludes", "Property", types),
+                null,
+                null,
+                null,
+                null,
+                null
         );
     }
 
@@ -73,7 +79,12 @@ class EntityBuilder {
                 document.getValues("sameAs"),
                 wikipediaArticleIRI.flatMap(this::buildWikipediaImage).orElseGet(() -> null),
                 wikipediaArticleIRI.map(this::buildWikipediaArticle).orElseGet(() -> null),
-                valuesIfType(document, "rangeIncludes", "Property", types)
+                valuesIfType(document, "rangeIncludes", "Property", types),
+                Optional.ofNullable(document.get("birthDate")).map(CalendarValue::new).orElseGet(() -> null),
+                document.get("birthPlace"),
+                Optional.ofNullable(document.get("deathDate")).map(CalendarValue::new).orElseGet(() -> null),
+                document.get("deathPlace"),
+                document.get("nationality")
         );
     }
 

@@ -39,6 +39,11 @@ public class Entity {
     private Image image;
     private Article detailedDescription;
     private String[] rangeIncludes;
+    private CalendarValue birthDate;
+    private String birthPlace;
+    private CalendarValue deathDate;
+    private String deathPlace;
+    private String nationality;
 
     @JsonCreator
     public Entity(
@@ -51,7 +56,12 @@ public class Entity {
             @JsonProperty("sameAs") String[] sameAsIRIs,
             @JsonProperty("image") Image image,
             @JsonProperty("detailedDescription") Article detailedDescription,
-            @JsonProperty("rangeIncludes") String[] rangeIncludes
+            @JsonProperty("rangeIncludes") String[] rangeIncludes,
+            @JsonProperty("birthDate") CalendarValue birthDate,
+            @JsonProperty("birthPlace") String birthPlace,
+            @JsonProperty("deathDate") CalendarValue deathDate,
+            @JsonProperty("deathPlace") String deathPlace,
+            @JsonProperty("nationality") String nationality
     ) {
         this.IRI = IRI;
         this.types = types;
@@ -63,6 +73,11 @@ public class Entity {
         this.image = image;
         this.detailedDescription = detailedDescription;
         this.rangeIncludes = rangeIncludes;
+        this.birthDate = birthDate;
+        this.birthPlace = birthPlace;
+        this.deathDate = deathDate;
+        this.deathPlace = deathPlace;
+        this.nationality = nationality;
     }
 
     @JsonProperty("@id")
@@ -110,9 +125,33 @@ public class Entity {
         return detailedDescription;
     }
 
-
     @JsonProperty("rangeIncludes")
     public String[] getRangeIncludes() {
         return rangeIncludes;
+    }
+
+    @JsonProperty("birthDate")
+    public CalendarValue getBirthDate() {
+        return birthDate;
+    }
+
+    @JsonProperty("birthPlace")
+    public String getBirthPlace() {
+        return birthPlace;
+    }
+
+    @JsonProperty("deathDate")
+    public CalendarValue getDeathDate() {
+        return deathDate;
+    }
+
+    @JsonProperty("deathPlace")
+    public String getDeathPlace() {
+        return deathPlace;
+    }
+
+    @JsonProperty("nationality")
+    public String getNationality() {
+        return nationality;
     }
 }
