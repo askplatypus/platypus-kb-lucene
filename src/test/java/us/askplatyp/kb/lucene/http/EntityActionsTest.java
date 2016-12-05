@@ -29,7 +29,10 @@ import us.askplatyp.kb.lucene.wikidata.FakeWikidataLuceneIndexFactory;
 
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Locale;
+import java.util.Map;
 
 public class EntityActionsTest extends JerseyTest {
 
@@ -88,63 +91,64 @@ public class EntityActionsTest extends JerseyTest {
     }
 
     private void assertEnglishIndividual(Entity result) {
-        Assert.assertEquals(result.getName(), "Foo bar");
-        Assert.assertNull(result.getDescription());
-        Assert.assertNull(result.getDetailedDescription());
+        Assert.assertEquals(result.getPropertyValue("name"), "Foo bar");
+        Assert.assertNull(result.getPropertyValue("description"));
+        Assert.assertNull(result.getPropertyValue("detailedDescription"));
         assertNotLanguageBaseIndividual(result);
     }
 
     private void assertFrenchIndividual(Entity result) {
-        Assert.assertEquals("super de test", result.getName());
-        Assert.assertEquals("Un test", result.getDescription());
-        Assert.assertEquals("http://fr.wikipedia.org/wiki/Douglas_Adams", result.getDetailedDescription().getIRI());
-        Assert.assertEquals("fr", result.getDetailedDescription().getLanguageCode());
-        Assert.assertEquals("Douglas Adams", result.getDetailedDescription().getTitle());
-        Assert.assertEquals("http://creativecommons.org/licenses/by-sa/3.0/", result.getDetailedDescription().getLicenseIRI());
-        Assert.assertNotNull(result.getImage());
+        Assert.assertEquals("super de test", result.getPropertyValue("name"));
+        Assert.assertEquals("Un test", result.getPropertyValue("description"));
+        Map detailedDescription = (Map) result.getPropertyValue("detailedDescription");
+        Assert.assertEquals("http://fr.wikipedia.org/wiki/Douglas_Adams", detailedDescription.get("@id"));
+        Assert.assertEquals("fr", detailedDescription.get("inLanguage"));
+        Assert.assertEquals("Douglas Adams", detailedDescription.get("name"));
+        Assert.assertEquals("http://creativecommons.org/licenses/by-sa/3.0/", detailedDescription.get("license"));
+        Assert.assertNotNull(result.getPropertyValue("image"));
         assertNotLanguageBaseIndividual(result);
     }
 
     private void assertNotLanguageBaseIndividual(Entity result) {
         Assert.assertEquals("wd:Q42", result.getIRI());
-        Assert.assertArrayEquals(new String[]{"Thing", "Person"}, result.getTypes());
-        Assert.assertEquals("http://foobar.com/", result.getOfficialWebsiteIRI());
-        Assert.assertArrayEquals(new String[]{
+        Assert.assertEquals(Arrays.asList("Thing", "Person"), result.getTypes());
+        Assert.assertEquals("http://foobar.com/", result.getPropertyValue("url"));
+        Assert.assertEquals(Arrays.asList(
                 "http://fr.wikipedia.org/wiki/Douglas_Adams",
                 "http://twitter.com/BarackObama",
                 "http://www.instagram.com/barackobama",
                 "http://www.facebook.com/barackobama",
                 "http://www.youtube.com/channel/UCdn86UYrf54lXfVli9CB6Aw",
                 "http://plus.google.com/+BarackObama"
-        }, result.getSameAsIRIs());
-        Assert.assertEquals("1952-03-11Z", result.getBirthDate().getValue());
-        Assert.assertEquals("xsd:date", result.getBirthDate().getType());
+        ), result.getPropertyValue("sameAs"));
+        Assert.assertEquals("1952-03-11Z", ((Map) result.getPropertyValue("birthDate")).get("@value"));
+        Assert.assertEquals("xsd:date", ((Map) result.getPropertyValue("birthDate")).get("@type"));
     }
 
     private void assertEnglishDummy(Entity result) {
-        Assert.assertEquals("dummy", result.getName());
-        Assert.assertNull(result.getDescription());
+        Assert.assertEquals("dummy", result.getPropertyValue("name"));
+        Assert.assertNull(result.getPropertyValue("description"));
         assertNotLanguageBaseDummy(result);
     }
 
     private void assertNotLanguageBaseDummy(Entity result) {
         Assert.assertEquals("wd:Q111", result.getIRI());
-        Assert.assertArrayEquals(new String[]{"Thing"}, result.getTypes());
-        Assert.assertNull(result.getOfficialWebsiteIRI());
-        Assert.assertArrayEquals(new String[]{}, result.getSameAsIRIs());
+        Assert.assertEquals(Collections.singletonList("Thing"), result.getTypes());
+        Assert.assertNull(result.getPropertyValue("url"));
+        Assert.assertEquals(Collections.emptyList(), result.getPropertyValue("sameAs"));
     }
 
     private void assertEnglishProperty(Entity result) {
-        Assert.assertEquals("Foo-Bar", result.getName());
-        Assert.assertNull(result.getDescription());
+        Assert.assertEquals("Foo-Bar", result.getPropertyValue("name"));
+        Assert.assertNull(result.getPropertyValue("description"));
         assertNotLanguageBaseProperty(result);
     }
 
     private void assertNotLanguageBaseProperty(Entity result) {
         Assert.assertEquals("wd:P42", result.getIRI());
-        Assert.assertArrayEquals(new String[]{"Property"}, result.getTypes());
-        Assert.assertArrayEquals(new String[]{"xsd:string"}, result.getRangeIncludes());
-        Assert.assertNull(result.getOfficialWebsiteIRI());
-        Assert.assertArrayEquals(new String[]{}, result.getSameAsIRIs());
+        Assert.assertEquals(Collections.singletonList("Property"), result.getTypes());
+        Assert.assertEquals(Collections.singletonList("xsd:string"), result.getPropertyValue("rangeIncludes"));
+        Assert.assertNull(result.getPropertyValue("url"));
+        Assert.assertEquals(Collections.emptyList(), result.getPropertyValue("sameAs"));
     }
 }

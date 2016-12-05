@@ -29,8 +29,7 @@ import us.askplatyp.kb.lucene.wikimedia.rest.WikimediaREST;
 import us.askplatyp.kb.lucene.wikimedia.rest.model.Summary;
 
 import java.io.IOException;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author Thomas Pellissier Tanon
@@ -45,63 +44,37 @@ class EntityBuilder {
     }
 
     Entity buildSimpleEntityInLanguage(Document document, Locale locale) {
-        String[] types = document.getValues("@type");
-        return new Entity(
-                document.get("@id"),
-                types,
-                document.get("name@" + locale.getLanguage()),
-                document.get("description@" + locale.getLanguage()),
-                document.getValues("alternateName@" + locale.getLanguage()),
-                document.get("url"),
-                document.getValues("sameAs"),
-                null,
-                null,
-                valuesIfType(document, "rangeIncludes", "Property", types),
-                null,
-                null,
-                null,
-                null,
-                null
-        );
+        FluentEntityBuilder entityBuilder = new FluentEntityBuilder(document.get("@id"), document.getValues("@type"));
+        entityBuilder.setPropertyValue("name", document.get("name@" + locale.getLanguage()));
+        entityBuilder.setPropertyValue("description", document.get("description@" + locale.getLanguage()));
+        entityBuilder.setPropertyValue("alternateName", document.getValues("alternateName@" + locale.getLanguage()));
+        entityBuilder.setPropertyValue("url", document.get("url"));
+        entityBuilder.setPropertyValue("sameAs", document.getValues("sameAs"));
+        entityBuilder.setPropertyValueIfType("rangeIncludes", document.getValues("rangeIncludes"), "Property");
+        return entityBuilder.build();
     }
 
     Entity buildFullEntityInLanguage(Document document, Locale locale) {
+        FluentEntityBuilder entityBuilder = new FluentEntityBuilder(document.get("@id"), document.getValues("@type"));
+        entityBuilder.setPropertyValue("name", document.get("name@" + locale.getLanguage()));
+        entityBuilder.setPropertyValue("description", document.get("description@" + locale.getLanguage()));
+        entityBuilder.setPropertyValue("alternateName", document.getValues("alternateName@" + locale.getLanguage()));
+        entityBuilder.setPropertyValue("url", document.get("url"));
+        entityBuilder.setPropertyValue("sameAs", document.getValues("sameAs"));
         Optional<String> wikipediaArticleIRI = findWikipediaArticleIRI(document.getValues("sameAs"), locale);
-
-        String[] types = document.getValues("@type");
-        return new Entity(
-                document.get("@id"),
-                types,
-                document.get("name@" + locale.getLanguage()),
-                document.get("description@" + locale.getLanguage()),
-                document.getValues("alternateName@" + locale.getLanguage()),
-                document.get("url"),
-                document.getValues("sameAs"),
-                wikipediaArticleIRI.flatMap(this::buildWikipediaImage).orElseGet(() -> null),
-                wikipediaArticleIRI.map(this::buildWikipediaArticle).orElseGet(() -> null),
-                valuesIfType(document, "rangeIncludes", "Property", types),
-                Optional.ofNullable(document.get("birthDate")).map(CalendarValue::new).orElseGet(() -> null),
-                document.get("birthPlace"),
-                Optional.ofNullable(document.get("deathDate")).map(CalendarValue::new).orElseGet(() -> null),
-                document.get("deathPlace"),
-                document.get("nationality")
+        wikipediaArticleIRI.flatMap(this::buildWikipediaImage).ifPresent(image ->
+                entityBuilder.setPropertyValue("image", image)
         );
-    }
-
-    private String[] valuesIfType(Document document, String name, String type, String[] types) {
-        if (!valueInArray(type, types)) {
-            return null;
-        }
-        return document.getValues(name);
-    }
-
-    private <T> boolean valueInArray(T value, T[] array) {
-        for (T element : array) {
-            if (element.equals(value)) {
-                return true;
-            }
-        }
-        return false;
+        wikipediaArticleIRI.map(this::buildWikipediaArticle).ifPresent(image ->
+                entityBuilder.setPropertyValue("detailedDescription", image)
+        );
+        entityBuilder.setPropertyValueIfType("rangeIncludes", document.getValues("rangeIncludes"), "Property");
+        entityBuilder.setPropertyDateValueIfType("birthDate", document.get("birthDate"), "Person");
+        entityBuilder.setPropertyValueIfType("birthPlace", document.get("birthPlace"), "Person");
+        entityBuilder.setPropertyDateValueIfType("deathDate", document.get("deathDate"), "Person");
+        entityBuilder.setPropertyValueIfType("deathPlace", document.get("deathPlace"), "Person");
+        entityBuilder.setPropertyDateValueIfType("nationality", document.get("nationality"), "Person");
+        return entityBuilder.build();
     }
 
     private Optional<String> findWikipediaArticleIRI(String[] IRIs, Locale locale) {
@@ -137,6 +110,45 @@ class EntityBuilder {
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
             return Optional.empty();
+        }
+    }
+
+    private static class FluentEntityBuilder {
+        private String IRI;
+        private List<String> types;
+        private Map<String, Object> propertyValues = new TreeMap<>();
+
+        FluentEntityBuilder(String IRI, String[] types) {
+            this.IRI = IRI;
+            this.types = Arrays.asList(types);
+        }
+
+        <T> void setPropertyValue(String property, T value) {
+            if (value != null) {
+                propertyValues.put(property, value);
+            }
+        }
+
+        void setPropertyDateValue(String property, String value) {
+            if (value != null) {
+                propertyValues.put(property, new CalendarValue(value));
+            }
+        }
+
+        void setPropertyValueIfType(String property, Object value, String type) {
+            if (types.contains(type)) {
+                setPropertyValue(property, value);
+            }
+        }
+
+        void setPropertyDateValueIfType(String property, String value, String type) {
+            if (types.contains(type)) {
+                setPropertyDateValue(property, value);
+            }
+        }
+
+        Entity build() {
+            return new Entity(IRI, types, propertyValues);
         }
     }
 }

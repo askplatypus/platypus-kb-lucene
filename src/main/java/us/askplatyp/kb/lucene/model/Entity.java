@@ -17,67 +17,32 @@
 
 package us.askplatyp.kb.lucene.model;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Entity {
 
     private String IRI;
-    private String[] types;
-    private String name;
-    private String description;
-    private String[] alternateNames;
-    private String officialWebsiteIRI;
-    private String[] sameAsIRIs;
-    private Image image;
-    private Article detailedDescription;
-    private String[] rangeIncludes;
-    private CalendarValue birthDate;
-    private String birthPlace;
-    private CalendarValue deathDate;
-    private String deathPlace;
-    private String nationality;
+    private List<String> types;
+    private Map<String, Object> propertyValues;
 
-    @JsonCreator
-    public Entity(
-            @JsonProperty("@id") String IRI,
-            @JsonProperty("@type") String[] types,
-            @JsonProperty("name") String name,
-            @JsonProperty("description") String description,
-            @JsonProperty("alternateName") String[] alternateNames,
-            @JsonProperty("url") String officialWebsiteIRI,
-            @JsonProperty("sameAs") String[] sameAsIRIs,
-            @JsonProperty("image") Image image,
-            @JsonProperty("detailedDescription") Article detailedDescription,
-            @JsonProperty("rangeIncludes") String[] rangeIncludes,
-            @JsonProperty("birthDate") CalendarValue birthDate,
-            @JsonProperty("birthPlace") String birthPlace,
-            @JsonProperty("deathDate") CalendarValue deathDate,
-            @JsonProperty("deathPlace") String deathPlace,
-            @JsonProperty("nationality") String nationality
-    ) {
+    public Entity(String IRI, List<String> types, Map<String, Object> propertyValues) {
         this.IRI = IRI;
         this.types = types;
-        this.name = name;
-        this.description = description;
-        this.alternateNames = alternateNames;
-        this.officialWebsiteIRI = officialWebsiteIRI;
-        this.sameAsIRIs = sameAsIRIs;
-        this.image = image;
-        this.detailedDescription = detailedDescription;
-        this.rangeIncludes = rangeIncludes;
-        this.birthDate = birthDate;
-        this.birthPlace = birthPlace;
-        this.deathDate = deathDate;
-        this.deathPlace = deathPlace;
-        this.nationality = nationality;
+        this.propertyValues = propertyValues;
+    }
+
+    @JsonCreator
+    public Entity(Map<String, Object> content) {
+        this((String) content.get("@id"), (List) content.get("@type"), content);
     }
 
     @JsonProperty("@id")
@@ -86,72 +51,21 @@ public class Entity {
     }
 
     @JsonProperty("@type")
-    public String[] getTypes() {
+    public List<String> getTypes() {
         return types;
     }
 
-    @JsonProperty("name")
-    public String getName() {
-        return name;
+    @JsonAnyGetter
+    public Map<String, Object> getPropertyValues() {
+        return propertyValues;
     }
 
-    @JsonProperty("description")
-    public String getDescription() {
-        return description;
+    public Object getPropertyValue(String property) {
+        return propertyValues.get(property);
     }
 
-    @JsonProperty("alternateName")
-    public String[] getAlternateNames() {
-        return alternateNames;
-    }
-
-    @JsonProperty("url")
-    public String getOfficialWebsiteIRI() {
-        return officialWebsiteIRI;
-    }
-
-    @JsonProperty("sameAs")
-    public String[] getSameAsIRIs() {
-        return sameAsIRIs;
-    }
-
-    @JsonProperty("image")
-    public Image getImage() {
-        return image;
-    }
-
-    @JsonProperty("detailedDescription")
-    public Article getDetailedDescription() {
-        return detailedDescription;
-    }
-
-    @JsonProperty("rangeIncludes")
-    public String[] getRangeIncludes() {
-        return rangeIncludes;
-    }
-
-    @JsonProperty("birthDate")
-    public CalendarValue getBirthDate() {
-        return birthDate;
-    }
-
-    @JsonProperty("birthPlace")
-    public String getBirthPlace() {
-        return birthPlace;
-    }
-
-    @JsonProperty("deathDate")
-    public CalendarValue getDeathDate() {
-        return deathDate;
-    }
-
-    @JsonProperty("deathPlace")
-    public String getDeathPlace() {
-        return deathPlace;
-    }
-
-    @JsonProperty("nationality")
-    public String getNationality() {
-        return nationality;
+    @JsonAnySetter
+    public void setPropertyValue(String property, Object value) {
+        propertyValues.put(property, value);
     }
 }

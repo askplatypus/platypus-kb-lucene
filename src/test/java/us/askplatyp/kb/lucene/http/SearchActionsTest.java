@@ -31,6 +31,8 @@ import us.askplatyp.kb.lucene.wikidata.FakeWikidataLuceneIndexFactory;
 
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Locale;
 
 public class SearchActionsTest extends JerseyTest {
@@ -142,34 +144,34 @@ public class SearchActionsTest extends JerseyTest {
     }
 
     private void assertEnglishIndividual(Entity result) {
-        Assert.assertEquals("Foo bar", result.getName());
-        Assert.assertNull(result.getDescription());
+        Assert.assertEquals("Foo bar", result.getPropertyValue("name"));
+        Assert.assertNull(result.getPropertyValue("description"));
         assertNotLanguageBaseIndividual(result);
     }
 
     private void assertFrenchIndividual(Entity result) {
-        Assert.assertEquals("super de test", result.getName());
-        Assert.assertEquals("Un test", result.getDescription());
+        Assert.assertEquals("super de test", result.getPropertyValue("name"));
+        Assert.assertEquals("Un test", result.getPropertyValue("description"));
         assertNotLanguageBaseIndividual(result);
     }
 
     private void assertNotLanguageBaseIndividual(Entity result) {
         Assert.assertEquals("wd:Q42", result.getIRI());
-        Assert.assertArrayEquals(new String[]{"Thing", "Person"}, result.getTypes());
-        Assert.assertEquals("http://foobar.com/", result.getOfficialWebsiteIRI());
-        Assert.assertArrayEquals(new String[]{
+        Assert.assertEquals(Arrays.asList("Thing", "Person"), result.getTypes());
+        Assert.assertEquals("http://foobar.com/", result.getPropertyValue("url"));
+        Assert.assertEquals(Arrays.asList(
                 "http://fr.wikipedia.org/wiki/Douglas_Adams",
                 "http://twitter.com/BarackObama",
                 "http://www.instagram.com/barackobama",
                 "http://www.facebook.com/barackobama",
                 "http://www.youtube.com/channel/UCdn86UYrf54lXfVli9CB6Aw",
                 "http://plus.google.com/+BarackObama"
-        }, result.getSameAsIRIs());
+        ), result.getPropertyValue("sameAs"));
     }
 
     private void assertEnglishDummy(Entity result) {
-        Assert.assertEquals("dummy", result.getName());
-        Assert.assertNull(result.getDescription());
+        Assert.assertEquals("dummy", result.getPropertyValue("name"));
+        Assert.assertNull(result.getPropertyValue("description"));
         assertNotLanguageBaseDummy(result);
     }
 
@@ -178,35 +180,35 @@ public class SearchActionsTest extends JerseyTest {
     }
 
     private void assertEnglishSmallFoo(Entity result) {
-        Assert.assertEquals("Foo bar", result.getName());
-        Assert.assertNull(result.getDescription());
+        Assert.assertEquals("Foo bar", result.getPropertyValue("name"));
+        Assert.assertNull(result.getPropertyValue("description"));
         assertNotLanguageBaseSmallFoo(result);
     }
 
     private void assertFrenchSmallFoo(Entity result) {
-        Assert.assertNull(result.getName());
-        Assert.assertNull(result.getDescription());
+        Assert.assertNull(result.getPropertyValue("name"));
+        Assert.assertNull(result.getPropertyValue("description"));
         assertNotLanguageBaseSmallFoo(result);
     }
 
     private void assertNotLanguageBaseSmallFoo(Entity result) {
         Assert.assertEquals("wd:Q222", result.getIRI());
-        Assert.assertArrayEquals(new String[]{"Thing"}, result.getTypes());
-        Assert.assertNull(result.getOfficialWebsiteIRI());
-        Assert.assertArrayEquals(new String[]{}, result.getSameAsIRIs());
+        Assert.assertEquals(Collections.singletonList("Thing"), result.getTypes());
+        Assert.assertNull(result.getPropertyValue("url"));
+        Assert.assertEquals(Collections.emptyList(), result.getPropertyValue("sameAs"));
     }
 
     private void assertEnglishProperty(Entity result) {
-        Assert.assertEquals("Foo-Bar", result.getName());
-        Assert.assertNull(result.getDescription());
+        Assert.assertEquals("Foo-Bar", result.getPropertyValue("name"));
+        Assert.assertNull(result.getPropertyValue("description"));
         assertNotLanguageBaseProperty(result);
     }
 
     private void assertNotLanguageBaseProperty(Entity result) {
         Assert.assertEquals("wd:P42", result.getIRI());
-        Assert.assertArrayEquals(new String[]{"Property"}, result.getTypes());
-        Assert.assertArrayEquals(new String[]{"xsd:string"}, result.getRangeIncludes());
-        Assert.assertNull(result.getOfficialWebsiteIRI());
-        Assert.assertArrayEquals(new String[]{}, result.getSameAsIRIs());
+        Assert.assertEquals(Collections.singletonList("Property"), result.getTypes());
+        Assert.assertEquals(Collections.singletonList("xsd:string"), result.getPropertyValue("rangeIncludes"));
+        Assert.assertNull(result.getPropertyValue("url"));
+        Assert.assertEquals(Collections.emptyList(), result.getPropertyValue("sameAs"));
     }
 }
