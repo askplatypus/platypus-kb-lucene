@@ -46,11 +46,11 @@ public class LuceneSearcher {
         try {
             return new JsonLdRoot<>(
                     new Context(outputLocale),
-                    EntityBuilder.getInstance()
-                            .buildFullEntityInLanguage(
+                    EntityBuilder.buildFullEntityInLanguage(
                                     entitiesReader.getDocumentForIRI(Namespaces.reduce(IRI))
                                             .orElseThrow(() -> new ApiException("Entity with IRI <" + IRI + "> not found.", 404)),
-                                    outputLocale
+                            outputLocale,
+                            entitiesReader
                             )
             );
         } catch (IOException e) {
@@ -136,7 +136,7 @@ public class LuceneSearcher {
 
     private EntitySearchResult<Entity> buildSearchResult(ScoreDoc scoreDoc, Locale locale) throws IOException {
         return new EntitySearchResult<>(
-                EntityBuilder.getInstance().buildSimpleEntityInLanguage(entitiesReader.getDocumentForDocId(scoreDoc.doc), locale),
+                EntityBuilder.buildSimpleEntityInLanguage(entitiesReader.getDocumentForDocId(scoreDoc.doc), locale, entitiesReader),
                 scoreDoc.score
         );
     }

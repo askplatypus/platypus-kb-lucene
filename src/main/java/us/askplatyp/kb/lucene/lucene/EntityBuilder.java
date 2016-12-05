@@ -37,47 +37,56 @@ import java.util.*;
 class EntityBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityBuilder.class);
-    private static final EntityBuilder INSTANCE = new EntityBuilder();
 
-    static EntityBuilder getInstance() {
-        return INSTANCE;
+    private LuceneIndex.Reader indexReader;
+    private String IRI;
+    private List<String> types;
+    private Map<String, Object> propertyValues = new TreeMap<>();
+
+    private EntityBuilder(LuceneIndex.Reader indexReader, String IRI, List<String> types) {
+        this.indexReader = indexReader;
+        this.IRI = IRI;
+        this.types = types;
     }
 
-    Entity buildSimpleEntityInLanguage(Document document, Locale locale) {
-        FluentEntityBuilder entityBuilder = new FluentEntityBuilder(document.get("@id"), document.getValues("@type"));
-        entityBuilder.setPropertyValue("name", document.get("name@" + locale.getLanguage()));
-        entityBuilder.setPropertyValue("description", document.get("description@" + locale.getLanguage()));
-        entityBuilder.setPropertyValue("alternateName", document.getValues("alternateName@" + locale.getLanguage()));
-        entityBuilder.setPropertyValue("url", document.get("url"));
-        entityBuilder.setPropertyValue("sameAs", document.getValues("sameAs"));
-        entityBuilder.setPropertyValueIfType("rangeIncludes", document.getValues("rangeIncludes"), "Property");
-        return entityBuilder.build();
+    static Entity buildSimpleEntityInLanguage(Document document, Locale locale, LuceneIndex.Reader indexReader) {
+        EntityBuilder builder = new EntityBuilder(indexReader, document.get("@id"), Arrays.asList(document.getValues("@type")));
+        fillSimpleEntityInLanguage(builder, document, locale);
+        return builder.build();
     }
 
-    Entity buildFullEntityInLanguage(Document document, Locale locale) {
-        FluentEntityBuilder entityBuilder = new FluentEntityBuilder(document.get("@id"), document.getValues("@type"));
-        entityBuilder.setPropertyValue("name", document.get("name@" + locale.getLanguage()));
-        entityBuilder.setPropertyValue("description", document.get("description@" + locale.getLanguage()));
-        entityBuilder.setPropertyValue("alternateName", document.getValues("alternateName@" + locale.getLanguage()));
-        entityBuilder.setPropertyValue("url", document.get("url"));
-        entityBuilder.setPropertyValue("sameAs", document.getValues("sameAs"));
+    static Entity buildFullEntityInLanguage(Document document, Locale locale, LuceneIndex.Reader indexReader) throws IOException {
+        EntityBuilder builder = new EntityBuilder(indexReader, document.get("@id"), Arrays.asList(document.getValues("@type")));
+        fillSimpleEntityInLanguage(builder, document, locale);
+        fillExtraEntityInLanguage(builder, document, locale);
+        return builder.build();
+    }
+
+    private static void fillSimpleEntityInLanguage(EntityBuilder builder, Document document, Locale locale) {
+        builder.setPropertyValue("name", document.get("name@" + locale.getLanguage()));
+        builder.setPropertyValue("description", document.get("description@" + locale.getLanguage()));
+        builder.setPropertyValue("alternateName", document.getValues("alternateName@" + locale.getLanguage()));
+        builder.setPropertyValue("url", document.get("url"));
+        builder.setPropertyValue("sameAs", document.getValues("sameAs"));
+        builder.setPropertyValueIfType("rangeIncludes", document.getValues("rangeIncludes"), "Property");
+    }
+
+    private static void fillExtraEntityInLanguage(EntityBuilder builder, Document document, Locale locale) throws IOException {
         Optional<String> wikipediaArticleIRI = findWikipediaArticleIRI(document.getValues("sameAs"), locale);
-        wikipediaArticleIRI.flatMap(this::buildWikipediaImage).ifPresent(image ->
-                entityBuilder.setPropertyValue("image", image)
+        wikipediaArticleIRI.flatMap(EntityBuilder::buildWikipediaImage).ifPresent(image ->
+                builder.setPropertyValue("image", image)
         );
-        wikipediaArticleIRI.map(this::buildWikipediaArticle).ifPresent(image ->
-                entityBuilder.setPropertyValue("detailedDescription", image)
+        wikipediaArticleIRI.map(EntityBuilder::buildWikipediaArticle).ifPresent(image ->
+                builder.setPropertyValue("detailedDescription", image)
         );
-        entityBuilder.setPropertyValueIfType("rangeIncludes", document.getValues("rangeIncludes"), "Property");
-        entityBuilder.setPropertyDateValueIfType("birthDate", document.get("birthDate"), "Person");
-        entityBuilder.setPropertyValueIfType("birthPlace", document.get("birthPlace"), "Person");
-        entityBuilder.setPropertyDateValueIfType("deathDate", document.get("deathDate"), "Person");
-        entityBuilder.setPropertyValueIfType("deathPlace", document.get("deathPlace"), "Person");
-        entityBuilder.setPropertyDateValueIfType("nationality", document.get("nationality"), "Person");
-        return entityBuilder.build();
+        builder.setPropertyDateValueIfType("birthDate", document.get("birthDate"), "Person");
+        builder.setPropertyEntityValueInLocaleIfType("birthPlace", document.get("birthPlace"), locale, "Person");
+        builder.setPropertyDateValueIfType("deathDate", document.get("deathDate"), "Person");
+        builder.setPropertyEntityValueInLocaleIfType("deathPlace", document.get("deathPlace"), locale, "Person");
+        builder.setPropertyDateValueIfType("nationality", document.get("nationality"), "Person");
     }
 
-    private Optional<String> findWikipediaArticleIRI(String[] IRIs, Locale locale) {
+    private static Optional<String> findWikipediaArticleIRI(String[] IRIs, Locale locale) {
         for (String IRI : IRIs) {
             if (IRI.contains(locale.getLanguage() + ".wikipedia.org/wiki/")) { //TODO: support complex language codes
                 return Optional.of(IRI);
@@ -86,7 +95,7 @@ class EntityBuilder {
         return Optional.empty();
     }
 
-    private Article buildWikipediaArticle(String articleIRI) {
+    private static Article buildWikipediaArticle(String articleIRI) {
         try {
             Summary summary = WikimediaREST.getInstance().getSummary(articleIRI);
             return new Article(
@@ -102,7 +111,7 @@ class EntityBuilder {
         }
     }
 
-    private Optional<Image> buildWikipediaImage(String articleIRI) {
+    private static Optional<Image> buildWikipediaImage(String articleIRI) {
         try {
             return WikimediaREST.getInstance().getSummary(articleIRI).getThumbnail().map(thumbnail ->
                     new Image(thumbnail.getSource()) //TODO: license
@@ -113,42 +122,45 @@ class EntityBuilder {
         }
     }
 
-    private static class FluentEntityBuilder {
-        private String IRI;
-        private List<String> types;
-        private Map<String, Object> propertyValues = new TreeMap<>();
+    public Entity build() {
+        return new Entity(IRI, types, propertyValues);
+    }
 
-        FluentEntityBuilder(String IRI, String[] types) {
-            this.IRI = IRI;
-            this.types = Arrays.asList(types);
+    private <T> void setPropertyValue(String property, T value) {
+        if (value != null) {
+            propertyValues.put(property, value);
         }
+    }
 
-        <T> void setPropertyValue(String property, T value) {
-            if (value != null) {
-                propertyValues.put(property, value);
-            }
+    private void setPropertyDateValue(String property, String value) {
+        if (value != null) {
+            propertyValues.put(property, new CalendarValue(value));
         }
+    }
 
-        void setPropertyDateValue(String property, String value) {
-            if (value != null) {
-                propertyValues.put(property, new CalendarValue(value));
-            }
+    private void setPropertyEntityValueInLocale(String property, String value, Locale locale) throws IOException {
+        if (value != null) {
+            indexReader.getDocumentForIRI(value).ifPresent(entity ->
+                    propertyValues.put(property, buildSimpleEntityInLanguage(entity, locale, indexReader))
+            );
         }
+    }
 
-        void setPropertyValueIfType(String property, Object value, String type) {
-            if (types.contains(type)) {
-                setPropertyValue(property, value);
-            }
+    private void setPropertyValueIfType(String property, Object value, String type) {
+        if (types.contains(type)) {
+            setPropertyValue(property, value);
         }
+    }
 
-        void setPropertyDateValueIfType(String property, String value, String type) {
-            if (types.contains(type)) {
-                setPropertyDateValue(property, value);
-            }
+    private void setPropertyDateValueIfType(String property, String value, String type) {
+        if (types.contains(type)) {
+            setPropertyDateValue(property, value);
         }
+    }
 
-        Entity build() {
-            return new Entity(IRI, types, propertyValues);
+    private void setPropertyEntityValueInLocaleIfType(String property, String value, Locale locale, String type) throws IOException {
+        if (types.contains(type)) {
+            setPropertyEntityValueInLocale(property, value, locale);
         }
     }
 }
