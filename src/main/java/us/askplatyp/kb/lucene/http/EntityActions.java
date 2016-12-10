@@ -20,8 +20,6 @@ package us.askplatyp.kb.lucene.http;
 import io.swagger.annotations.*;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
 import us.askplatyp.kb.lucene.lucene.LuceneSearcher;
-import us.askplatyp.kb.lucene.model.Entity;
-import us.askplatyp.kb.lucene.model.JsonLdRoot;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -64,11 +62,5 @@ public class EntityActions {
                 );
             }
         });
-    }
-
-    private static class GetResult extends JsonLdRoot<Entity> {
-        public GetResult(us.askplatyp.kb.lucene.model.Context context, Entity content) {
-            super(context, content);
-        }
     }
 }

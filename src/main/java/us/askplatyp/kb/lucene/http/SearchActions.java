@@ -20,14 +20,13 @@ package us.askplatyp.kb.lucene.http;
 import io.swagger.annotations.*;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
 import us.askplatyp.kb.lucene.lucene.LuceneSearcher;
-import us.askplatyp.kb.lucene.model.*;
+import us.askplatyp.kb.lucene.model.ApiException;
 
 import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.*;
 import java.util.Locale;
 
@@ -95,11 +94,5 @@ public class SearchActions {
             throw new ApiException("The limit parameter should have a value greater than 0", 400);
         }
         return Math.min(limit, LIMIT_MAX);
-    }
-
-    private static class SimpleResult extends JsonLdRoot<Collection<EntitySearchResult<Entity>>> {
-        public SimpleResult(us.askplatyp.kb.lucene.model.Context context, Collection<EntitySearchResult<Entity>> content) {
-            super(context, content);
-        }
     }
 }
