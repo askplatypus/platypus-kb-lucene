@@ -25,8 +25,8 @@ import java.util.TreeMap;
  */
 public class Namespaces {
 
+    public static final Map<String, String> NAMESPACES = new TreeMap<>();
     static final String DEFAULT_NAMESPACE = "http://schema.org/";
-    static final Map<String, String> NAMESPACES = new TreeMap<>();
     private static final Map<String, String> SPECIAL_CASES = new TreeMap<>();
 
     static {
@@ -36,6 +36,7 @@ public class Namespaces {
         NAMESPACES.put("owl", "http://www.w3.org/2002/07/owl#");
         NAMESPACES.put("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
         NAMESPACES.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
+        NAMESPACES.put("schema", "http://schema.org/");
         NAMESPACES.put("wd", "http://www.wikidata.org/entity/");
         NAMESPACES.put("xsd", "http://www.w3.org/2001/XMLSchema#");
 

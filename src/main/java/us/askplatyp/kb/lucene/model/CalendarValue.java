@@ -25,12 +25,11 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
- * @author Thomas pellissier Tanon
+ * @author Thomas Pellissier Tanon
  */
 public class CalendarValue {
 
     private static DatatypeFactory DATATYPE_FACTORY;
-
     static {
         try {
             DATATYPE_FACTORY = DatatypeFactory.newInstance();

@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.Set;
 
 /**
  * @author Thomas Pellissier Tanon
@@ -94,7 +95,7 @@ public class LuceneIndex implements Closeable {
         /**
          * @param IRI The entity IRI (IRIs should have been reduced)
          */
-        Optional<Document> getDocumentForIRI(String IRI) throws IOException {
+        public Optional<Document> getDocumentForIRI(String IRI) throws IOException {
             OptionalInt docID = getDocIdForIRI(IRI);
             if (docID.isPresent()) {
                 return Optional.of(indexSearcher.doc(docID.getAsInt()));
@@ -122,11 +123,15 @@ public class LuceneIndex implements Closeable {
             return indexSearcher.doc(docID);
         }
 
+        public Document getDocumentForDocId(int docID, Set<String> fieldsToLoad) throws IOException {
+            return indexSearcher.doc(docID, fieldsToLoad);
+        }
+
         TopDocs search(Query query, int limit) throws IOException {
             return indexSearcher.search(query, limit);
         }
 
-        TopDocs searchAfter(ScoreDoc after, Query query, int limit) throws IOException {
+        public TopDocs searchAfter(ScoreDoc after, Query query, int limit) throws IOException {
             return indexSearcher.searchAfter(after, query, limit);
         }
 

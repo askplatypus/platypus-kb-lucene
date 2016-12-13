@@ -31,6 +31,7 @@
         <jerseyVersion>2.24</jerseyVersion>
         <junitVersion>4.12</junitVersion>
         <luceneVersion>6.3.0</luceneVersion>
+        <rdf4jVersion>2.1.4</rdf4jVersion>
         <servletVersion>3.1.0</servletVersion>
         <swaggerVersion>1.5.10</swaggerVersion>
         <slf4jVersion>1.7.21</slf4jVersion>
@@ -79,6 +80,41 @@
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queries</artifactId>
             <version>${luceneVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-queryparser-sparql</artifactId>
+            <version>${rdf4jVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-queryalgebra-evaluation</artifactId>
+            <version>${rdf4jVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-queryresultio-sparqljson</artifactId>
+            <version>${rdf4jVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-queryresultio-text</artifactId>
+            <version>${rdf4jVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-rio-n3</artifactId>
+            <version>${rdf4jVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-rio-rdfxml</artifactId>
+            <version>${rdf4jVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-rio-turtle</artifactId>
+            <version>${rdf4jVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
