@@ -53,7 +53,7 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
         }
 
         Document document = createDocumentForEntity(itemDocument);
-        document.add(new StringField("@type", "Thing", Field.Store.YES));
+        document.add(new StringField("@type", "NamedIndividual", Field.Store.YES));
         addTermsToDocument(itemDocument, document);
         addSiteLinksToDocument(itemDocument, document);
         addStatementsToDocument(itemDocument, document);
@@ -74,8 +74,13 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
         Document document = createDocumentForEntity(propertyDocument);
         addTermsToDocument(propertyDocument, document);
         document.add(new StringField("@type", "Property", Field.Store.YES));
+        if (WikidataTypes.isObjectRange(propertyDocument.getDatatype())) {
+            document.add(new StringField("@type", "ObjectProperty", Field.Store.YES));
+        } else {
+            document.add(new StringField("@type", "DatatypeProperty", Field.Store.YES));
+        }
         for (String range : WikidataTypes.getRangeForDatatype(propertyDocument.getDatatype())) {
-            document.add(new StoredField("rangeIncludes", range));
+            document.add(new StoredField("range", range));
         }
         writeDocument(document);
     }

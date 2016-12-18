@@ -68,7 +68,7 @@ class EntityBuilder {
         builder.setPropertyValue("alternateName", document.getValues("alternateName@" + locale.getLanguage()));
         builder.setPropertyValue("url", document.get("url"));
         builder.setPropertyValue("sameAs", document.getValues("sameAs"));
-        builder.setPropertyValueIfType("rangeIncludes", document.getValues("rangeIncludes"), "Property");
+        builder.setPropertyValueIfType("range", document.get("range"), "Property");
     }
 
     private static void fillExtraEntityInLanguage(EntityBuilder builder, Document document, Locale locale) throws IOException {

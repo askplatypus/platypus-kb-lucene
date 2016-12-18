@@ -98,7 +98,7 @@ public class WikidataTypes {
     }
 
     static {
-        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_ITEM, Collections.singletonList("Thing"));
+        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_ITEM, Collections.singletonList("NamedIndividual"));
         XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_PROPERTY, Collections.singletonList("Property"));
         XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_STRING, Collections.singletonList("xsd:string"));
         XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_URL, Collections.singletonList("xsd:string"));
@@ -193,5 +193,10 @@ public class WikidataTypes {
         } else {
             return found;
         }
+    }
+
+    static boolean isObjectRange(DatatypeIdValue datatypeIdValue) {
+        return datatypeIdValue.getIri().equals(DatatypeIdValue.DT_ITEM) ||
+                datatypeIdValue.getIri().equals(DatatypeIdValue.DT_PROPERTY);
     }
 }

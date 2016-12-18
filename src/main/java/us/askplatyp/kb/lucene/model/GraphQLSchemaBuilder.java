@@ -254,10 +254,10 @@ public class GraphQLSchemaBuilder {
                 .withInterfaces(node, entity)
                 .fields(buildEntityFields())
                 .field(newFieldDefinition()
-                        .name("rangeIncludes")
-                        .description("Possible ranges of the property")
-                        .type(nonNullList(Scalars.GraphQLString))
-                        .dataFetcher(dataFetcherBuilder.stringsPropertyFetcher("rangeIncludes"))
+                        .name("range")
+                        .description("Range of the property")
+                        .type(Scalars.GraphQLString)
+                        .dataFetcher(dataFetcherBuilder.stringPropertyFetcher("range"))
                 )
                 .build();
     }
@@ -334,7 +334,7 @@ public class GraphQLSchemaBuilder {
                                 .description("The id of the individual to retrieve")
                                 .type(new GraphQLNonNull(Scalars.GraphQLID))
                         )
-                        .dataFetcher(dataFetcherBuilder.entityForIRIFetcher("Thing"))
+                        .dataFetcher(dataFetcherBuilder.entityForIRIFetcher("NamedIndividual"))
                 )
                 .field(newFieldDefinition()
                         .type(property)

@@ -33,6 +33,7 @@ public class Namespaces {
         NAMESPACES.put("goog", "http://schema.googleapis.com/");
         NAMESPACES.put("hydra", "http://www.w3.org/ns/hydra/core#");
         NAMESPACES.put("kg", "http://g.co/kg");
+        NAMESPACES.put("owl", "http://www.w3.org/2001/XMLSchema#");
         NAMESPACES.put("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
         NAMESPACES.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
         NAMESPACES.put("wd", "http://www.wikidata.org/entity/");
@@ -41,6 +42,8 @@ public class Namespaces {
         SPECIAL_CASES.put("rdf:type", "@type");
         SPECIAL_CASES.put("rdf:Property", "Property");
         SPECIAL_CASES.put("rdfs:Class", "Class");
+        SPECIAL_CASES.put("owl:Class", "Class");
+        SPECIAL_CASES.put("owl:NamedIndividual", "NamedIndividual");
         SPECIAL_CASES.put("owl:Thing", "Thing");
     }
 

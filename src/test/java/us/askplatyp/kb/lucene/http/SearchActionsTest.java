@@ -157,7 +157,7 @@ public class SearchActionsTest extends JerseyTest {
 
     private void assertNotLanguageBaseIndividual(Entity result) {
         Assert.assertEquals("wd:Q42", result.getIRI());
-        Assert.assertEquals(Arrays.asList("Thing", "Person"), result.getTypes());
+        Assert.assertEquals(Arrays.asList("NamedIndividual", "Person"), result.getTypes());
         Assert.assertEquals("http://foobar.com/", result.getPropertyValue("url"));
         Assert.assertEquals(Arrays.asList(
                 "http://fr.wikipedia.org/wiki/Douglas_Adams",
@@ -193,7 +193,7 @@ public class SearchActionsTest extends JerseyTest {
 
     private void assertNotLanguageBaseSmallFoo(Entity result) {
         Assert.assertEquals("wd:Q222", result.getIRI());
-        Assert.assertEquals(Collections.singletonList("Thing"), result.getTypes());
+        Assert.assertEquals(Collections.singletonList("NamedIndividual"), result.getTypes());
         Assert.assertNull(result.getPropertyValue("url"));
         Assert.assertEquals(Collections.emptyList(), result.getPropertyValue("sameAs"));
     }
@@ -206,8 +206,8 @@ public class SearchActionsTest extends JerseyTest {
 
     private void assertNotLanguageBaseProperty(Entity result) {
         Assert.assertEquals("wd:P42", result.getIRI());
-        Assert.assertEquals(Collections.singletonList("Property"), result.getTypes());
-        Assert.assertEquals(Collections.singletonList("xsd:string"), result.getPropertyValue("rangeIncludes"));
+        Assert.assertEquals(Arrays.asList("Property", "DatatypeProperty"), result.getTypes());
+        Assert.assertEquals("xsd:string", result.getPropertyValue("range"));
         Assert.assertNull(result.getPropertyValue("url"));
         Assert.assertEquals(Collections.emptyList(), result.getPropertyValue("sameAs"));
     }
