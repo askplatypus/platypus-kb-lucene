@@ -18,6 +18,7 @@
 package us.askplatyp.kb.lucene.http;
 
 import com.sun.net.httpserver.HttpServer;
+import io.swagger.annotations.ExternalDocs;
 import io.swagger.annotations.Info;
 import io.swagger.annotations.License;
 import io.swagger.annotations.SwaggerDefinition;
@@ -56,7 +57,8 @@ import java.security.NoSuchAlgorithmException;
                 )
         ),
         produces = {"application/json", "application/ld+json"},
-        schemes = {SwaggerDefinition.Scheme.HTTP, SwaggerDefinition.Scheme.HTTPS}
+        schemes = {SwaggerDefinition.Scheme.HTTP, SwaggerDefinition.Scheme.HTTPS},
+        externalDocs = @ExternalDocs(value = "GraphQL editor", url = "graphiql.html")
 )
 public class Main extends ResourceConfig {
 

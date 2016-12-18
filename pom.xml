@@ -26,6 +26,7 @@
     <version>0.1-SNAPSHOT</version>
 
     <properties>
+        <graphqlVersion>2.2.0</graphqlVersion>
         <jerseyVersion>2.24</jerseyVersion>
         <junitVersion>4.12</junitVersion>
         <luceneVersion>6.3.0</luceneVersion>
@@ -36,6 +37,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.graphql-java</groupId>
+            <artifactId>graphql-java</artifactId>
+            <version>${graphqlVersion}</version>
+        </dependency>
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-jersey2-jaxrs</artifactId>

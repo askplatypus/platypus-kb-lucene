@@ -20,18 +20,25 @@ package us.askplatyp.kb.lucene.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Locale;
+
 /**
  * @author Thomas pellissier Tanon
  */
 public class LanguageTaggedString {
 
     private String value;
-    private String languageCode;
+    private Locale locale;
+
+    public LanguageTaggedString(String value, Locale locale) {
+        this.value = value;
+        this.locale = locale;
+    }
 
     @JsonCreator
     public LanguageTaggedString(@JsonProperty("@value") String value, @JsonProperty("@language") String languageCode) {
         this.value = value;
-        this.languageCode = languageCode;
+        this.locale = Locale.forLanguageTag(languageCode);
     }
 
     @JsonProperty("@value")
@@ -39,8 +46,12 @@ public class LanguageTaggedString {
         return this.value;
     }
 
+    public Locale getLocale() {
+        return this.locale;
+    }
+
     @JsonProperty("@language")
     public String getLanguageCode() {
-        return this.languageCode;
+        return this.locale.toLanguageTag();
     }
 }

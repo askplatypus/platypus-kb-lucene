@@ -52,7 +52,8 @@
             "datatype": "wikibase-item"
           },
           "type": "statement",
-          "rank": "normal"
+          "rank": "normal",
+          "id": "Q222-foo"
         }
       ],
       "P569": [
@@ -74,7 +75,8 @@
             "datatype": "time"
           },
           "type": "statement",
-          "rank": "normal"
+          "rank": "normal",
+          "id": "Q222-bar"
         }
       ],
       "P856": [
@@ -88,7 +90,8 @@
             }
           },
           "type": "statement",
-          "rank": "normal"
+          "rank": "normal",
+          "id": "Q222-z"
         },
         {
           "mainsnak": {
@@ -100,7 +103,8 @@
             }
           },
           "type": "statement",
-          "rank": "preferred"
+          "rank": "preferred",
+          "id": "Q222-baz"
         }
       ],
       "P2002": [
@@ -114,7 +118,8 @@
             }
           },
           "type": "statement",
-          "rank": "normal"
+          "rank": "normal",
+          "id": "Q222-y"
         },
         {
           "mainsnak": {
@@ -122,7 +127,8 @@
             "property": "P2002"
           },
           "type": "statement",
-          "rank": "normal"
+          "rank": "normal",
+          "id": "Q222-a"
         }
       ],
       "P2003": [
@@ -136,7 +142,8 @@
             }
           },
           "type": "statement",
-          "rank": "normal"
+          "rank": "normal",
+          "id": "Q222-x"
         }
       ],
       "P2013": [
@@ -150,7 +157,8 @@
             }
           },
           "type": "statement",
-          "rank": "normal"
+          "rank": "normal",
+          "id": "Q222-b"
         }
       ],
       "P2397": [
@@ -164,7 +172,8 @@
             }
           },
           "type": "statement",
-          "rank": "normal"
+          "rank": "normal",
+          "id": "Q222-c"
         }
       ],
       "P2847": [
@@ -178,7 +187,8 @@
             }
           },
           "type": "statement",
-          "rank": "normal"
+          "rank": "normal",
+          "id": "Q222-d"
         }
       ]
     },
