@@ -23,7 +23,7 @@ import graphql.relay.Relay;
 import graphql.schema.*;
 import us.askplatyp.kb.lucene.lucene.DataFetcherBuilder;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -98,6 +98,97 @@ public class GraphQLSchemaBuilder {
         return new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(elementType)));
     }
 
+    private List<GraphQLFieldDefinition> buildFieldsForClass(Class dmClass) {
+        List<GraphQLFieldDefinition> fields = new ArrayList<>();
+        fields.add(newFieldDefinition()
+                .name("id")
+                .description("The IRI of the entity")
+                .type(new GraphQLNonNull(Scalars.GraphQLID))
+                .dataFetcher(dataFetcherBuilder.stringPropertyFetcher("@id"))
+                .build()
+        );
+        fields.add(newFieldDefinition()
+                .name("type")
+                .description("The types of the entity")
+                .type(nonNullList(Scalars.GraphQLString))
+                .dataFetcher(dataFetcherBuilder.stringsPropertyFetcher("@type"))
+                .build()
+        );
+
+        for (ObjectProperty property : ObjectProperty.PROPERTIES) {
+            if (property.getDomains().stream().anyMatch(dmClass::isSubClassOf)) {
+                fields.add(newFieldDefinition()
+                        .name(property.getLabel())
+                        .description(property.getDescription())
+                        .type(new GraphQLTypeReference(property.getRange().getLabel()))
+                        .build()
+                );
+            }
+        }
+        for (DatatypeProperty property : DatatypeProperty.PROPERTIES) {
+            if (property.getDomains().stream().anyMatch(dmClass::isSubClassOf)) {
+                GraphQLFieldDefinition.Builder fieldBuilder = newFieldDefinition()
+                        .name(property.getLabel())
+                        .description(property.getDescription());
+                switch (property.getRange()) {
+                    case STRING:
+                        if (property.withMultipleValues()) {
+                            fieldBuilder.type(nonNullList(Scalars.GraphQLString))
+                                    .dataFetcher(dataFetcherBuilder.stringsPropertyFetcher(property.getLabel()));
+                        } else {
+                            fieldBuilder.type(Scalars.GraphQLString)
+                                    .dataFetcher(dataFetcherBuilder.stringPropertyFetcher(property.getLabel()));
+                        }
+                        break;
+                    case LANGUAGE_TAGGED_STRING:
+                        if (property.withMultipleValues()) {
+                            fieldBuilder.type(nonNullList(Scalars.GraphQLString))
+                                    .argument(newArgument()
+                                            .name("language")
+                                            .description("The required language of the values")
+                                            .type(new GraphQLNonNull(BCP47))
+                                    )
+                                    .dataFetcher(dataFetcherBuilder.languageStringsPropertyFetcher(property.getLabel()));
+                        } else {
+                            fieldBuilder.type(Scalars.GraphQLString)
+                                    .argument(newArgument()
+                                            .name("language")
+                                            .description("The required language of the value")
+                                            .type(new GraphQLNonNull(BCP47))
+                                    )
+                                    .dataFetcher(dataFetcherBuilder.languageStringPropertyFetcher(property.getLabel()));
+                        }
+                        break;
+                    case CALENDAR:
+                        //TODO
+                        if (property.withMultipleValues()) {
+                            fieldBuilder.type(nonNullList(Scalars.GraphQLString))
+                                    .dataFetcher(dataFetcherBuilder.stringsPropertyFetcher(property.getLabel()));
+                        } else {
+                            fieldBuilder.type(Scalars.GraphQLString)
+                                    .dataFetcher(dataFetcherBuilder.stringPropertyFetcher(property.getLabel()));
+                        }
+                        break;
+                    case ARTICLE:
+                        fieldBuilder.type(article)
+                                .argument(newArgument()
+                                        .name("language")
+                                        .description("The language of the article to retrieve")
+                                        .type(new GraphQLNonNull(BCP47))
+                                )
+                                .dataFetcher(dataFetcherBuilder.wikipediaArticleFetcher());
+                        break;
+                    case IMAGE:
+                        fieldBuilder.type(image)
+                                .dataFetcher(dataFetcherBuilder.wikipediaImageFetcher());
+                        break;
+                }
+                fields.add(fieldBuilder.build());
+            }
+        }
+        return fields;
+    }
+
     private TypeResolver buildEntityTypeResolver() {
         return (document -> {
             List<String> types = dataFetcherBuilder.retrieveTypes(document);
@@ -113,7 +204,7 @@ public class GraphQLSchemaBuilder {
         return newInterface()
                 .name("Entity")
                 .description("Something described by the knowledge base")
-                .fields(buildEntityFields())
+                .fields(buildFieldsForClass(Class.THING))
                 .typeResolver(buildEntityTypeResolver())
                 .build();
     }
@@ -214,36 +305,7 @@ public class GraphQLSchemaBuilder {
                 .name("NamedIndividual")
                 .description("An individual described by the knowledge base")
                 .withInterfaces(node, entity)
-                .fields(buildEntityFields())
-                .field(newFieldDefinition()
-                        .name("image")
-                        .description("An image of the individual")
-                        .type(image)
-                        .dataFetcher(dataFetcherBuilder.wikipediaImageFetcher())
-                )
-                .field(newFieldDefinition()
-                        .name("detailedDescription")
-                        .description("A detailed description of the individual")
-                        .type(article)
-                        .argument(newArgument()
-                                .name("language")
-                                .description("The language of the detailed description to retrieve")
-                                .type(new GraphQLNonNull(BCP47))
-                        )
-                        .dataFetcher(dataFetcherBuilder.wikipediaArticleFetcher())
-                )
-                .field(newFieldDefinition()
-                        .name("url")
-                        .description("The URL of the official website of the individual")
-                        .type(Scalars.GraphQLString)
-                        .dataFetcher(dataFetcherBuilder.stringPropertyFetcher("url"))
-                )
-                .field(newFieldDefinition()
-                        .name("sameAs")
-                        .description("URLs of authorities about the individual")
-                        .type(nonNullList(Scalars.GraphQLString))
-                        .dataFetcher(dataFetcherBuilder.stringsPropertyFetcher("sameAs"))
-                )
+                .fields(buildFieldsForClass(Class.NAMED_INDIVIDUAL))
                 .build();
     }
 
@@ -252,64 +314,8 @@ public class GraphQLSchemaBuilder {
                 .name("Property")
                 .description("A property stored in the knowledge base. For internal Platypus use only.")
                 .withInterfaces(node, entity)
-                .fields(buildEntityFields())
-                .field(newFieldDefinition()
-                        .name("range")
-                        .description("Range of the property")
-                        .type(Scalars.GraphQLString)
-                        .dataFetcher(dataFetcherBuilder.stringPropertyFetcher("range"))
-                )
+                .fields(buildFieldsForClass(Class.PROPERTY))
                 .build();
-    }
-
-    private List<GraphQLFieldDefinition> buildEntityFields() {
-        return Arrays.asList(
-                newFieldDefinition()
-                        .name("id")
-                        .description("The IRI of the entity")
-                        .type(new GraphQLNonNull(Scalars.GraphQLID))
-                        .dataFetcher(dataFetcherBuilder.stringPropertyFetcher("@id"))
-                        .build(),
-                newFieldDefinition()
-                        .name("type")
-                        .description("The types of the entity")
-                        .type(nonNullList(Scalars.GraphQLString))
-                        .dataFetcher(dataFetcherBuilder.stringsPropertyFetcher("@type"))
-                        .build(),
-                newFieldDefinition()
-                        .name("name")
-                        .description("The entity name")
-                        .type(Scalars.GraphQLString)
-                        .argument(newArgument()
-                                .name("language")
-                                .description("The language of the name to retrieve")
-                                .type(new GraphQLNonNull(BCP47))
-                        )
-                        .dataFetcher(dataFetcherBuilder.languageStringPropertyFetcher("name"))
-                        .build(),
-                newFieldDefinition()
-                        .name("description")
-                        .description("The entity description")
-                        .type(Scalars.GraphQLString)
-                        .argument(newArgument()
-                                .name("language")
-                                .description("The language of the description to retrieve")
-                                .type(new GraphQLNonNull(BCP47))
-                        )
-                        .dataFetcher(dataFetcherBuilder.languageStringPropertyFetcher("description"))
-                        .build(),
-                newFieldDefinition()
-                        .name("alternateName")
-                        .description("Alternative names for the entity")
-                        .type(nonNullList(Scalars.GraphQLString))
-                        .argument(newArgument()
-                                .name("language")
-                                .description("The language of the alternate names to retrieve")
-                                .type(new GraphQLNonNull(BCP47))
-                        )
-                        .dataFetcher(dataFetcherBuilder.languageStringsPropertyFetcher("alternateName"))
-                        .build()
-        );
     }
 
     private GraphQLObjectType buildQuery() {
@@ -341,7 +347,7 @@ public class GraphQLSchemaBuilder {
                         .name("property")
                         .argument(newArgument()
                                 .name("id")
-                                .description("The id of the property to retrieve")
+                                .description("The id of the property to retrieve. For internal use only.")
                                 .type(new GraphQLNonNull(Scalars.GraphQLID))
                         )
                         .dataFetcher(dataFetcherBuilder.entityForIRIFetcher("Property"))

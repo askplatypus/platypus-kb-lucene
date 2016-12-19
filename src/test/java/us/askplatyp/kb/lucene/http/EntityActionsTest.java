@@ -149,6 +149,6 @@ public class EntityActionsTest extends JerseyTest {
         Assert.assertEquals(Arrays.asList("Property", "DatatypeProperty"), result.getTypes());
         Assert.assertEquals("xsd:string", result.getPropertyValue("range"));
         Assert.assertNull(result.getPropertyValue("url"));
-        Assert.assertEquals(Collections.emptyList(), result.getPropertyValue("sameAs"));
+        Assert.assertNull(result.getPropertyValue("sameAs"));
     }
 }

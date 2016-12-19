@@ -21,10 +21,8 @@ import org.apache.lucene.document.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.interfaces.WikimediaLanguageCodes;
-import us.askplatyp.kb.lucene.model.Article;
-import us.askplatyp.kb.lucene.model.CalendarValue;
-import us.askplatyp.kb.lucene.model.Entity;
-import us.askplatyp.kb.lucene.model.Image;
+import us.askplatyp.kb.lucene.model.*;
+import us.askplatyp.kb.lucene.model.Class;
 import us.askplatyp.kb.lucene.wikimedia.rest.WikimediaREST;
 import us.askplatyp.kb.lucene.wikimedia.rest.model.Summary;
 
@@ -51,39 +49,76 @@ class EntityBuilder {
 
     static Entity buildSimpleEntityInLanguage(Document document, Locale locale, LuceneIndex.Reader indexReader) {
         EntityBuilder builder = new EntityBuilder(indexReader, document.get("@id"), Arrays.asList(document.getValues("@type")));
-        fillSimpleEntityInLanguage(builder, document, locale);
+        addDatatypePropertiesValues(builder, document, locale, DatatypeProperty.SIMPLE_PROPERTIES);
         return builder.build();
     }
 
     static Entity buildFullEntityInLanguage(Document document, Locale locale, LuceneIndex.Reader indexReader) throws IOException {
         EntityBuilder builder = new EntityBuilder(indexReader, document.get("@id"), Arrays.asList(document.getValues("@type")));
-        fillSimpleEntityInLanguage(builder, document, locale);
-        fillExtraEntityInLanguage(builder, document, locale);
+        addDatatypePropertiesValues(builder, document, locale, DatatypeProperty.PROPERTIES);
+        for (ObjectProperty property : ObjectProperty.PROPERTIES) {
+            builder.setPropertyEntityValueInLocale(
+                    property.getLabel(),
+                    document.get(property.getLabel()),
+                    locale,
+                    property.getDomains()
+            );
+        }
         return builder.build();
     }
 
-    private static void fillSimpleEntityInLanguage(EntityBuilder builder, Document document, Locale locale) {
-        builder.setPropertyValue("name", document.get("name@" + locale.getLanguage()));
-        builder.setPropertyValue("description", document.get("description@" + locale.getLanguage()));
-        builder.setPropertyValue("alternateName", document.getValues("alternateName@" + locale.getLanguage()));
-        builder.setPropertyValue("url", document.get("url"));
-        builder.setPropertyValue("sameAs", document.getValues("sameAs"));
-        builder.setPropertyValueIfType("range", document.get("range"), "Property");
-    }
-
-    private static void fillExtraEntityInLanguage(EntityBuilder builder, Document document, Locale locale) throws IOException {
-        Optional<String> wikipediaArticleIRI = findWikipediaArticleIRI(document.getValues("sameAs"), locale);
-        wikipediaArticleIRI.flatMap(EntityBuilder::buildWikipediaImage).ifPresent(image ->
-                builder.setPropertyValue("image", image)
-        );
-        wikipediaArticleIRI.map(EntityBuilder::buildWikipediaArticle).ifPresent(image ->
-                builder.setPropertyValue("detailedDescription", image)
-        );
-        builder.setPropertyDateValueIfType("birthDate", document.get("birthDate"), "Person");
-        builder.setPropertyEntityValueInLocaleIfType("birthPlace", document.get("birthPlace"), locale, "Person");
-        builder.setPropertyDateValueIfType("deathDate", document.get("deathDate"), "Person");
-        builder.setPropertyEntityValueInLocaleIfType("deathPlace", document.get("deathPlace"), locale, "Person");
-        builder.setPropertyDateValueIfType("nationality", document.get("nationality"), "Person");
+    private static void addDatatypePropertiesValues(EntityBuilder entityBuilder, Document document, Locale locale, List<DatatypeProperty> properties) {
+        for (DatatypeProperty property : properties) {
+            switch (property.getRange()) {
+                case STRING:
+                    if (property.withMultipleValues()) {
+                        entityBuilder.setPropertyValue(
+                                property.getLabel(),
+                                document.getValues(property.getLabel()),
+                                property.getDomains()
+                        );
+                    } else {
+                        entityBuilder.setPropertyValue(
+                                property.getLabel(),
+                                document.get(property.getLabel()),
+                                property.getDomains()
+                        );
+                    }
+                    break;
+                case LANGUAGE_TAGGED_STRING:
+                    if (property.withMultipleValues()) {
+                        entityBuilder.setPropertyValue(
+                                property.getLabel(),
+                                document.getValues(property.getLabel() + "@" + locale.getLanguage()),
+                                property.getDomains()
+                        );
+                    } else {
+                        entityBuilder.setPropertyValue(
+                                property.getLabel(),
+                                document.get(property.getLabel() + "@" + locale.getLanguage()),
+                                property.getDomains()
+                        );
+                    }
+                    break;
+                case CALENDAR:
+                    entityBuilder.setPropertyDateValue(
+                            property.getLabel(),
+                            document.get(property.getLabel()),
+                            property.getDomains()
+                    );
+                    break;
+                case ARTICLE:
+                    findWikipediaArticleIRI(document.getValues("sameAs"), locale)
+                            .map(EntityBuilder::buildWikipediaArticle)
+                            .ifPresent(article -> entityBuilder.setPropertyValue(property.getLabel(), article, property.getDomains()));
+                    break;
+                case IMAGE:
+                    findWikipediaArticleIRI(document.getValues("sameAs"), locale)
+                            .flatMap(EntityBuilder::buildWikipediaImage)
+                            .ifPresent(image -> entityBuilder.setPropertyValue(property.getLabel(), image, property.getDomains()));
+                    break;
+            }
+        }
     }
 
     private static Optional<String> findWikipediaArticleIRI(String[] IRIs, Locale locale) {
@@ -126,41 +161,27 @@ class EntityBuilder {
         return new Entity(IRI, types, propertyValues);
     }
 
-    private <T> void setPropertyValue(String property, T value) {
-        if (value != null) {
+    private <T> void setPropertyValue(String property, T value, List<Class> possibleTypes) {
+        if (value != null && hasOneType(possibleTypes)) {
             propertyValues.put(property, value);
         }
     }
 
-    private void setPropertyDateValue(String property, String value) {
-        if (value != null) {
+    private void setPropertyDateValue(String property, String value, List<Class> possibleTypes) {
+        if (value != null && hasOneType(possibleTypes)) {
             propertyValues.put(property, new CalendarValue(value));
         }
     }
 
-    private void setPropertyEntityValueInLocale(String property, String value, Locale locale) throws IOException {
-        if (value != null) {
+    private void setPropertyEntityValueInLocale(String property, String value, Locale locale, List<Class> possibleTypes) throws IOException {
+        if (value != null && hasOneType(possibleTypes)) {
             indexReader.getDocumentForIRI(value).ifPresent(entity ->
                     propertyValues.put(property, buildSimpleEntityInLanguage(entity, locale, indexReader))
             );
         }
     }
 
-    private void setPropertyValueIfType(String property, Object value, String type) {
-        if (types.contains(type)) {
-            setPropertyValue(property, value);
-        }
-    }
-
-    private void setPropertyDateValueIfType(String property, String value, String type) {
-        if (types.contains(type)) {
-            setPropertyDateValue(property, value);
-        }
-    }
-
-    private void setPropertyEntityValueInLocaleIfType(String property, String value, Locale locale, String type) throws IOException {
-        if (types.contains(type)) {
-            setPropertyEntityValueInLocale(property, value, locale);
-        }
+    private boolean hasOneType(List<Class> possibleTypes) {
+        return possibleTypes.contains(Class.THING) || possibleTypes.stream().anyMatch(type -> types.contains(type.getLabel()));
     }
 }
