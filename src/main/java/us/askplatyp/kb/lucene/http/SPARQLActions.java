@@ -63,7 +63,7 @@ import java.util.stream.Collectors;
  */
 @Path("/api/v1/sparql")
 @Api
-public class SparqlActions {
+public class SPARQLActions {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GraphQLActions.class);
     private static final String PREFIX = Namespaces.NAMESPACES.entrySet().stream()

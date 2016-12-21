@@ -42,13 +42,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class SparqlActionsTest extends JerseyTest {
+public class SPARQLActionsTest extends JerseyTest {
 
     private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
     @Override
     protected Application configure() {
-        return new ResourceConfig(SparqlActions.class)
+        return new ResourceConfig(SPARQLActions.class)
                 .register(new AbstractBinder() {
                     @Override
                     protected void configure() {
