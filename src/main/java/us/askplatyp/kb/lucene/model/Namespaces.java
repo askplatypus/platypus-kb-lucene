@@ -74,14 +74,14 @@ public class Namespaces {
     }
 
     public static String reduce(String IRI) {
+        if (IRI.startsWith(DEFAULT_NAMESPACE)) {
+            IRI = IRI.substring(DEFAULT_NAMESPACE.length());
+        }
         for (Map.Entry<String, String> namespace : NAMESPACES.entrySet()) {
             if (IRI.startsWith(namespace.getValue())) {
                 IRI = namespace.getKey() + ":" + IRI.substring(namespace.getValue().length());
                 break;
             }
-        }
-        if (IRI.startsWith(DEFAULT_NAMESPACE)) {
-            IRI = IRI.substring(DEFAULT_NAMESPACE.length());
         }
         if (SPECIAL_CASES.containsKey(IRI)) {
             IRI = SPECIAL_CASES.get(IRI);
