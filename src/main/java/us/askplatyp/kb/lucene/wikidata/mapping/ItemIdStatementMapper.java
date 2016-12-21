@@ -18,7 +18,7 @@
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StoredField;
+import org.apache.lucene.document.StringField;
 import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
 import us.askplatyp.kb.lucene.model.Namespaces;
 
@@ -38,6 +38,6 @@ class ItemIdStatementMapper implements StatementMainItemIdValueMapper {
 
     @Override
     public List<Field> mapMainItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException {
-        return Collections.singletonList(new StoredField(targetFieldName, Namespaces.reduce(value.getIri())));
+        return Collections.singletonList(new StringField(targetFieldName, Namespaces.reduce(value.getIri()), Field.Store.YES));
     }
 }

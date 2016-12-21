@@ -18,7 +18,7 @@
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StoredField;
+import org.apache.lucene.document.StringField;
 import org.wikidata.wdtk.datamodel.interfaces.StringValue;
 
 import java.util.Collections;
@@ -47,7 +47,7 @@ class StringStatementMapper implements StatementMainStringValueMapper {
         if (pattern != null && !pattern.matcher(value.getString()).matches()) {
             throw new InvalidWikibaseValueException(value + " is not a valid string value. It does not matches the pattern " + pattern);
         }
-        return Collections.singletonList(new StoredField(targetFieldName, value.getString()));
+        return Collections.singletonList(new StringField(targetFieldName, value.getString(), Field.Store.YES));
     }
 }
 

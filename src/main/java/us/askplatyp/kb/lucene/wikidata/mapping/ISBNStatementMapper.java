@@ -19,7 +19,7 @@ package us.askplatyp.kb.lucene.wikidata.mapping;
 
 import org.apache.commons.validator.routines.ISBNValidator;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StoredField;
+import org.apache.lucene.document.StringField;
 import org.wikidata.wdtk.datamodel.interfaces.StringValue;
 
 import java.util.Collections;
@@ -36,6 +36,6 @@ class ISBNStatementMapper implements StatementMainStringValueMapper {
         if (ISBN == null) {
             return Collections.emptyList();
         }
-        return Collections.singletonList(new StoredField("isbn", ISBN));
+        return Collections.singletonList(new StringField("isbn", ISBN, Field.Store.YES));
     }
 }

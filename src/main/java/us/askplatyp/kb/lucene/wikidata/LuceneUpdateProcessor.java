@@ -93,16 +93,16 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
 
     private void addTermsToDocument(TermedDocument termedDocument, Document document) {
         termedDocument.getLabels().values().forEach(label -> {
-            document.add(toLabelField(label));
-            document.add(toStoredField("name", label));
+            document.add(toField("label", label, Field.Store.NO));
+            document.add(toField("name", label, Field.Store.YES));
         });
         termedDocument.getDescriptions().values().forEach(description ->
-                document.add(toStoredField("description", description))
+                document.add(toField("description", description, Field.Store.YES))
         );
         termedDocument.getAliases().values().forEach(aliases ->
                 aliases.forEach(alias -> {
-                    document.add(toLabelField(alias));
-                    document.add(toStoredField("alternateName", alias));
+                    document.add(toField("label", alias, Field.Store.NO));
+                    document.add(toField("alternateName", alias, Field.Store.YES));
                 })
         );
     }
@@ -113,7 +113,7 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
                         sites.getGroup(siteLink.getSiteKey()).equals("wikipedia") &&
                                 SUPPORTED_LANGUAGES.contains(sites.getLanguageCode(siteLink.getSiteKey()))
                 )
-                .forEach(siteLink -> document.add(new StoredField("sameAs", sites.getSiteLinkUrl(siteLink).replace("https://", "http://"))));
+                .forEach(siteLink -> document.add(new StringField("sameAs", sites.getSiteLinkUrl(siteLink).replace("https://", "http://"), Field.Store.YES)));
     }
 
     private void addStatementsToDocument(StatementDocument statementDocument, Document document) {
@@ -153,18 +153,11 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
         }
     }
 
-    private StringField toLabelField(MonolingualTextValue value) {
+    private StringField toField(String name, MonolingualTextValue value, Field.Store store) {
         return new StringField(
-                "label@" + WikimediaLanguageCodes.getLanguageCode(value.getLanguageCode()),
-                value.getText(),
-                Field.Store.NO
-        );
-    }
-
-    private StoredField toStoredField(String name, MonolingualTextValue value) {
-        return new StoredField(
                 name + "@" + WikimediaLanguageCodes.getLanguageCode(value.getLanguageCode()),
-                value.getText()
+                value.getText(),
+                store
         );
     }
 

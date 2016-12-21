@@ -18,7 +18,7 @@
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StoredField;
+import org.apache.lucene.document.StringField;
 import org.wikidata.wdtk.datamodel.interfaces.TimeValue;
 
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -52,7 +52,7 @@ class TimeStatementMapper implements StatementMainTimeValueMapper {
 
     @Override
     public List<Field> mapMainTimeValue(TimeValue value) throws InvalidWikibaseValueException {
-        return Collections.singletonList(new StoredField(targetFieldName, convertTimeValue(value).toXMLFormat()));
+        return Collections.singletonList(new StringField(targetFieldName, convertTimeValue(value).toXMLFormat(), Field.Store.YES));
     }
 
     private XMLGregorianCalendar convertTimeValue(TimeValue value) throws InvalidWikibaseValueException {
