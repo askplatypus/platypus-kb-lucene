@@ -18,7 +18,6 @@
 package us.askplatyp.kb.lucene.lucene.sparql;
 
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Sets;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
@@ -30,6 +29,7 @@ import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.evaluation.TripleSource;
+import us.askplatyp.kb.lucene.Configuration;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
 import us.askplatyp.kb.lucene.model.DatatypeProperty;
 import us.askplatyp.kb.lucene.model.Namespaces;
@@ -43,16 +43,17 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
  */
 public class LuceneTripleSource implements TripleSource {
 
-    private static final int QUERY_LOAD_SIZE = 1000;
+    private static final int QUERY_LOAD_SIZE = 262144;
     private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
-    private static DatatypeFactory DATATYPE_FACTORY;
-
+    private static final DatatypeFactory DATATYPE_FACTORY;
     static {
         try {
             DATATYPE_FACTORY = DatatypeFactory.newInstance();
@@ -98,7 +99,7 @@ public class LuceneTripleSource implements TripleSource {
                 }
             } else {
                 if (obj == null) {
-                    return getStatementsForPredicate(pred);
+                    throw new QueryEvaluationException("Could not retrieve statements from predicate only"); //TODO
                 } else {
                     return getStatementsForPredicateObject(pred, obj);
                 }
@@ -140,7 +141,7 @@ public class LuceneTripleSource implements TripleSource {
             //TODO: selective load
             return reader.getDocumentForIRI(Namespaces.reduce(subj.stringValue())).map(document ->
                     (CloseableIteration<Statement, QueryEvaluationException>) new CloseableIteratorIteration<Statement, QueryEvaluationException>(
-                            Arrays.stream(document.getFields(parsePropertyName(pred))).map(field -> formatField(subj, field)).iterator()
+                            statementFromDocumentSubjectProperty(document, subj, pred).iterator()
                     )
             ).orElse(new EmptyIteration<>());
         }
@@ -153,8 +154,7 @@ public class LuceneTripleSource implements TripleSource {
             //TODO: selective load
             return reader.getDocumentForIRI(Namespaces.reduce(subj.stringValue())).map(document ->
                     (CloseableIteration<Statement, QueryEvaluationException>) new CloseableIteratorIteration<Statement, QueryEvaluationException>(
-                            Arrays.stream(document.getFields(parsePropertyName(pred)))
-                                    .map(field -> formatField(subj, field))
+                            statementFromDocumentSubjectProperty(document, subj, pred)
                                     .filter(statement -> statement.equals(inputStatement))
                                     .iterator()
                     )
@@ -172,13 +172,19 @@ public class LuceneTripleSource implements TripleSource {
     }
 
     private CloseableIteration<Statement, QueryEvaluationException> getStatementsForPredicate(IRI pred) throws IOException {
+        //TODO: does not seems to work
+        BooleanQuery.Builder booleanQueryBuilder = new BooleanQuery.Builder();
+        fieldsFromPropertyIRI(pred).forEach(field ->
+                booleanQueryBuilder.add(new BooleanClause(new FieldValueQuery(field), BooleanClause.Occur.SHOULD))
+        );
         return new QueryIteration(
                 index.getReader(),
-                new FieldValueQuery(parsePropertyName(pred)),
-                document -> Arrays.stream(document.getFields(parsePropertyName(pred)))
-                        .map(field -> formatField(getIRIFromDocument(document), field))
-                        .iterator(),
-                Sets.newHashSet("@id", parsePropertyName(pred))
+                booleanQueryBuilder.build(),
+                document -> {
+                    System.out.print("fo");
+                    return statementFromDocumentSubjectProperty(document, getIRIFromDocument(document), pred).iterator();
+                },
+                null
         );
     }
 
@@ -211,38 +217,55 @@ public class LuceneTripleSource implements TripleSource {
         return new Term(key, value);
     }
 
-    private String parsePropertyName(IRI propertyIRI) {
-        return Namespaces.reduce(propertyIRI.stringValue());
+    private Stream<Statement> statementFromDocumentSubjectProperty(Document document, Resource subject, IRI propertyIRI) {
+        return fieldsFromPropertyIRI(propertyIRI).stream()
+                .flatMap(field -> Arrays.stream(document.getValues(field)).map(value -> formatField(subject, field, value)));
+    }
+
+    private Set<String> fieldsFromPropertyIRI(IRI propertyIRI) {
+        String name = Namespaces.reduce(propertyIRI.stringValue());
+        for (DatatypeProperty property : DatatypeProperty.PROPERTIES) {
+            if (name.equals(property.getLabel()) && property.getRange() == DatatypeProperty.Datatype.LANGUAGE_TAGGED_STRING) {
+                return Arrays.stream(Configuration.SUPPORTED_LOCALES)
+                        .map(locale -> name + "@" + locale.getLanguage())
+                        .collect(Collectors.toSet());
+            }
+        }
+        return Collections.singleton(name);
     }
 
     private Statement formatField(Resource subject, IndexableField field) {
-        return VALUE_FACTORY.createStatement(subject, formatPropertyName(field.name()), fieldToValue(field));
+        return formatField(subject, field.name(), field.stringValue());
     }
 
-    private Value fieldToValue(IndexableField field) {
-        String propertyName = normalizePropertyName(field.name());
+    private Statement formatField(Resource subject, String fieldName, String fieldValue) {
+        return VALUE_FACTORY.createStatement(subject, formatPropertyName(fieldName), fieldToValue(fieldName, fieldValue));
+    }
+
+    private Value fieldToValue(String name, String value) {
+        String propertyName = normalizePropertyName(name);
         if (propertyName.equals("@type")) {
-            return VALUE_FACTORY.createIRI(Namespaces.expand(field.stringValue()));
+            return VALUE_FACTORY.createIRI(Namespaces.expand(value));
         }
         for (ObjectProperty property : ObjectProperty.PROPERTIES) {
             if (propertyName.equals(property.getLabel())) {
-                return VALUE_FACTORY.createIRI(Namespaces.expand(field.stringValue()));
+                return VALUE_FACTORY.createIRI(Namespaces.expand(value));
             }
         }
         for (DatatypeProperty property : DatatypeProperty.PROPERTIES) {
             if (propertyName.equals(property.getLabel())) {
                 switch (property.getRange()) {
                     case STRING:
-                        return VALUE_FACTORY.createLiteral(field.stringValue());
+                        return VALUE_FACTORY.createLiteral(value);
                     case LANGUAGE_TAGGED_STRING:
-                        return VALUE_FACTORY.createLiteral(field.stringValue(), field.name().split("@")[1]);
+                        return VALUE_FACTORY.createLiteral(value, name.split("@")[1]);
                     case CALENDAR:
-                        return VALUE_FACTORY.createLiteral(DATATYPE_FACTORY.newXMLGregorianCalendar(field.stringValue()));
+                        return VALUE_FACTORY.createLiteral(DATATYPE_FACTORY.newXMLGregorianCalendar(value));
                     //TODO: other types
                 }
             }
         }
-        throw new QueryEvaluationException("Unsupported field " + field.name());
+        throw new QueryEvaluationException("Unsupported field " + name);
     }
 
     private IRI formatPropertyName(String name) {
