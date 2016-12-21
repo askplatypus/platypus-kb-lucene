@@ -33,7 +33,7 @@ public class Namespaces {
         NAMESPACES.put("goog", "http://schema.googleapis.com/");
         NAMESPACES.put("hydra", "http://www.w3.org/ns/hydra/core#");
         NAMESPACES.put("kg", "http://g.co/kg");
-        NAMESPACES.put("owl", "http://www.w3.org/2001/XMLSchema#");
+        NAMESPACES.put("owl", "http://www.w3.org/2002/07/owl#");
         NAMESPACES.put("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
         NAMESPACES.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
         NAMESPACES.put("wd", "http://www.wikidata.org/entity/");
@@ -41,15 +41,22 @@ public class Namespaces {
 
         SPECIAL_CASES.put("rdf:type", "@type");
         SPECIAL_CASES.put("rdf:Property", "Property");
-        SPECIAL_CASES.put("rdfs:Class", "Class");
+        SPECIAL_CASES.put("rdfs:domain", "domain");
+        SPECIAL_CASES.put("rdfs:range", "range");
         SPECIAL_CASES.put("owl:Class", "Class");
+        SPECIAL_CASES.put("rdfs:Class", "Class");
+        SPECIAL_CASES.put("owl:DatatypeProperty", "DatatypeProperty");
+        SPECIAL_CASES.put("owl:ObjectProperty", "ObjectProperty");
         SPECIAL_CASES.put("owl:NamedIndividual", "NamedIndividual");
         SPECIAL_CASES.put("owl:Thing", "Thing");
     }
 
     public static String expand(String qualifiedName) {
-        if (qualifiedName.equals("@type")) {
-            return "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
+        for (Map.Entry<String, String> specialCase : SPECIAL_CASES.entrySet()) {
+            if (specialCase.getValue().equals(qualifiedName)) {
+                qualifiedName = specialCase.getKey();
+                break;
+            }
         }
 
         int namespaceEnd = qualifiedName.indexOf(':');
