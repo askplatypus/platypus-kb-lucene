@@ -28,6 +28,7 @@ public class Class {
 
     public static final Class THING = new Class("Thing", "Any entity of the knowledge base", Collections.emptyList());
     public static final Class NAMED_INDIVIDUAL = new Class("NamedIndividual", "An entity described by the knowledge base (i.e. not a property or a class)", Collections.singletonList(THING));
+    public static final Class COUNTRY = new Class("Country", "A country (past or present)", Arrays.asList(NAMED_INDIVIDUAL, THING));
     public static final Class PERSON = new Class("Person", "A person (real or fictional)", Arrays.asList(NAMED_INDIVIDUAL, THING));
     public static final Class PROPERTY = new Class("Property", "A property (for internal use only)", Collections.singletonList(THING));
 

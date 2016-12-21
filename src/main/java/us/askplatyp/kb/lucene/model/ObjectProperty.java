@@ -28,8 +28,11 @@ public class ObjectProperty {
 
     public static final List<ObjectProperty> PROPERTIES = Arrays.asList(
             new ObjectProperty("birthPlace", "Birth place of the person", Collections.singletonList(Class.PERSON), Class.PERSON, false),
+            new ObjectProperty("children", "Children of the person", Collections.singletonList(Class.PERSON), Class.COUNTRY, true),
             new ObjectProperty("deathPlace", "Death place of the person", Collections.singletonList(Class.PERSON), Class.PERSON, false),
-            new ObjectProperty("nationality", "Nationality of the person", Collections.singletonList(Class.PERSON), Class.NAMED_INDIVIDUAL, false)
+            new ObjectProperty("nationality", "Nationality of the person", Collections.singletonList(Class.PERSON), Class.COUNTRY, false),
+            new ObjectProperty("parent", "Parents of the person", Collections.singletonList(Class.PERSON), Class.PERSON, true)
+            //TODO Role? new ObjectProperty("spouse", "Spouse of the person", Collections.singletonList(Class.PERSON), Class.PERSON, true)
     );
 
     private String label;

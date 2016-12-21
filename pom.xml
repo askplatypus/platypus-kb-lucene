@@ -26,6 +26,7 @@
     <version>0.1-SNAPSHOT</version>
 
     <properties>
+        <commonsValidatorVersion>1.5.1</commonsValidatorVersion>
         <graphqlVersion>2.2.0</graphqlVersion>
         <jerseyVersion>2.24</jerseyVersion>
         <junitVersion>4.12</junitVersion>
@@ -37,6 +38,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>commons-validator</groupId>
+            <artifactId>commons-validator</artifactId>
+            <version>${commonsValidatorVersion}</version>
+        </dependency>
         <dependency>
             <groupId>com.graphql-java</groupId>
             <artifactId>graphql-java</artifactId>

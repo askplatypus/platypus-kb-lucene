@@ -28,21 +28,26 @@ import java.util.regex.Pattern;
 /**
  * @author Thomas Pellissier Tanon
  */
-class ExternalIdentifierStatementMapper implements StatementMainStringValueMapper {
-    private String URITemplate;
+class StringStatementMapper implements StatementMainStringValueMapper {
+
+    private String targetFieldName;
     private Pattern pattern;
 
-    ExternalIdentifierStatementMapper(String URITemplate, String pattern) {
-        this.URITemplate = URITemplate;
+    StringStatementMapper(String targetFieldName, String pattern) {
+        this.targetFieldName = targetFieldName;
         this.pattern = Pattern.compile(pattern);
+    }
+
+    StringStatementMapper(String targetFieldName) {
+        this.targetFieldName = targetFieldName;
     }
 
     @Override
     public List<Field> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
-        if (!pattern.matcher(value.getString()).matches()) {
-            throw new InvalidWikibaseValueException(value + " is not a valid identifier. It does not matches the pattern " + pattern);
+        if (pattern != null && !pattern.matcher(value.getString()).matches()) {
+            throw new InvalidWikibaseValueException(value + " is not a valid string value. It does not matches the pattern " + pattern);
         }
-        return Collections.singletonList(new StoredField("sameAs", URITemplate.replace("$1", value.getString())));
+        return Collections.singletonList(new StoredField(targetFieldName, value.getString()));
     }
 }
 
