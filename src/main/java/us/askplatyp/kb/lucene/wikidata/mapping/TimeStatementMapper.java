@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,6 +81,10 @@ class TimeStatementMapper implements StatementMainTimeValueMapper {
             default:
                 throw new InvalidWikibaseValueException(value.getPrecision() + " is not a supported precision.");
         }
-        return DATATYPE_FACTORY.newXMLGregorianCalendar(year, month, day, hour, minute, second, null, 0);
+        try {
+            return DATATYPE_FACTORY.newXMLGregorianCalendar(year, month, day, hour, minute, second, null, 0);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidWikibaseValueException("Calendar value not supported by Java", e);
+        }
     }
 }
