@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,14 +38,15 @@ public class Namespaces {
         NAMESPACES.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
         NAMESPACES.put("schema", "http://schema.org/");
         NAMESPACES.put("wd", "http://www.wikidata.org/entity/");
+        NAMESPACES.put("wdt", "http://www.wikidata.org/prop/direct/");
         NAMESPACES.put("xsd", "http://www.w3.org/2001/XMLSchema#");
 
         SPECIAL_CASES.put("rdf:type", "@type");
         SPECIAL_CASES.put("rdf:Property", "Property");
         SPECIAL_CASES.put("rdfs:domain", "domain");
         SPECIAL_CASES.put("rdfs:range", "range");
-        SPECIAL_CASES.put("owl:Class", "Class");
         SPECIAL_CASES.put("rdfs:Class", "Class");
+        SPECIAL_CASES.put("owl:Class", "Class");
         SPECIAL_CASES.put("owl:DatatypeProperty", "DatatypeProperty");
         SPECIAL_CASES.put("owl:ObjectProperty", "ObjectProperty");
         SPECIAL_CASES.put("owl:NamedIndividual", "NamedIndividual");

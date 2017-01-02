@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ public class SPARQLActionsTest extends JerseyTest {
                         VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q42"),
                         VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q222"),
                         VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q111"),
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/P42")
+                        VALUE_FACTORY.createIRI("http://www.wikidata.org/prop/direct/P42")
                 ),
                 doSparqlQuerySingleSelect("SELECT DISTINCT ?s WHERE { ?s ?p ?o }")
         );
@@ -74,7 +74,7 @@ public class SPARQLActionsTest extends JerseyTest {
     public void testGetProperties() throws IOException {
         Assert.assertEquals(
                 Sets.newHashSet(
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/P42")
+                        VALUE_FACTORY.createIRI("http://www.wikidata.org/prop/direct/P42")
                 ),
                 doSparqlQuerySingleSelect("SELECT DISTINCT ?s WHERE { ?s a rdf:Property }")
         );

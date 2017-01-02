@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
 import org.wikidata.wdtk.datamodel.interfaces.*;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
+import us.askplatyp.kb.lucene.model.Namespaces;
 import us.askplatyp.kb.lucene.wikidata.mapping.InvalidWikibaseValueException;
 import us.askplatyp.kb.lucene.wikidata.mapping.MapperRegistry;
 
@@ -52,7 +53,8 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
             return;
         }
 
-        Document document = createDocumentForEntity(itemDocument);
+        Document document = new Document();
+        document.add(new StringField("@id", Namespaces.reduce(itemDocument.getEntityId().getIri()), Field.Store.YES));
         document.add(new StringField("@type", "NamedIndividual", Field.Store.YES));
         addTermsToDocument(itemDocument, document);
         addSiteLinksToDocument(itemDocument, document);
@@ -71,7 +73,8 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
     }
 
     public void processPropertyDocument(PropertyDocument propertyDocument) {
-        Document document = createDocumentForEntity(propertyDocument);
+        Document document = new Document();
+        document.add(new StringField("@id", IRIforPropertyId(propertyDocument.getPropertyId()), Field.Store.YES));
         addTermsToDocument(propertyDocument, document);
         document.add(new StringField("@type", "Property", Field.Store.YES));
         if (WikidataTypes.isObjectRange(propertyDocument.getDatatype())) {
@@ -85,10 +88,12 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
         writeDocument(document);
     }
 
-    private Document createDocumentForEntity(EntityDocument entityDocument) {
-        Document document = new Document();
-        document.add(new StringField("@id", DataValueEncoder.encode(entityDocument.getEntityId()), Field.Store.YES));
-        return document;
+    private String IRIforPropertyId(PropertyIdValue propertyId) {
+        if (propertyId.getSiteIri().equals(Datamodel.SITE_WIKIDATA)) {
+            return "wdt:" + propertyId.getId();
+        } else {
+            return Namespaces.reduce(propertyId.getIri());
+        }
     }
 
     private void addTermsToDocument(TermedDocument termedDocument, Document document) {
