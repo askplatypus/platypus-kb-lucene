@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -117,12 +117,23 @@ public class GraphQLSchemaBuilder {
 
         for (ObjectProperty property : ObjectProperty.PROPERTIES) {
             if (property.getDomains().stream().anyMatch(dmClass::isSubClassOf)) {
-                fields.add(newFieldDefinition()
-                        .name(property.getLabel())
-                        .description(property.getDescription())
-                        .type(new GraphQLTypeReference(property.getRange().getLabel()))
-                        .build()
-                );
+                if (property.withMultipleValues()) {
+                    fields.add(newFieldDefinition()
+                            .name(property.getLabel())
+                            .description(property.getDescription())
+                            .type(nonNullList(new GraphQLTypeReference(property.getRange().getLabel())))
+                            .dataFetcher(dataFetcherBuilder.entityPropertyFetcher(property.getLabel()))
+                            .build()
+                    );
+                } else {
+                    fields.add(newFieldDefinition()
+                            .name(property.getLabel())
+                            .description(property.getDescription())
+                            .type(new GraphQLTypeReference(property.getRange().getLabel()))
+                            .dataFetcher(dataFetcherBuilder.entitiesPropertyFetcher(property.getLabel()))
+                            .build()
+                    );
+                }
             }
         }
         for (DatatypeProperty property : DatatypeProperty.PROPERTIES) {

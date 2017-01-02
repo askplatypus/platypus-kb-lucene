@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,8 @@ import us.askplatyp.kb.lucene.wikimedia.rest.model.Summary;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
@@ -75,6 +77,41 @@ public class DataFetcherBuilder {
 
     public DataFetcher stringsPropertyFetcher(String property) {
         return environment -> Arrays.asList(((Document) environment.getSource()).getValues(property));
+    }
+
+    public DataFetcher entityPropertyFetcher(String property) {
+        return environment -> {
+            String IRI = ((Document) environment.getSource()).get(property);
+            if (IRI == null) {
+                return null;
+            }
+            try (LuceneIndex.Reader reader = index.getReader()) {
+                return reader.getDocumentForIRI(IRI).orElse(null);
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
+                return null;
+            }
+        };
+    }
+
+    public DataFetcher entitiesPropertyFetcher(String property) {
+        return environment -> {
+            try (LuceneIndex.Reader reader = index.getReader()) {
+                return Arrays.stream(((Document) environment.getSource()).getValues(property))
+                        .flatMap(IRI -> {
+                            try {
+                                return reader.getDocumentForIRI(IRI).map(Stream::of).orElseGet(Stream::empty);
+                            } catch (IOException e) {
+                                LOGGER.error(e.getMessage(), e);
+                                return Stream.empty();
+                            }
+                        })
+                        .collect(Collectors.toList());
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
+                return Collections.emptyList();
+            }
+        };
     }
 
     public DataFetcher languageStringPropertyFetcher(String property) {

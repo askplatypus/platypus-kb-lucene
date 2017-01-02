@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ import us.askplatyp.kb.lucene.wikimedia.rest.model.Summary;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Thomas Pellissier Tanon
@@ -57,12 +58,21 @@ class EntityBuilder {
         EntityBuilder builder = new EntityBuilder(indexReader, document.get("@id"), Arrays.asList(document.getValues("@type")));
         addDatatypePropertiesValues(builder, document, locale, DatatypeProperty.PROPERTIES);
         for (ObjectProperty property : ObjectProperty.PROPERTIES) {
-            builder.setPropertyEntityValueInLocale(
-                    property.getLabel(),
-                    document.get(property.getLabel()),
-                    locale,
-                    property.getDomains()
-            );
+            if (property.withMultipleValues()) {
+                builder.setPropertyEntityValuesInLocale(
+                        property.getLabel(),
+                        document.getValues(property.getLabel()),
+                        locale,
+                        property.getDomains()
+                );
+            } else {
+                builder.setPropertyEntityValueInLocale(
+                        property.getLabel(),
+                        document.get(property.getLabel()),
+                        locale,
+                        property.getDomains()
+                );
+            }
         }
         return builder.build();
     }
@@ -101,11 +111,19 @@ class EntityBuilder {
                     }
                     break;
                 case CALENDAR:
-                    entityBuilder.setPropertyDateValue(
-                            property.getLabel(),
-                            document.get(property.getLabel()),
-                            property.getDomains()
-                    );
+                    if (property.withMultipleValues()) {
+                        entityBuilder.setPropertyCalendarValues(
+                                property.getLabel(),
+                                document.getValues(property.getLabel()),
+                                property.getDomains()
+                        );
+                    } else {
+                        entityBuilder.setPropertyCalendarValue(
+                                property.getLabel(),
+                                document.get(property.getLabel()),
+                                property.getDomains()
+                        );
+                    }
                     break;
                 case ARTICLE:
                     findWikipediaArticleIRI(document.getValues("sameAs"), locale)
@@ -167,9 +185,15 @@ class EntityBuilder {
         }
     }
 
-    private void setPropertyDateValue(String property, String value, List<Class> possibleTypes) {
+    private void setPropertyCalendarValue(String property, String value, List<Class> possibleTypes) {
         if (value != null && hasOneType(possibleTypes)) {
             propertyValues.put(property, new CalendarValue(value));
+        }
+    }
+
+    private void setPropertyCalendarValues(String property, String[] values, List<Class> possibleTypes) {
+        if (values != null && hasOneType(possibleTypes)) {
+            propertyValues.put(property, Arrays.stream(values).map(CalendarValue::new).collect(Collectors.toList()));
         }
     }
 
@@ -178,6 +202,18 @@ class EntityBuilder {
             indexReader.getDocumentForIRI(value).ifPresent(entity ->
                     propertyValues.put(property, buildSimpleEntityInLanguage(entity, locale, indexReader))
             );
+        }
+    }
+
+    private void setPropertyEntityValuesInLocale(String property, String[] values, Locale locale, List<Class> possibleTypes) throws IOException {
+        if (values != null && hasOneType(possibleTypes)) {
+            List<Entity> entities = new ArrayList<>();
+            for (String value : values) {
+                indexReader.getDocumentForIRI(value).ifPresent(entity ->
+                        entities.add(buildSimpleEntityInLanguage(entity, locale, indexReader))
+                );
+            }
+            propertyValues.put(property, entities);
         }
     }
 

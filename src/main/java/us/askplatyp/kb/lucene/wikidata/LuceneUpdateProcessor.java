@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,8 +63,8 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
 
     private boolean isGoodItem(ItemDocument itemDocument) {
         //TODO: filter elements without statements?
-        return !getBestStatements(itemDocument, P31).stream()
-                .anyMatch(statement -> {
+        return getBestStatements(itemDocument, P31).stream()
+                .noneMatch(statement -> {
                     Value value = statement.getValue();
                     return value instanceof ItemIdValue && WikidataTypes.isFilteredType((ItemIdValue) statement.getValue());
                 });
