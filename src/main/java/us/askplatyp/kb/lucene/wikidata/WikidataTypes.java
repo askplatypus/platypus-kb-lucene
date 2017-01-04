@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -104,7 +104,7 @@ public class WikidataTypes {
         XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_URL, Collections.singletonList("xsd:string"));
         XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_COMMONS_MEDIA, Collections.singletonList("xsd:string"));
         XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_TIME, Collections.singletonList("xsd:dateTime"));
-        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_GLOBE_COORDINATES, Collections.singletonList("GeoCoordinates"));
+        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_GLOBE_COORDINATES, Collections.singletonList("geo:wktLiteral"));
         XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_QUANTITY, Collections.singletonList("xsd:decimal"));
         XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_MONOLINGUAL_TEXT, Collections.singletonList("rdf:langString"));
         XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_EXTERNAL_ID, Collections.singletonList("xsd:string"));

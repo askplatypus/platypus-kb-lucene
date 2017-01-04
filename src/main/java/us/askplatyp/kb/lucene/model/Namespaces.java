@@ -30,6 +30,7 @@ public class Namespaces {
     private static final Map<String, String> SPECIAL_CASES = new TreeMap<>();
 
     static {
+        NAMESPACES.put("geo", "http://www.opengis.net/ont/geosparql#");
         NAMESPACES.put("goog", "http://schema.googleapis.com/");
         NAMESPACES.put("hydra", "http://www.w3.org/ns/hydra/core#");
         NAMESPACES.put("kg", "http://g.co/kg");
