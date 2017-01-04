@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -79,7 +79,7 @@ public class MapperRegistry {
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P570"), new TimeStatementMapper("deathDate"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P571"), new TimeStatementMapper("dateCreated"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P577"), new TimeStatementMapper("datePublished"));
-        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P646"), new ExternalIdentifierStatementMapper("kg:$1", "(/m/0[0-9a-z_]{2,6}|/m/01[0123][0-9a-z_]{5})"));
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P646"), new ExternalIdentifierStatementMapper("http://g.co/kg$1", "(/m/0[0-9a-z_]{2,6}|/m/01[0123][0-9a-z_]{5})"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P655"), new ItemIdStatementMapper("translator"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P674"), new ItemIdStatementMapper("character"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P734"), new ItemIdStatementMapper("familyName"));
@@ -107,7 +107,7 @@ public class MapperRegistry {
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2013"), new ExternalIdentifierStatementMapper("http://www.facebook.com/$1", "[A-Za-zА-Яа-яёäöüßЁ0-9.-]+"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2019"), new ExternalIdentifierStatementMapper("http://www.allmovie.com/artist/$1", "p[1-9][0-9]*"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2397"), new ExternalIdentifierStatementMapper("http://www.youtube.com/channel/$1", "UC([A-Za-z0-9_\\-]){22}"));
-        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2671"), new ExternalIdentifierStatementMapper("kg:$1", "\\/g\\/[0-9a-zA-Z]+"));
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2671"), new ExternalIdentifierStatementMapper("http://g.co/kg$1", "\\/g\\/[0-9a-zA-Z]+"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2847"), new ExternalIdentifierStatementMapper("http://plus.google.com/$1", "\\d{22}|\\+[-\\w_\\u00C0-\\u00FF]+"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2360"), new ItemIdStatementMapper("audience"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2860"), new ItemIdStatementMapper("citation"));
