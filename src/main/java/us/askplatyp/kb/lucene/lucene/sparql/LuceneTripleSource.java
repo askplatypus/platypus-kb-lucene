@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,8 @@ import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.evaluation.TripleSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import us.askplatyp.kb.lucene.Configuration;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
 import us.askplatyp.kb.lucene.model.DatatypeProperty;
@@ -43,7 +45,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -51,9 +52,11 @@ import java.util.stream.Stream;
  */
 public class LuceneTripleSource implements TripleSource {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(LuceneTripleSource.class);
     private static final int QUERY_LOAD_SIZE = 262144;
     private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
     private static final DatatypeFactory DATATYPE_FACTORY;
+
     static {
         try {
             DATATYPE_FACTORY = DatatypeFactory.newInstance();
@@ -128,7 +131,7 @@ public class LuceneTripleSource implements TripleSource {
                     (CloseableIteration<Statement, QueryEvaluationException>) new CloseableIteratorIteration<Statement, QueryEvaluationException>(
                             document.getFields().stream()
                                     .filter(field -> !field.name().equals("@id"))
-                                    .map(field -> formatField(subj, field))
+                                    .flatMap(field -> formatField(subj, field))
                                     .iterator()
                     )
             ).orElse(new EmptyIteration<>());
@@ -194,7 +197,7 @@ public class LuceneTripleSource implements TripleSource {
                 new MatchAllDocsQuery(),
                 document -> document.getFields().stream()
                         .filter(field -> !field.name().equals("@id"))
-                        .map(field -> formatField(getIRIFromDocument(document), field))
+                        .flatMap(field -> formatField(getIRIFromDocument(document), field))
                         .iterator(),
                 null
         );
@@ -218,54 +221,56 @@ public class LuceneTripleSource implements TripleSource {
     }
 
     private Stream<Statement> statementFromDocumentSubjectProperty(Document document, Resource subject, IRI propertyIRI) {
-        return fieldsFromPropertyIRI(propertyIRI).stream()
-                .flatMap(field -> Arrays.stream(document.getValues(field)).map(value -> formatField(subject, field, value)));
+        return fieldsFromPropertyIRI(propertyIRI)
+                .flatMap(field -> Arrays.stream(document.getValues(field)).flatMap(value -> formatField(subject, field, value)));
     }
 
-    private Set<String> fieldsFromPropertyIRI(IRI propertyIRI) {
+    private Stream<String> fieldsFromPropertyIRI(IRI propertyIRI) {
         String name = Namespaces.reduce(propertyIRI.stringValue());
         for (DatatypeProperty property : DatatypeProperty.PROPERTIES) {
             if (name.equals(property.getLabel()) && property.getRange() == DatatypeProperty.Datatype.LANGUAGE_TAGGED_STRING) {
                 return Arrays.stream(Configuration.SUPPORTED_LOCALES)
-                        .map(locale -> name + "@" + locale.getLanguage())
-                        .collect(Collectors.toSet());
+                        .map(locale -> name + "@" + locale.getLanguage());
             }
         }
-        return Collections.singleton(name);
+        return Stream.of(name);
     }
 
-    private Statement formatField(Resource subject, IndexableField field) {
+    private Stream<Statement> formatField(Resource subject, IndexableField field) {
         return formatField(subject, field.name(), field.stringValue());
     }
 
-    private Statement formatField(Resource subject, String fieldName, String fieldValue) {
-        return VALUE_FACTORY.createStatement(subject, formatPropertyName(fieldName), fieldToValue(fieldName, fieldValue));
+    private Stream<Statement> formatField(Resource subject, String fieldName, String fieldValue) {
+        return fieldToValue(fieldName, fieldValue).map(object ->
+                VALUE_FACTORY.createStatement(subject, formatPropertyName(fieldName), object)
+        );
     }
 
-    private Value fieldToValue(String name, String value) {
+    private Stream<Value> fieldToValue(String name, String value) {
         String propertyName = normalizePropertyName(name);
         if (propertyName.equals("@type")) {
-            return VALUE_FACTORY.createIRI(Namespaces.expand(value));
+            return Stream.of(VALUE_FACTORY.createIRI(Namespaces.expand(value)));
         }
         for (ObjectProperty property : ObjectProperty.PROPERTIES) {
             if (propertyName.equals(property.getLabel())) {
-                return VALUE_FACTORY.createIRI(Namespaces.expand(value));
+                return Stream.of(VALUE_FACTORY.createIRI(Namespaces.expand(value)));
             }
         }
         for (DatatypeProperty property : DatatypeProperty.PROPERTIES) {
             if (propertyName.equals(property.getLabel())) {
                 switch (property.getRange()) {
                     case STRING:
-                        return VALUE_FACTORY.createLiteral(value);
+                        return Stream.of(VALUE_FACTORY.createLiteral(value));
                     case LANGUAGE_TAGGED_STRING:
-                        return VALUE_FACTORY.createLiteral(value, name.split("@")[1]);
+                        return Stream.of(VALUE_FACTORY.createLiteral(value, name.split("@")[1]));
                     case CALENDAR:
-                        return VALUE_FACTORY.createLiteral(DATATYPE_FACTORY.newXMLGregorianCalendar(value));
+                        return Stream.of(VALUE_FACTORY.createLiteral(DATATYPE_FACTORY.newXMLGregorianCalendar(value)));
                     //TODO: other types
                 }
             }
         }
-        throw new QueryEvaluationException("Unsupported field " + name);
+        LOGGER.info("Unsupported field " + name);
+        return Stream.empty();
     }
 
     private IRI formatPropertyName(String name) {
