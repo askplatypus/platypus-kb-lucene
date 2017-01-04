@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ public class SimpleQueryPreparer extends AbstractQueryPreparer {
 
         EvaluationStrategy strategy = new ExtendedEvaluationStrategy(
                 getTripleSource(), dataset, new FederatedServiceResolverImpl(), 0L
-        ); //TODO: limit iteration size
+        );
 
         new BindingAssigner().optimize(tupleExpr, dataset, bindings);
         new ConstantOptimizer(strategy).optimize(tupleExpr, dataset, bindings);
