@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) 2016 Platypus Knowledge Base developers.
+  ~ Copyright (c) 2017 Platypus Knowledge Base developers.
   ~
   ~ This program is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
@@ -36,8 +36,19 @@
         <servletVersion>3.1.0</servletVersion>
         <swaggerVersion>1.5.10</swaggerVersion>
         <slf4jVersion>1.7.21</slf4jVersion>
-        <wdtkVersion>0.7.0</wdtkVersion>
+        <wdtkVersion>0.8.0-SNAPSHOT</wdtkVersion>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>Wikidata-Toolkit-mvn-repo</id>
+            <url>https://raw.github.com/askplatypus/Wikidata-Toolkit/mvn-repo/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>
