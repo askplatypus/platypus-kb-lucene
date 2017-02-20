@@ -26,6 +26,8 @@ If you want to create a docker image of the service just run:
 mvn clean package docker:build
 ```
 
+It creates an image called `platypus-kb-lucence` with the service listening to port `4567`.
+
 ### Configuration
 
 The main configuration file is `src/main/resources/config.properties`.
