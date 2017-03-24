@@ -27,15 +27,15 @@
 
     <properties>
         <jdkVersion>1.8</jdkVersion>
-        <commonsValidatorVersion>1.5.1</commonsValidatorVersion>
-        <graphqlVersion>2.2.0</graphqlVersion>
-        <jerseyVersion>2.24</jerseyVersion>
+        <commonsValidatorVersion>1.6</commonsValidatorVersion>
+        <graphqlVersion>2.3.0</graphqlVersion>
+        <jerseyVersion>2.25.1</jerseyVersion>
         <junitVersion>4.12</junitVersion>
-        <luceneVersion>6.3.0</luceneVersion>
-        <rdf4jVersion>2.1.4</rdf4jVersion>
+        <luceneVersion>6.4.2</luceneVersion>
+        <rdf4jVersion>2.2</rdf4jVersion>
         <servletVersion>3.1.0</servletVersion>
-        <swaggerVersion>1.5.10</swaggerVersion>
-        <slf4jVersion>1.7.21</slf4jVersion>
+        <swaggerVersion>1.5.13</swaggerVersion>
+        <slf4jVersion>1.7.25</slf4jVersion>
         <wdtkVersion>0.8.0-SNAPSHOT</wdtkVersion>
     </properties>
 
@@ -105,6 +105,11 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-queryresultio-sparqlxml</artifactId>
+            <version>${rdf4jVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
             <artifactId>rdf4j-queryresultio-sparqljson</artifactId>
             <version>${rdf4jVersion}</version>
         </dependency>
@@ -151,7 +156,7 @@
         <dependency>
             <groupId>org.glassfish.jersey.test-framework.providers</groupId>
             <artifactId>jersey-test-framework-provider-inmemory</artifactId>
-            <version>2.23.2</version>
+            <version>${jerseyVersion}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
