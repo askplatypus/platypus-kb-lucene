@@ -32,7 +32,7 @@ public class MapperRegistry {
     private static final Map<PropertyIdValue, StatementMapper> MAPPER_FOR_PROPERTY = new HashMap<>();
 
     static {
-        //TODO: LinkedIn, Myspace, Pinterest, SoundCloud, Tumblr...
+        //TODO: IMDB, LinkedIn, Myspace, Pinterest, Tumblr...
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P19"), new ItemIdStatementMapper("birthPlace"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P20"), new ItemIdStatementMapper("deathPlace"));
         //TODO: use http://schema.org/(Male|Female)? MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P21"), new ItemIdStatementMapper("gender"));
@@ -95,24 +95,37 @@ public class MapperRegistry {
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P982"), new ExternalIdentifierStatementMapper("http://musicbrainz.org/area/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P1004"), new ExternalIdentifierStatementMapper("http://musicbrainz.org/place/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P1243"), new StringStatementMapper("isrcCode", "[A-Z]{2}[A-Z0-9]{3}[0-9]{7}"));
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P1281"), new ExternalIdentifierStatementMapper("http://www.flickr.com/places/info/$1", "[1-9][0-9]{0,9}"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P1330"), new ExternalIdentifierStatementMapper("http://musicbrainz.org/instrument/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P1407"), new ExternalIdentifierStatementMapper("http://musicbrainz.org/series/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P1566"), new ExternalIdentifierStatementMapper("http://sws.geonames.org/$1", "[1-9]\\d{0,8}"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P1657"), new ItemIdStatementMapper("contentRating"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P1716"), new ItemIdStatementMapper("brand"));
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P1733"), new ExternalIdentifierStatementMapper("http://store.steampowered.com/app/$1", "[1-9]\\d{0,5}"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P1874"), new ExternalIdentifierStatementMapper("http://www.netflix.com/title/$1", "\\d{6,8}"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P1953"), new ExternalIdentifierStatementMapper("http://www.discogs.com/artist/$1", "[1-9][0-9]*"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P1954"), new ExternalIdentifierStatementMapper("http://www.discogs.com/master/$1", "[1-9][0-9]*"));
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P1902"), new ExternalIdentifierStatementMapper("http://open.spotify.com/artist/$1", "[0-9A-Za-z]{22}"));
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P1968"), new ExternalIdentifierStatementMapper("http://foursquare.com/v/$1", "[0-9a-f]+"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2002"), new ExternalIdentifierStatementMapper("http://twitter.com/$1", "[A-Za-z0-9_]{1,15}"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2003"), new ExternalIdentifierStatementMapper("http://www.instagram.com/$1", "[a-z0-9_\\.]{1,30}"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2013"), new ExternalIdentifierStatementMapper("http://www.facebook.com/$1", "[A-Za-zА-Яа-яёäöüßЁ0-9.-]+"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2019"), new ExternalIdentifierStatementMapper("http://www.allmovie.com/artist/$1", "p[1-9][0-9]*"));
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2037"), new ExternalIdentifierStatementMapper("http://github.com/$1", "[A-Za-z0-9]([A-Za-z0-9\\-]{0,37}[A-Za-z0-9])?"));
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2205"), new ExternalIdentifierStatementMapper("http://open.spotify.com/album/$1", "[0-9A-Za-z]{22}"));
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2207"), new ExternalIdentifierStatementMapper("http://open.spotify.com/track/$1", "[0-9A-Za-z]{22}"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2397"), new ExternalIdentifierStatementMapper("http://www.youtube.com/channel/$1", "UC([A-Za-z0-9_\\-]){22}"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2671"), new ExternalIdentifierStatementMapper("http://g.co/kg$1", "\\/g\\/[0-9a-zA-Z]+"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2847"), new ExternalIdentifierStatementMapper("http://plus.google.com/$1", "\\d{22}|\\+[-\\w_\\u00C0-\\u00FF]+"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2360"), new ItemIdStatementMapper("audience"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P2860"), new ItemIdStatementMapper("citation"));
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P3040"), new ExternalIdentifierStatementMapper("http://soundcloud.com/$1", "[a-zA-Z0-9/_-]+"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P3090"), new StringStatementMapper("flightNumber", "([A-Z]{2,3}|[A-Z][0-9]|[0-9][A-Z])\\d{1,4}[A-Z]?"));
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P3108"), new ExternalIdentifierStatementMapper("http://www.yelp.com/biz/$1", "[^\\s]+")); //TODO: bad validation
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P3192"), new ExternalIdentifierStatementMapper("http://www.last.fm/music/$1", "[^\\s]+")); //TODO: bad validation
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P3267"), new ExternalIdentifierStatementMapper("http://www.flickr.com/photos/$1", "[a-zA-Z0-9@]+"));
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P3207"), new ExternalIdentifierStatementMapper("http://vine.co/u/$1", "\\d+"));
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P3417"), new ExternalIdentifierStatementMapper("http://www.quora.com/topic/$1", "[^\\s\\/]+"));
     }
 
     public static Optional<StatementMapper> getMapperForProperty(PropertyIdValue propertyId) {
