@@ -73,7 +73,7 @@ public class GraphQLSchemaBuilder {
         }
     });
 
-
+    private Schema schema = Schema.getSchema();
     private DataFetcherBuilder dataFetcherBuilder;
     private Relay relay;
     private GraphQLInterfaceType node;
@@ -98,7 +98,7 @@ public class GraphQLSchemaBuilder {
         return new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(elementType)));
     }
 
-    private List<GraphQLFieldDefinition> buildFieldsForClass(Class dmClass) {
+    private List<GraphQLFieldDefinition> buildFieldsForClass(Schema.Class dmClass) {
         List<GraphQLFieldDefinition> fields = new ArrayList<>();
         fields.add(newFieldDefinition()
                 .name("id")
@@ -114,89 +114,101 @@ public class GraphQLSchemaBuilder {
                 .dataFetcher(dataFetcherBuilder.stringsPropertyFetcher("@type"))
                 .build()
         );
+        if (dmClass.isSubClassOf(schema.getClass("NamedIndividual"))) {
+            fields.add(newFieldDefinition()
+                    .name("detailedDescription")
+                    .description("An article describing the entity")
+                    .type(article)
+                    .argument(newArgument()
+                            .name("language")
+                            .description("The language of the article to retrieve")
+                            .type(new GraphQLNonNull(BCP47))
+                    )
+                    .dataFetcher(dataFetcherBuilder.wikipediaArticleFetcher())
+                    .build()
+            );
+            fields.add(newFieldDefinition()
+                    .name("image")
+                    .description("An image of the entity")
+                    .type(image)
+                    .dataFetcher(dataFetcherBuilder.wikipediaImageFetcher())
+                    .build()
+            );
+        }
 
-        for (ObjectProperty property : ObjectProperty.PROPERTIES) {
-            if (property.getDomains().stream().anyMatch(dmClass::isSubClassOf)) {
-                if (property.withMultipleValues()) {
-                    fields.add(newFieldDefinition()
-                            .name(property.getLabel())
-                            .description(property.getDescription())
-                            .type(nonNullList(new GraphQLTypeReference(property.getRange().getLabel())))
-                            .dataFetcher(dataFetcherBuilder.entityPropertyFetcher(property.getLabel()))
-                            .build()
-                    );
-                } else {
-                    fields.add(newFieldDefinition()
-                            .name(property.getLabel())
-                            .description(property.getDescription())
-                            .type(new GraphQLTypeReference(property.getRange().getLabel()))
-                            .dataFetcher(dataFetcherBuilder.entitiesPropertyFetcher(property.getLabel()))
-                            .build()
-                    );
-                }
-            }
-        }
-        for (DatatypeProperty property : DatatypeProperty.PROPERTIES) {
-            if (property.getDomains().stream().anyMatch(dmClass::isSubClassOf)) {
-                GraphQLFieldDefinition.Builder fieldBuilder = newFieldDefinition()
-                        .name(property.getLabel())
-                        .description(property.getDescription());
-                switch (property.getRange()) {
-                    case STRING:
-                        if (property.withMultipleValues()) {
-                            fieldBuilder.type(nonNullList(Scalars.GraphQLString))
-                                    .dataFetcher(dataFetcherBuilder.stringsPropertyFetcher(property.getLabel()));
+        schema.getProperties()
+                .filter(property -> property.getDomains().anyMatch(dmClass::isSubClassOf))
+                .forEach(undeterminedProperty -> {
+                    if (undeterminedProperty instanceof Schema.ObjectProperty) {
+                        Schema.ObjectProperty property = (Schema.ObjectProperty) undeterminedProperty;
+                        GraphQLOutputType type = new GraphQLTypeReference(property.getRanges().findAny().orElseThrow(() ->
+                                new IllegalArgumentException("Properties should not have a range")
+                        ).getShortURI()); //TODO: bad
+                        if (property.isFunctionalProperty()) {
+                            fields.add(newFieldDefinition()
+                                    .name(property.getShortURI())
+                                    .description(property.getDescription())
+                                    .type(type)
+                                    .dataFetcher(dataFetcherBuilder.entitiesPropertyFetcher(property.getShortURI()))
+                                    .build()
+                            );
                         } else {
-                            fieldBuilder.type(Scalars.GraphQLString)
-                                    .dataFetcher(dataFetcherBuilder.stringPropertyFetcher(property.getLabel()));
+                            fields.add(newFieldDefinition()
+                                    .name(property.getShortURI())
+                                    .description(property.getDescription())
+                                    .type(nonNullList(type))
+                                    .dataFetcher(dataFetcherBuilder.entityPropertyFetcher(property.getShortURI()))
+                                    .build()
+                            );
                         }
-                        break;
-                    case LANGUAGE_TAGGED_STRING:
-                        if (property.withMultipleValues()) {
-                            fieldBuilder.type(nonNullList(Scalars.GraphQLString))
-                                    .argument(newArgument()
-                                            .name("language")
-                                            .description("The required language of the values")
-                                            .type(new GraphQLNonNull(BCP47))
-                                    )
-                                    .dataFetcher(dataFetcherBuilder.languageStringsPropertyFetcher(property.getLabel()));
-                        } else {
-                            fieldBuilder.type(Scalars.GraphQLString)
-                                    .argument(newArgument()
-                                            .name("language")
-                                            .description("The required language of the value")
-                                            .type(new GraphQLNonNull(BCP47))
-                                    )
-                                    .dataFetcher(dataFetcherBuilder.languageStringPropertyFetcher(property.getLabel()));
+                    } else if (undeterminedProperty instanceof Schema.DatatypeProperty) {
+                        Schema.DatatypeProperty property = (Schema.DatatypeProperty) undeterminedProperty;
+                        GraphQLFieldDefinition.Builder fieldBuilder = newFieldDefinition()
+                                .name(property.getShortURI())
+                                .description(property.getDescription());
+                        switch (property.getRange()) {
+                            case STRING:
+                                if (property.isFunctionalProperty()) {
+                                    fieldBuilder.type(Scalars.GraphQLString)
+                                            .dataFetcher(dataFetcherBuilder.stringPropertyFetcher(property.getShortURI()));
+                                } else {
+                                    fieldBuilder.type(nonNullList(Scalars.GraphQLString))
+                                            .dataFetcher(dataFetcherBuilder.stringsPropertyFetcher(property.getShortURI()));
+                                }
+                                break;
+                            case LANGUAGE_TAGGED_STRING:
+                                if (property.isFunctionalProperty()) {
+                                    fieldBuilder.type(Scalars.GraphQLString)
+                                            .argument(newArgument()
+                                                    .name("language")
+                                                    .description("The required language of the value")
+                                                    .type(new GraphQLNonNull(BCP47))
+                                            )
+                                            .dataFetcher(dataFetcherBuilder.languageStringPropertyFetcher(property.getShortURI()));
+                                } else {
+                                    fieldBuilder.type(nonNullList(Scalars.GraphQLString))
+                                            .argument(newArgument()
+                                                    .name("language")
+                                                    .description("The required language of the values")
+                                                    .type(new GraphQLNonNull(BCP47))
+                                            )
+                                            .dataFetcher(dataFetcherBuilder.languageStringsPropertyFetcher(property.getShortURI()));
+                                }
+                                break;
+                            case CALENDAR:
+                                //TODO
+                                if (property.isFunctionalProperty()) {
+                                    fieldBuilder.type(Scalars.GraphQLString)
+                                            .dataFetcher(dataFetcherBuilder.stringPropertyFetcher(property.getShortURI()));
+                                } else {
+                                    fieldBuilder.type(nonNullList(Scalars.GraphQLString))
+                                            .dataFetcher(dataFetcherBuilder.stringsPropertyFetcher(property.getShortURI()));
+                                }
+                                break;
                         }
-                        break;
-                    case CALENDAR:
-                        //TODO
-                        if (property.withMultipleValues()) {
-                            fieldBuilder.type(nonNullList(Scalars.GraphQLString))
-                                    .dataFetcher(dataFetcherBuilder.stringsPropertyFetcher(property.getLabel()));
-                        } else {
-                            fieldBuilder.type(Scalars.GraphQLString)
-                                    .dataFetcher(dataFetcherBuilder.stringPropertyFetcher(property.getLabel()));
-                        }
-                        break;
-                    case ARTICLE:
-                        fieldBuilder.type(article)
-                                .argument(newArgument()
-                                        .name("language")
-                                        .description("The language of the article to retrieve")
-                                        .type(new GraphQLNonNull(BCP47))
-                                )
-                                .dataFetcher(dataFetcherBuilder.wikipediaArticleFetcher());
-                        break;
-                    case IMAGE:
-                        fieldBuilder.type(image)
-                                .dataFetcher(dataFetcherBuilder.wikipediaImageFetcher());
-                        break;
-                }
-                fields.add(fieldBuilder.build());
-            }
-        }
+                        fields.add(fieldBuilder.build());
+                    }
+                });
         return fields;
     }
 
@@ -215,7 +227,7 @@ public class GraphQLSchemaBuilder {
         return newInterface()
                 .name("Entity")
                 .description("Something described by the knowledge base")
-                .fields(buildFieldsForClass(Class.THING))
+                .fields(buildFieldsForClass(schema.getClass("owl:Thing")))
                 .typeResolver(buildEntityTypeResolver())
                 .build();
     }
@@ -316,7 +328,7 @@ public class GraphQLSchemaBuilder {
                 .name("NamedIndividual")
                 .description("An individual described by the knowledge base")
                 .withInterfaces(node, entity)
-                .fields(buildFieldsForClass(Class.NAMED_INDIVIDUAL))
+                .fields(buildFieldsForClass(schema.getClass("owl:NamedIndividual")))
                 .build();
     }
 
@@ -325,7 +337,7 @@ public class GraphQLSchemaBuilder {
                 .name("Property")
                 .description("A property stored in the knowledge base. For internal Platypus use only.")
                 .withInterfaces(node, entity)
-                .fields(buildFieldsForClass(Class.PROPERTY))
+                .fields(buildFieldsForClass(schema.getClass("rdf:Property")))
                 .build();
     }
 

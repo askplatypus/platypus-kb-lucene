@@ -17,18 +17,19 @@
 
 package us.askplatyp.kb.lucene.lucene;
 
+import com.google.common.collect.Sets;
 import org.apache.lucene.document.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.interfaces.WikimediaLanguageCodes;
 import us.askplatyp.kb.lucene.model.*;
-import us.askplatyp.kb.lucene.model.Class;
 import us.askplatyp.kb.lucene.wikimedia.rest.WikimediaREST;
 import us.askplatyp.kb.lucene.wikimedia.rest.model.Summary;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
@@ -36,6 +37,8 @@ import java.util.stream.Collectors;
 class EntityBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityBuilder.class);
+    private static final Set<String> SIMPLE_PROPERTIES = Sets.newHashSet("name", "description", "alternateName", "url", "sameAs", "range");
+    private static final Schema SCHEMA = Schema.getSchema();
 
     private LuceneIndex.Reader indexReader;
     private String IRI;
@@ -50,93 +53,102 @@ class EntityBuilder {
 
     static Entity buildSimpleEntityInLanguage(Document document, Locale locale, LuceneIndex.Reader indexReader) {
         EntityBuilder builder = new EntityBuilder(indexReader, document.get("@id"), Arrays.asList(document.getValues("@type")));
-        addDatatypePropertiesValues(builder, document, locale, DatatypeProperty.SIMPLE_PROPERTIES);
+        addPropertiesValues(builder, document, locale, true);
         return builder.build();
     }
 
-    static Entity buildFullEntityInLanguage(Document document, Locale locale, LuceneIndex.Reader indexReader) throws IOException {
+    static Entity buildFullEntityInLanguage(Document document, Locale locale, LuceneIndex.Reader indexReader) {
         EntityBuilder builder = new EntityBuilder(indexReader, document.get("@id"), Arrays.asList(document.getValues("@type")));
-        addDatatypePropertiesValues(builder, document, locale, DatatypeProperty.PROPERTIES);
-        for (ObjectProperty property : ObjectProperty.PROPERTIES) {
-            if (property.withMultipleValues()) {
-                builder.setPropertyEntityValuesInLocale(
-                        property.getLabel(),
-                        document.getValues(property.getLabel()),
-                        locale,
-                        property.getDomains()
-                );
-            } else {
-                builder.setPropertyEntityValueInLocale(
-                        property.getLabel(),
-                        document.get(property.getLabel()),
-                        locale,
-                        property.getDomains()
-                );
-            }
-        }
+        addPropertiesValues(builder, document, locale, false);
         return builder.build();
     }
 
-    private static void addDatatypePropertiesValues(EntityBuilder entityBuilder, Document document, Locale locale, List<DatatypeProperty> properties) {
-        for (DatatypeProperty property : properties) {
-            switch (property.getRange()) {
-                case STRING:
-                    if (property.withMultipleValues()) {
-                        entityBuilder.setPropertyValue(
-                                property.getLabel(),
-                                document.getValues(property.getLabel()),
-                                property.getDomains()
-                        );
-                    } else {
-                        entityBuilder.setPropertyValue(
-                                property.getLabel(),
-                                document.get(property.getLabel()),
-                                property.getDomains()
-                        );
-                    }
-                    break;
-                case LANGUAGE_TAGGED_STRING:
-                    if (property.withMultipleValues()) {
-                        entityBuilder.setPropertyValue(
-                                property.getLabel(),
-                                document.getValues(property.getLabel() + "@" + locale.getLanguage()),
-                                property.getDomains()
-                        );
-                    } else {
-                        entityBuilder.setPropertyValue(
-                                property.getLabel(),
-                                document.get(property.getLabel() + "@" + locale.getLanguage()),
-                                property.getDomains()
-                        );
-                    }
-                    break;
-                case CALENDAR:
-                    if (property.withMultipleValues()) {
-                        entityBuilder.setPropertyCalendarValues(
-                                property.getLabel(),
-                                document.getValues(property.getLabel()),
-                                property.getDomains()
-                        );
-                    } else {
-                        entityBuilder.setPropertyCalendarValue(
-                                property.getLabel(),
-                                document.get(property.getLabel()),
-                                property.getDomains()
-                        );
-                    }
-                    break;
-                case ARTICLE:
-                    findWikipediaArticleIRI(document.getValues("sameAs"), locale)
-                            .map(EntityBuilder::buildWikipediaArticle)
-                            .ifPresent(article -> entityBuilder.setPropertyValue(property.getLabel(), article, property.getDomains()));
-                    break;
-                case IMAGE:
-                    findWikipediaArticleIRI(document.getValues("sameAs"), locale)
-                            .flatMap(EntityBuilder::buildWikipediaImage)
-                            .ifPresent(image -> entityBuilder.setPropertyValue(property.getLabel(), image, property.getDomains()));
-                    break;
-            }
+    private static void addPropertiesValues(EntityBuilder entityBuilder, Document document, Locale locale, boolean simpleOnly) {
+        if (!simpleOnly) {
+            findWikipediaArticleIRI(document.getValues("sameAs"), locale)
+                    .map(EntityBuilder::buildWikipediaArticle)
+                    .ifPresent(article -> entityBuilder.setPropertyValue("detailedDescription", article, Stream.of(SCHEMA.getClass("NamedIndividual"))));
+            findWikipediaArticleIRI(document.getValues("sameAs"), locale)
+                    .flatMap(EntityBuilder::buildWikipediaImage)
+                    .ifPresent(image -> entityBuilder.setPropertyValue("image", image, Stream.of(SCHEMA.getClass("NamedIndividual"))));
         }
+
+        SCHEMA.getProperties().forEach(undeterminedProperty -> {
+            if (undeterminedProperty instanceof Schema.DatatypeProperty) {
+                Schema.DatatypeProperty property = (Schema.DatatypeProperty) undeterminedProperty;
+                if (simpleOnly && !SIMPLE_PROPERTIES.contains(property.getShortURI())) {
+                    return;
+                }
+                switch (property.getRange()) {
+                    case STRING:
+                        if (property.isFunctionalProperty()) {
+                            entityBuilder.setPropertyValue(
+                                    property.getShortURI(),
+                                    document.get(property.getShortURI()),
+                                    property.getDomains()
+                            );
+                        } else {
+                            entityBuilder.setPropertyValue(
+                                    property.getShortURI(),
+                                    document.getValues(property.getShortURI()),
+                                    property.getDomains()
+                            );
+                        }
+                        break;
+                    case LANGUAGE_TAGGED_STRING:
+                        if (property.isFunctionalProperty()) {
+                            entityBuilder.setPropertyValue(
+                                    property.getShortURI(),
+                                    document.get(property.getShortURI() + "@" + locale.getLanguage()),
+                                    property.getDomains()
+                            );
+                        } else {
+                            entityBuilder.setPropertyValue(
+                                    property.getShortURI(),
+                                    document.getValues(property.getShortURI() + "@" + locale.getLanguage()),
+                                    property.getDomains()
+                            );
+                        }
+                        break;
+                    case CALENDAR:
+                        if (property.isFunctionalProperty()) {
+                            entityBuilder.setPropertyCalendarValue(
+                                    property.getShortURI(),
+                                    document.get(property.getShortURI()),
+                                    property.getDomains()
+                            );
+                        } else {
+                            entityBuilder.setPropertyCalendarValues(
+                                    property.getShortURI(),
+                                    document.getValues(property.getShortURI()),
+                                    property.getDomains()
+                            );
+                        }
+                        break;
+                }
+            } else if (!simpleOnly && undeterminedProperty instanceof Schema.ObjectProperty) {
+                Schema.ObjectProperty property = (Schema.ObjectProperty) undeterminedProperty;
+                try {
+                    if (property.isFunctionalProperty()) {
+                        entityBuilder.setPropertyEntityValueInLocale(
+                                property.getShortURI(),
+                                document.get(property.getShortURI()),
+                                locale,
+                                property.getDomains()
+                        );
+                    } else {
+                        entityBuilder.setPropertyEntityValuesInLocale(
+                                property.getShortURI(),
+                                document.getValues(property.getShortURI()),
+                                locale,
+                                property.getDomains()
+                        );
+                    }
+                } catch (IOException e) {
+                    LOGGER.warn(e.getMessage(), e);
+                }
+            }
+        });
     }
 
     private static Optional<String> findWikipediaArticleIRI(String[] IRIs, Locale locale) {
@@ -179,25 +191,25 @@ class EntityBuilder {
         return new Entity(IRI, types, propertyValues);
     }
 
-    private <T> void setPropertyValue(String property, T value, List<Class> possibleTypes) {
+    private <T> void setPropertyValue(String property, T value, Stream<Schema.Class> possibleTypes) {
         if (value != null && hasOneType(possibleTypes)) {
             propertyValues.put(property, value);
         }
     }
 
-    private void setPropertyCalendarValue(String property, String value, List<Class> possibleTypes) {
+    private void setPropertyCalendarValue(String property, String value, Stream<Schema.Class> possibleTypes) {
         if (value != null && hasOneType(possibleTypes)) {
             propertyValues.put(property, new CalendarValue(value));
         }
     }
 
-    private void setPropertyCalendarValues(String property, String[] values, List<Class> possibleTypes) {
+    private void setPropertyCalendarValues(String property, String[] values, Stream<Schema.Class> possibleTypes) {
         if (values != null && hasOneType(possibleTypes)) {
             propertyValues.put(property, Arrays.stream(values).map(CalendarValue::new).collect(Collectors.toList()));
         }
     }
 
-    private void setPropertyEntityValueInLocale(String property, String value, Locale locale, List<Class> possibleTypes) throws IOException {
+    private void setPropertyEntityValueInLocale(String property, String value, Locale locale, Stream<Schema.Class> possibleTypes) throws IOException {
         if (value != null && hasOneType(possibleTypes)) {
             indexReader.getDocumentForIRI(value).ifPresent(entity ->
                     propertyValues.put(property, buildSimpleEntityInLanguage(entity, locale, indexReader))
@@ -205,7 +217,7 @@ class EntityBuilder {
         }
     }
 
-    private void setPropertyEntityValuesInLocale(String property, String[] values, Locale locale, List<Class> possibleTypes) throws IOException {
+    private void setPropertyEntityValuesInLocale(String property, String[] values, Locale locale, Stream<Schema.Class> possibleTypes) throws IOException {
         if (values != null && hasOneType(possibleTypes)) {
             List<Entity> entities = new ArrayList<>();
             for (String value : values) {
@@ -217,7 +229,7 @@ class EntityBuilder {
         }
     }
 
-    private boolean hasOneType(List<Class> possibleTypes) {
-        return possibleTypes.contains(Class.THING) || possibleTypes.stream().anyMatch(type -> types.contains(type.getLabel()));
+    private boolean hasOneType(Stream<Schema.Class> possibleTypes) {
+        return possibleTypes.anyMatch(type -> types.contains(type.getShortURI()) || type.getShortURI().equals("Thing"));
     }
 }

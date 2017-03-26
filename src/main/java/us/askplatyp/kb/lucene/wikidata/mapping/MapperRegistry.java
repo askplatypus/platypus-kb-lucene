@@ -59,6 +59,7 @@ public class MapperRegistry {
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P212"), new ISBNStatementMapper());
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P214"), new ExternalIdentifierStatementMapper("http://viaf.org/viaf/$1", "[1-9]\\d(\\d{0,7}|\\d{17,20})"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P229"), new StringStatementMapper("iataCode", "[A-Z0-9]{2}"));
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P230"), new StringStatementMapper("icaoCode", "[A-Z]{3}"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P236"), new ISSNStatementMapper());
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P238"), new StringStatementMapper("iataCode", "[A-Z]{3}"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P239"), new StringStatementMapper("icaoCode", "([A-Z]{2}|[CKY][A-Z0-9])[A-Z0-9]{2}"));

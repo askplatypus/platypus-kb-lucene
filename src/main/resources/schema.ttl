@@ -1,0 +1,186 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix schema: <http://schema.org/> .
+
+
+# classes
+
+rdf:Property a rdfs:Class ;
+    rdfs:label "Property" ;
+    rdfs:comment "A property (for internal use only)" ;
+    rdfs:subClassOf owl:Thing .
+
+owl:NamedIndividual a rdfs:Class ;
+    rdfs:label "NamedIndividual" ;
+    rdfs:comment "An entity described by the knowledge base (i.e. not a property or a class)" ;
+    rdfs:subClassOf owl:Thing .
+
+owl:Thing a rdfs:Class ;
+    rdfs:label "Thing" ;
+    rdfs:comment "Any entity of the knowledge base" .
+
+schema:Airline a rdfs:Class ;
+    rdfs:label "Airline" ;
+    rdfs:comment "An airline company" ;
+    rdfs:subClassOf schema:Organization .
+
+schema:Airport a rdfs:Class ;
+    rdfs:label "Airport" ;
+    rdfs:comment "An airport" ;
+    rdfs:subClassOf schema:Place .
+
+schema:Book a rdfs:Class ;
+    rdfs:label "Book" ;
+    rdfs:comment "A work" ;
+    rdfs:subClassOf schema:CreativeWork .
+
+schema:City a rdfs:Class ;
+    rdfs:label "City" ;
+    rdfs:comment "A city or town" ;
+    rdfs:subClassOf schema:Place .
+
+schema:Country a rdfs:Class ;
+    rdfs:label "Country" ;
+    rdfs:comment "A country (past or present)" ;
+    rdfs:subClassOf schema:Place .
+
+schema:CreativeWork a rdfs:Class ;
+    rdfs:label "CreativeWork" ;
+    rdfs:comment "A work" ;
+    rdfs:subClassOf owl:NamedIndividual .
+
+schema:Organization a rdfs:Class ;
+    rdfs:label "Organization" ;
+    rdfs:comment "An organization" ;
+    rdfs:subClassOf owl:NamedIndividual .
+
+schema:Periodical a rdfs:Class ;
+    rdfs:label "Periodical" ;
+    rdfs:comment "A publication issued in successive parts" ;
+    rdfs:subClassOf schema:CreativeWork .
+
+schema:Person a rdfs:Class ;
+    rdfs:label "Person" ;
+    rdfs:comment "A person (real or fictional)" ;
+    rdfs:subClassOf owl:NamedIndividual .
+
+schema:Place a rdfs:Class ;
+    rdfs:label "Place" ;
+    rdfs:comment "Entities that have a somewhat fixed, physical extension" ;
+    rdfs:subClassOf owl:NamedIndividual .
+
+
+# object properties
+
+schema:author a owl:ObjectProperty ;
+    rdfs:label "author" ;
+    rdfs:comment "Agent that has created this work" ;
+    rdfs:domain schema:CreativeWork ;
+    rdfs:range [ owl:unionOf ( schema:Person schema:Organization ) ] .
+
+schema:birthPlace a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "birthPlace" ;
+    rdfs:comment "Birth place of the person" ;
+    rdfs:domain schema:Person ;
+    rdfs:range schema:Place .
+
+schema:children a owl:ObjectProperty ;
+    rdfs:label "children" ;
+    rdfs:comment "Children of the person" ;
+    rdfs:domain schema:Person ;
+    rdfs:range schema:Person .
+
+schema:deathPlace a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "deathPlace" ;
+    rdfs:comment "Death place of the person" ;
+    rdfs:domain schema:Person ;
+    rdfs:range schema:Place .
+
+schema:nationality a owl:ObjectProperty ;
+    rdfs:label "nationality" ;
+    rdfs:comment "Nationality of the person" ;
+    rdfs:domain schema:Person ;
+    rdfs:range schema:Place .
+
+schema:parent a owl:ObjectProperty ;
+    rdfs:label "parent" ;
+    rdfs:comment "Parents of the person" ;
+    rdfs:domain schema:Person ;
+    rdfs:range schema:Person .
+
+
+# datatype properties
+
+schema:alternateName a owl:DatatypeProperty ;
+    rdfs:label "alternateName" ;
+    rdfs:comment "Alternative names for the entity" ;
+    rdfs:domain owl:Thing ;
+    rdfs:range rdf:langString .
+
+schema:birthDate a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "birthDate" ;
+    rdfs:comment "Birth date of the person" ;
+    rdfs:domain schema:Person ;
+    rdfs:range rdfs:Literal .
+
+schema:deathDate a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "deathDate" ;
+    rdfs:comment "Death date of the person" ;
+    rdfs:domain schema:Person ;
+    rdfs:range rdfs:Literal .
+
+schema:description a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "description" ;
+    rdfs:comment "A description of the entity" ;
+    rdfs:domain owl:Thing ;
+    rdfs:range rdf:langString .
+
+schema:iataCode a owl:DatatypeProperty, owl:FunctionalProperty, owl:InverseFunctionalProperty ;
+    rdfs:label "iataCode" ;
+    rdfs:comment "IATA code of a company, an airport or a city" ;
+    rdfs:domain [ owl:unionOf ( schema:Airline schema:Airport schema:City ) ] ;
+    rdfs:range xsd:string .
+
+schema:icaoCode a owl:DatatypeProperty, owl:FunctionalProperty, owl:InverseFunctionalProperty ;
+    rdfs:label "icaoCode" ;
+    rdfs:comment "ICAO code of an airport of a company" ;
+    rdfs:domain [ owl:unionOf ( schema:Airline schema:Airport ) ] ;
+    rdfs:range xsd:string .
+
+schema:isbn a owl:DatatypeProperty, owl:InverseFunctionalProperty ;
+    rdfs:label "isbn" ;
+    rdfs:comment "The ISBN of a book" ;
+    rdfs:domain schema:Book ;
+    rdfs:range xsd:string .
+
+schema:isni a owl:DatatypeProperty, owl:InverseFunctionalProperty ;
+    rdfs:label "isni" ;
+    rdfs:comment "The International Standard Serial Number (ISSN) that identifies this periodical" ;
+    rdfs:domain schema:Periodical ;
+    rdfs:range xsd:string .
+
+schema:name a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "name" ;
+    rdfs:comment "The entity name" ;
+    rdfs:domain owl:Thing ;
+    rdfs:range rdf:langString .
+
+schema:range a owl:DatatypeProperty, owl:FunctionalProperty ; #TODO: bad
+    rdfs:label "range" ;
+    rdfs:comment "Property range" ;
+    rdfs:domain rdf:Property ;
+    rdfs:range xsd:anyURI .
+
+schema:sameAs a owl:DatatypeProperty ;
+    rdfs:label "sameAs" ;
+    rdfs:comment "URL of the official website of the entity" ;
+    rdfs:domain owl:NamedIndividual ;
+    rdfs:range xsd:anyURI .
+
+schema:url a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "url" ;
+    rdfs:comment "URL of the official website of the entity" ;
+    rdfs:domain owl:NamedIndividual ;
+    rdfs:range xsd:anyURI .

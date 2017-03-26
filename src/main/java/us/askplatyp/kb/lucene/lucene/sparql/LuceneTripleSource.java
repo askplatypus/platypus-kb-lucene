@@ -33,17 +33,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.askplatyp.kb.lucene.Configuration;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
-import us.askplatyp.kb.lucene.model.DatatypeProperty;
 import us.askplatyp.kb.lucene.model.Namespaces;
-import us.askplatyp.kb.lucene.model.ObjectProperty;
+import us.askplatyp.kb.lucene.model.Schema;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -65,6 +61,7 @@ public class LuceneTripleSource implements TripleSource {
         }
     }
 
+    private Schema schema = Schema.getSchema();
     private LuceneIndex index;
 
     public LuceneTripleSource(LuceneIndex index) {
@@ -227,13 +224,16 @@ public class LuceneTripleSource implements TripleSource {
 
     private Stream<String> fieldsFromPropertyIRI(IRI propertyIRI) {
         String name = Namespaces.reduce(propertyIRI.stringValue());
-        for (DatatypeProperty property : DatatypeProperty.PROPERTIES) {
-            if (name.equals(property.getLabel()) && property.getRange() == DatatypeProperty.Datatype.LANGUAGE_TAGGED_STRING) {
+        return schema.getProperty(propertyIRI.stringValue()).map(property -> {
+            if (
+                    property instanceof Schema.DatatypeProperty &&
+                            ((Schema.DatatypeProperty) property).getRange() == Schema.Datatype.LANGUAGE_TAGGED_STRING) {
                 return Arrays.stream(Configuration.SUPPORTED_LOCALES)
                         .map(locale -> name + "@" + locale.getLanguage());
+            } else {
+                return Stream.of(name);
             }
-        }
-        return Stream.of(name);
+        }).orElse(Stream.of(name));
     }
 
     private Stream<Statement> formatField(Resource subject, IndexableField field) {
@@ -251,26 +251,25 @@ public class LuceneTripleSource implements TripleSource {
         if (propertyName.equals("@type")) {
             return Stream.of(VALUE_FACTORY.createIRI(Namespaces.expand(value)));
         }
-        for (ObjectProperty property : ObjectProperty.PROPERTIES) {
-            if (propertyName.equals(property.getLabel())) {
-                return Stream.of(VALUE_FACTORY.createIRI(Namespaces.expand(value)));
-            }
-        }
-        for (DatatypeProperty property : DatatypeProperty.PROPERTIES) {
-            if (propertyName.equals(property.getLabel())) {
-                switch (property.getRange()) {
+        return schema.getProperty(propertyName).flatMap(property -> {
+            if (property instanceof Schema.ObjectProperty) {
+                return Optional.of(VALUE_FACTORY.createIRI(Namespaces.expand(value)));
+            } else if (property instanceof Schema.DatatypeProperty) {
+                switch (((Schema.DatatypeProperty) property).getRange()) {
                     case STRING:
-                        return Stream.of(VALUE_FACTORY.createLiteral(value));
+                        return Optional.of(VALUE_FACTORY.createLiteral(value));
                     case LANGUAGE_TAGGED_STRING:
-                        return Stream.of(VALUE_FACTORY.createLiteral(value, name.split("@")[1]));
+                        return Optional.of(VALUE_FACTORY.createLiteral(value, name.split("@")[1]));
                     case CALENDAR:
-                        return Stream.of(VALUE_FACTORY.createLiteral(DATATYPE_FACTORY.newXMLGregorianCalendar(value)));
+                        return Optional.of(VALUE_FACTORY.createLiteral(DATATYPE_FACTORY.newXMLGregorianCalendar(value)));
                     //TODO: other types
                 }
             }
-        }
-        LOGGER.info("Unsupported field " + name);
-        return Stream.empty();
+            return Optional.empty();
+        }).map(Stream::of).orElseGet(() -> {
+            LOGGER.info("Unsupported field " + name);
+            return Stream.empty();
+        });
     }
 
     private IRI formatPropertyName(String name) {

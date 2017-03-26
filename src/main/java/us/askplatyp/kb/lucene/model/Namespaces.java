@@ -68,9 +68,9 @@ public class Namespaces {
         }
 
         String prefix = qualifiedName.substring(0, namespaceEnd);
-        try {
+        if (NAMESPACES.containsKey(prefix)) {
             return NAMESPACES.get(prefix) + qualifiedName.substring(namespaceEnd + 1);
-        } catch (NullPointerException e) {
+        } else {
             return qualifiedName;
         }
     }
