@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -105,7 +105,7 @@ public class LuceneSearcher {
 
     private Query buildFuzzyQueryForTerm(Locale locale, String label, int fuziness) throws ApiException {
         String name = "label@" + locale.getLanguage(); //TODO: variants
-        Term term = new Term(name, label);
+        Term term = new Term(name, label.toLowerCase(locale));
         if (fuziness == 0) {
             return new TermQuery(term);
         } else {

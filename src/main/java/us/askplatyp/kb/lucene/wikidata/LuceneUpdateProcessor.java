@@ -98,16 +98,16 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
 
     private void addTermsToDocument(TermedDocument termedDocument, Document document) {
         termedDocument.getLabels().values().forEach(label -> {
-            document.add(toField("label", label, Field.Store.NO));
-            document.add(toField("name", label, Field.Store.YES));
+            document.add(toLabelField(label));
+            document.add(toField("name", label));
         });
         termedDocument.getDescriptions().values().forEach(description ->
-                document.add(toField("description", description, Field.Store.YES))
+                document.add(toField("description", description))
         );
         termedDocument.getAliases().values().forEach(aliases ->
                 aliases.forEach(alias -> {
-                    document.add(toField("label", alias, Field.Store.NO));
-                    document.add(toField("alternateName", alias, Field.Store.YES));
+                    document.add(toLabelField(alias));
+                    document.add(toField("alternateName", alias));
                 })
         );
     }
@@ -158,11 +158,20 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
         }
     }
 
-    private StringField toField(String name, MonolingualTextValue value, Field.Store store) {
+    private StringField toField(String name, MonolingualTextValue value) {
         return new StringField(
                 name + "@" + WikimediaLanguageCodes.getLanguageCode(value.getLanguageCode()),
                 value.getText(),
-                store
+                Field.Store.YES
+        );
+    }
+
+    private StringField toLabelField(MonolingualTextValue value) {
+        Locale locale = Locale.forLanguageTag(WikimediaLanguageCodes.getLanguageCode(value.getLanguageCode()));
+        return new StringField(
+                "label@" + locale.getLanguage(), //TODO: variants
+                value.getText().toLowerCase(locale),
+                Field.Store.NO
         );
     }
 

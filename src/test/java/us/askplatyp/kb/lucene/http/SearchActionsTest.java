@@ -75,6 +75,16 @@ public class SearchActionsTest extends JerseyTest {
     }
 
     @Test
+    public void testKeywordSearchFuzzyAndCaseInsensitive() {
+        JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
+                target("/api/v1/search/simple").queryParam("q", "fooo barr").request().get(RESULT_TYPE);
+        Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
+        assertElementCount(result.getContent(), 2);
+        assertEnglishIndividual(result.getContent().getElements().get(0).getResult());
+        assertEnglishSmallFoo(result.getContent().getElements().get(1).getResult());
+    }
+
+    @Test
     public void testKeywordAndTypeSearch() {
         JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
                 target("/api/v1/search/simple").queryParam("q", "Foo Bar").queryParam("type", "Person").request().get(RESULT_TYPE);
