@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,6 +53,7 @@ class ActionUtils {
             return Response.ok(serialize(resultBuilder.buildResult(bestResponseVariant.getLanguage())), bestResponseVariant)
                     .build();
         } catch (ApiException e) {
+            LOGGER.warn(e.getMessage(), e);
             return resultForApiException(e, bestResponseVariant);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
