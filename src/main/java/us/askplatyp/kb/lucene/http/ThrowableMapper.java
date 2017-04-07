@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,10 +17,11 @@
 
 package us.askplatyp.kb.lucene.http;
 
-import javax.ws.rs.WebApplicationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Variant;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import java.util.Locale;
@@ -29,17 +30,18 @@ import java.util.Locale;
  * @author Thomas Pellissier Tanon
  */
 @Provider
-public class EnhancedExceptionMapper implements ExceptionMapper<WebApplicationException> {
+public class ThrowableMapper implements ExceptionMapper<Throwable> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ThrowableMapper.class);
 
     @Override
-    public Response toResponse(WebApplicationException exception) {
-        Response response = exception.getResponse();
-        if (response.hasEntity()) {
-            return response;
-        }
-        return Response.fromResponse(response)
-                .entity(exception.getMessage())
-                .variant(new Variant(MediaType.TEXT_PLAIN_TYPE, Locale.ENGLISH, null))
+    public Response toResponse(Throwable throwable) {
+        LOGGER.warn(throwable.getMessage(), throwable);
+
+        return Response.serverError()
+                .entity(throwable.getMessage())
+                .type(MediaType.TEXT_PLAIN_TYPE)
+                .language(Locale.ENGLISH)
                 .build();
     }
 }
