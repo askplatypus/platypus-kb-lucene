@@ -29,6 +29,8 @@ import us.askplatyp.kb.lucene.wikidata.FakeWikidataLuceneIndexFactory;
 
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Locale;
@@ -88,6 +90,18 @@ public class EntityActionsTest extends JerseyTest {
                 target("/api/v1/entity/wdt:P42").request().get(RESULT_TYPE);
         Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
         assertEnglishProperty(result.getContent());
+    }
+
+    @Test
+    public void test404() {
+        Response response = target("/api/v1/entity/wd:Q00").request().get();
+        Assert.assertEquals(404, response.getStatus());
+    }
+
+    @Test
+    public void testUnsupportedContentType() {
+        Response response = target("/api/v1/entity/wdt:Q00").request(MediaType.APPLICATION_XML_TYPE).get();
+        Assert.assertEquals(406, response.getStatus());
     }
 
     private void assertEnglishIndividual(Entity result) {

@@ -36,6 +36,7 @@ import us.askplatyp.kb.lucene.wikidata.FakeWikidataLuceneIndexFactory;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -166,5 +167,13 @@ public class SPARQLActionsTest extends JerseyTest {
         parser.setQueryResultHandler(collector);
         parser.parseQueryResult(result);
         return collector.getBindingSets();
+    }
+
+    @Test
+    public void testBadRequest() {
+        Response response = target("/api/v1/sparql")
+                .request(MediaType.APPLICATION_JSON_TYPE)
+                .post(Entity.entity("foo", "application/sparql-query"));
+        Assert.assertEquals(400, response.getStatus());
     }
 }

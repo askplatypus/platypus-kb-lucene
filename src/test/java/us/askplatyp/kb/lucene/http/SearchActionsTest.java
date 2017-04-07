@@ -31,6 +31,8 @@ import us.askplatyp.kb.lucene.wikidata.FakeWikidataLuceneIndexFactory;
 
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Locale;
@@ -146,6 +148,20 @@ public class SearchActionsTest extends JerseyTest {
         Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
         assertElementCount(result.getContent(), 1);
         assertEnglishProperty(result.getContent().getElements().get(0).getResult());
+    }
+
+    @Test
+    public void testSearchWithoutResults() {
+        JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
+                target("/api/v1/search/simple").queryParam("q", "TitiToto").request().get(RESULT_TYPE);
+        Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
+        assertElementCount(result.getContent(), 0);
+    }
+
+    @Test
+    public void testUnsupportedContentType() {
+        Response response = target("/api/v1/search/simple").queryParam("q", "Foo Bar").request(MediaType.APPLICATION_XML_TYPE).get();
+        Assert.assertEquals(406, response.getStatus());
     }
 
     private <T> void assertElementCount(Collection<T> collection, int count) {
