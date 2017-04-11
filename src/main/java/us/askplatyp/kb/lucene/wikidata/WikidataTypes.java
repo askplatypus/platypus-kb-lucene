@@ -101,7 +101,7 @@ public class WikidataTypes {
         XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_ITEM, Collections.singletonList("NamedIndividual"));
         XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_PROPERTY, Collections.singletonList("Property"));
         XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_STRING, Collections.singletonList("xsd:string"));
-        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_URL, Collections.singletonList("xsd:string"));
+        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_URL, Collections.singletonList("xsd:anyURI"));
         XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_COMMONS_MEDIA, Collections.singletonList("xsd:string"));
         XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_TIME, Collections.singletonList("xsd:dateTime"));
         XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_GLOBE_COORDINATES, Collections.singletonList("geo:wktLiteral"));
