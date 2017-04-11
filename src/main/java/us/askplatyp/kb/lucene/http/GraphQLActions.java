@@ -97,15 +97,15 @@ public class GraphQLActions {
             );
             if (result.getErrors() != null) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(ActionUtils.serialize(result))
+                        .entity(result)
                         .type(MediaType.APPLICATION_JSON).build();
             } else {
-                return Response.ok(ActionUtils.serialize(result), MediaType.APPLICATION_JSON).build();
+                return Response.ok(result, MediaType.APPLICATION_JSON).build();
             }
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             return Response.serverError()
-                    .entity(ActionUtils.serialize(new GraphQLResult(e)))
+                    .entity(new GraphQLResult(e))
                     .type(MediaType.APPLICATION_JSON).build();
         }
     }
