@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import us.askplatyp.kb.lucene.Configuration;
 import us.askplatyp.kb.lucene.model.ApiException;
 
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
@@ -53,7 +54,6 @@ class ActionUtils {
             return Response.ok(serialize(resultBuilder.buildResult(bestResponseVariant.getLanguage())), bestResponseVariant)
                     .build();
         } catch (ApiException e) {
-            LOGGER.warn(e.getMessage(), e);
             return resultForApiException(e, bestResponseVariant);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -65,7 +65,7 @@ class ActionUtils {
         return Response
                 .status(e.getStatus())
                 .variant(variant)
-                .entity(e)
+                .entity(serialize(e))
                 .build();
     }
 
@@ -73,8 +73,7 @@ class ActionUtils {
         try {
             return OBJECT_MAPPER.writeValueAsString(model);
         } catch (JsonProcessingException e) {
-            LOGGER.error(e.getMessage(), e);
-            return "Result serialization failed";
+            throw new InternalServerErrorException("Result serialization failed", e);
         }
     }
 

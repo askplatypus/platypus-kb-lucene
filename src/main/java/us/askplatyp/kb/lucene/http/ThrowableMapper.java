@@ -36,7 +36,7 @@ public class ThrowableMapper implements ExceptionMapper<Throwable> {
 
     @Override
     public Response toResponse(Throwable throwable) {
-        LOGGER.warn(throwable.getMessage(), throwable);
+        LOGGER.error(throwable.getMessage(), throwable);
 
         return Response.serverError()
                 .entity(throwable.getMessage())
