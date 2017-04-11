@@ -28,10 +28,10 @@
     <properties>
         <jdkVersion>1.8</jdkVersion>
         <commonsValidatorVersion>1.6</commonsValidatorVersion>
-        <graphqlVersion>2.3.0</graphqlVersion>
+        <graphqlVersion>2.4.0</graphqlVersion>
         <jerseyVersion>2.25.1</jerseyVersion>
         <junitVersion>4.12</junitVersion>
-        <luceneVersion>6.4.2</luceneVersion>
+        <luceneVersion>6.5.0</luceneVersion>
         <rdf4jVersion>2.2</rdf4jVersion>
         <servletVersion>3.1.0</servletVersion>
         <swaggerVersion>1.5.13</swaggerVersion>

@@ -112,7 +112,7 @@ public class GraphQLActions {
 
     private GraphQL getGraphQL() {
         if (graphQL == null) {
-            graphQL = new GraphQL(new GraphQLSchemaBuilder(new DataFetcherBuilder(index)).schema());
+            graphQL = GraphQL.newGraphQL(new GraphQLSchemaBuilder(new DataFetcherBuilder(index)).schema()).build();
         }
         return graphQL;
     }
