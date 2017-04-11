@@ -69,7 +69,7 @@ class ActionUtils {
                 .build();
     }
 
-    private static String serialize(Object model) {
+    static String serialize(Object model) {
         try {
             return OBJECT_MAPPER.writeValueAsString(model);
         } catch (JsonProcessingException e) {

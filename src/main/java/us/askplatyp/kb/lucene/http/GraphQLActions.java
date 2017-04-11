@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -96,15 +96,17 @@ public class GraphQLActions {
                     getGraphQL().execute(request.getQuery(), request.getOperationName(), null, request.getVariables())
             );
             if (result.getErrors() != null) {
-                return Response.ok(result, MediaType.APPLICATION_JSON)
-                        .status(Response.Status.BAD_REQUEST).build();
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(ActionUtils.serialize(result))
+                        .type(MediaType.APPLICATION_JSON).build();
             } else {
-                return Response.ok(result, MediaType.APPLICATION_JSON).build();
+                return Response.ok(ActionUtils.serialize(result), MediaType.APPLICATION_JSON).build();
             }
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
-            return Response.ok(new GraphQLResult(e), MediaType.APPLICATION_JSON)
-                    .status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            return Response.serverError()
+                    .entity(ActionUtils.serialize(new GraphQLResult(e)))
+                    .type(MediaType.APPLICATION_JSON).build();
         }
     }
 
