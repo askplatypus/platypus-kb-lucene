@@ -69,15 +69,19 @@ public class Schema {
 
     public static Schema getSchema() {
         if (SCHEMA == null) {
-            RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE);
-            Model model = new LinkedHashModel();
-            rdfParser.setRDFHandler(new StatementCollector(model));
-            try (InputStream inputStream = Schema.class.getResourceAsStream("/schema.ttl")) {
-                rdfParser.parse(inputStream, "http://schema.org/");
-            } catch (IOException e) {
-                LOGGER.warn(e.getMessage(), e);
+            try {
+                RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE);
+                Model model = new LinkedHashModel();
+                rdfParser.setRDFHandler(new StatementCollector(model));
+                try (InputStream inputStream = Schema.class.getResourceAsStream("/schema.ttl")) {
+                    rdfParser.parse(inputStream, "http://schema.org/");
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage(), e);
+                }
+                SCHEMA = new Schema(model);
+            } catch (Exception e) {
+                LOGGER.error(e.getMessage(), e);
             }
-            SCHEMA = new Schema(model);
         }
         return SCHEMA;
     }
