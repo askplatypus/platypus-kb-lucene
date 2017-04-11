@@ -66,6 +66,7 @@ public class MapperRegistry {
         //TODO: P249 tickerSymbol have ISO15022 compliant code
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P275"), new ItemIdStatementMapper("license"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P276"), new ItemIdStatementMapper("location"));
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P361"), new ItemIdStatementMapper("isPartOf"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P433"), new StringStatementMapper("issueNumber"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P434"), new ExternalIdentifierStatementMapper("http://musicbrainz.org/artist/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P435"), new ExternalIdentifierStatementMapper("http://musicbrainz.org/work/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
@@ -75,6 +76,7 @@ public class MapperRegistry {
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P478"), new StringStatementMapper("volumeNumber"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P483"), new ItemIdStatementMapper("recordedAt"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P495"), new ItemIdStatementMapper("countryOfOrigin"));
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P527"), new ItemIdStatementMapper("hasPart"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P551"), new ItemIdStatementMapper("homeLocation"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P569"), new TimeStatementMapper("birthDate"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P570"), new TimeStatementMapper("deathDate"));
