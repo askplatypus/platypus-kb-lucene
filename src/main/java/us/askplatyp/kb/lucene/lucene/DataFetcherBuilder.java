@@ -22,9 +22,9 @@ import org.apache.lucene.document.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.interfaces.WikimediaLanguageCodes;
-import us.askplatyp.kb.lucene.model.Article;
-import us.askplatyp.kb.lucene.model.Image;
 import us.askplatyp.kb.lucene.model.Namespaces;
+import us.askplatyp.kb.lucene.model.value.Article;
+import us.askplatyp.kb.lucene.model.value.Image;
 import us.askplatyp.kb.lucene.wikimedia.rest.WikimediaREST;
 import us.askplatyp.kb.lucene.wikimedia.rest.model.Summary;
 
@@ -118,7 +118,7 @@ public class DataFetcherBuilder {
         return environment -> {
             Locale locale = environment.getArgument("language");
             String value = ((Document) environment.getSource()).get(property + "@" + locale.getLanguage());
-            return (value == null) ? null : value;
+            return value;
         };
     }
 

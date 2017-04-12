@@ -82,6 +82,7 @@ public class MapperRegistry {
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P570"), new TimeStatementMapper("deathDate"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P571"), new TimeStatementMapper("dateCreated"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P577"), new TimeStatementMapper("datePublished"));
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P625"), new GlobeCoordinatesStatementMapper("geo"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P646"), new ExternalIdentifierStatementMapper("http://g.co/kg$1", "(/m/0[0-9a-z_]{2,6}|/m/01[0123][0-9a-z_]{5})"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P655"), new ItemIdStatementMapper("translator"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P674"), new ItemIdStatementMapper("character"));

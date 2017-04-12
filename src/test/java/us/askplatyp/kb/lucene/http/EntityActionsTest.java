@@ -85,6 +85,23 @@ public class EntityActionsTest extends JerseyTest {
     }
 
     @Test
+    public void testPlaceShape() {
+        JsonLdRoot<Entity> result =
+                target("/api/v1/entity/wd:Q90").request().get(RESULT_TYPE);
+        Assert.assertNotNull(result.getContent().getPropertyValue("geo"));
+        Map geoValue = (Map) result.getContent().getPropertyValue("geo");
+        Assert.assertEquals(geoValue.get("@type"), "GeoShape");
+    }
+
+    @Test
+    public void testPlaceCoordinates() {
+        JsonLdRoot<Entity> result =
+                target("/api/v1/entity/wd:Q91").request().get(RESULT_TYPE);
+        Map geoValue = (Map) result.getContent().getPropertyValue("geo");
+        Assert.assertEquals(geoValue.get("@type"), "GeoCoordinates");
+    }
+
+    @Test
     public void testProperty() {
         JsonLdRoot<Entity> result =
                 target("/api/v1/entity/wdt:P42").request().get(RESULT_TYPE);

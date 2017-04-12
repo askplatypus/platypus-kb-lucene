@@ -226,6 +226,80 @@
     "sitelinks": []
   },
   {
+    "lastrevid": 12,
+    "type": "item",
+    "id": "Q90",
+    "labels": {
+      "fr": {
+        "language": "fr",
+        "value": "Paris"
+      }
+    },
+    "descriptions": [],
+    "aliases": {},
+    "claims": {
+      "P625": [
+        {
+          "mainsnak": {
+            "snaktype": "value",
+            "property": "P625",
+            "datavalue": {
+              "value": {
+                "latitude": 48.856577777778,
+                "longitude": 2.3518277777778,
+                "precision": 2.7777777777778e-6,
+                "globe": "http://www.wikidata.org/entity/Q2"
+              },
+              "type": "globecoordinate"
+            },
+            "datatype": "globe-coordinate"
+          },
+          "type": "statement",
+          "id": "q90$CC8612EE-CB95-4E57-9AA0-2AFA95A214E6",
+          "rank": "normal"
+        }
+      ]
+    },
+    "sitelinks": []
+  },
+  {
+    "lastrevid": 12,
+    "type": "item",
+    "id": "Q91",
+    "labels": {
+      "fr": {
+        "language": "fr",
+        "value": "Foo"
+      }
+    },
+    "descriptions": [],
+    "aliases": {},
+    "claims": {
+      "P625": [
+        {
+          "mainsnak": {
+            "snaktype": "value",
+            "property": "P625",
+            "datavalue": {
+              "value": {
+                "latitude": 48.856577777778,
+                "longitude": 2.3518277777778,
+                "precision": 2.7777777777778e-6,
+                "globe": "http://www.wikidata.org/entity/Q2"
+              },
+              "type": "globecoordinate"
+            },
+            "datatype": "globe-coordinate"
+          },
+          "type": "statement",
+          "id": "q90$CC8612EE-CB95-4E57-9AA0-2AFA95A214E6",
+          "rank": "normal"
+        }
+      ]
+    },
+    "sitelinks": []
+  },
+  {
     "lastrevid": 24,
     "type": "property",
     "id": "P42",

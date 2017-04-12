@@ -22,7 +22,11 @@ import org.apache.lucene.document.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.interfaces.WikimediaLanguageCodes;
-import us.askplatyp.kb.lucene.model.*;
+import us.askplatyp.kb.lucene.model.Entity;
+import us.askplatyp.kb.lucene.model.Namespaces;
+import us.askplatyp.kb.lucene.model.Schema;
+import us.askplatyp.kb.lucene.model.value.*;
+import us.askplatyp.kb.lucene.wikimedia.rest.KartographerAPI;
 import us.askplatyp.kb.lucene.wikimedia.rest.WikimediaREST;
 import us.askplatyp.kb.lucene.wikimedia.rest.model.Summary;
 
@@ -71,6 +75,8 @@ class EntityBuilder {
             findWikipediaArticleIRI(document.getValues("sameAs"), locale)
                     .flatMap(EntityBuilder::buildWikipediaImage)
                     .ifPresent(image -> entityBuilder.setPropertyValue("image", image, Stream.of(SCHEMA.getClass("NamedIndividual"))));
+            buildGeoValue(document)
+                    .ifPresent(geoValue -> entityBuilder.setPropertyValue("geo", geoValue, Stream.of(SCHEMA.getClass("NamedIndividual"))));
         }
 
         SCHEMA.getProperties().forEach(undeterminedProperty -> {
@@ -158,6 +164,21 @@ class EntityBuilder {
             }
         }
         return Optional.empty();
+    }
+
+    private static Optional<Object> buildGeoValue(Document document) {
+        try {
+            Optional<Object> shape = KartographerAPI.getInstance()
+                    .getShapeForItemId(Namespaces.expand(document.get("@id")))
+                    .map(GeoShapeValue::new);
+            if (shape.isPresent()) {
+                return shape;
+            }
+            return Optional.ofNullable(document.get("geo")).map(GeoCoordinatesValue::new);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+            return Optional.empty();
+        }
     }
 
     private static Article buildWikipediaArticle(String articleIRI) {

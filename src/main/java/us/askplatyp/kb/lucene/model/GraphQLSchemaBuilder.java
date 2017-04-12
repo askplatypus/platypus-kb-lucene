@@ -22,6 +22,8 @@ import graphql.language.StringValue;
 import graphql.relay.Relay;
 import graphql.schema.*;
 import us.askplatyp.kb.lucene.lucene.DataFetcherBuilder;
+import us.askplatyp.kb.lucene.model.value.Article;
+import us.askplatyp.kb.lucene.model.value.Image;
 
 import java.util.ArrayList;
 import java.util.Collections;

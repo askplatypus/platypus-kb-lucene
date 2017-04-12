@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@ public class Context {
         BASIC_CONTEXT.put("Class", "owl:Class");
         BASIC_CONTEXT.put("DatatypeProperty", "owl:DatatypeProperty");
         BASIC_CONTEXT.put("contentUrl", ID_CONTEXT);
+        BASIC_CONTEXT.put("geo:asWKT", Collections.singletonMap("@type", "geo:wktLiteral"));
         BASIC_CONTEXT.put("hydra:first", ID_CONTEXT);
         BASIC_CONTEXT.put("inLanguage", Collections.singletonMap("@type", "xsd:language"));
         BASIC_CONTEXT.put("license", ID_CONTEXT);
