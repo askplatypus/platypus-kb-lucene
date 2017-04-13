@@ -33,7 +33,6 @@ import us.askplatyp.kb.lucene.wikimedia.rest.model.Summary;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
@@ -71,12 +70,12 @@ class EntityBuilder {
         if (!simpleOnly) {
             findWikipediaArticleIRI(document.getValues("sameAs"), locale)
                     .map(EntityBuilder::buildWikipediaArticle)
-                    .ifPresent(article -> entityBuilder.setPropertyValue("detailedDescription", article, Stream.of(SCHEMA.getClass("NamedIndividual"))));
+                    .ifPresent(article -> entityBuilder.setPropertyValue("detailedDescription", article));
             findWikipediaArticleIRI(document.getValues("sameAs"), locale)
                     .flatMap(EntityBuilder::buildWikipediaImage)
-                    .ifPresent(image -> entityBuilder.setPropertyValue("image", image, Stream.of(SCHEMA.getClass("NamedIndividual"))));
+                    .ifPresent(image -> entityBuilder.setPropertyValue("image", image));
             buildGeoValue(document)
-                    .ifPresent(geoValue -> entityBuilder.setPropertyValue("geo", geoValue, Stream.of(SCHEMA.getClass("NamedIndividual"))));
+                    .ifPresent(geoValue -> entityBuilder.setPropertyValue("geo", geoValue));
         }
 
         SCHEMA.getProperties().forEach(undeterminedProperty -> {
@@ -90,14 +89,12 @@ class EntityBuilder {
                         if (property.isFunctionalProperty()) {
                             entityBuilder.setPropertyValue(
                                     property.getShortURI(),
-                                    document.get(property.getShortURI()),
-                                    property.getDomains()
+                                    document.get(property.getShortURI())
                             );
                         } else {
                             entityBuilder.setPropertyValue(
                                     property.getShortURI(),
-                                    document.getValues(property.getShortURI()),
-                                    property.getDomains()
+                                    document.getValues(property.getShortURI())
                             );
                         }
                         break;
@@ -105,14 +102,12 @@ class EntityBuilder {
                         if (property.isFunctionalProperty()) {
                             entityBuilder.setPropertyValue(
                                     property.getShortURI(),
-                                    document.get(property.getShortURI() + "@" + locale.getLanguage()),
-                                    property.getDomains()
+                                    document.get(property.getShortURI() + "@" + locale.getLanguage())
                             );
                         } else {
                             entityBuilder.setPropertyValue(
                                     property.getShortURI(),
-                                    document.getValues(property.getShortURI() + "@" + locale.getLanguage()),
-                                    property.getDomains()
+                                    document.getValues(property.getShortURI() + "@" + locale.getLanguage())
                             );
                         }
                         break;
@@ -120,14 +115,12 @@ class EntityBuilder {
                         if (property.isFunctionalProperty()) {
                             entityBuilder.setPropertyCalendarValue(
                                     property.getShortURI(),
-                                    document.get(property.getShortURI()),
-                                    property.getDomains()
+                                    document.get(property.getShortURI())
                             );
                         } else {
                             entityBuilder.setPropertyCalendarValues(
                                     property.getShortURI(),
-                                    document.getValues(property.getShortURI()),
-                                    property.getDomains()
+                                    document.getValues(property.getShortURI())
                             );
                         }
                         break;
@@ -139,15 +132,13 @@ class EntityBuilder {
                         entityBuilder.setPropertyEntityValueInLocale(
                                 property.getShortURI(),
                                 document.get(property.getShortURI()),
-                                locale,
-                                property.getDomains()
+                                locale
                         );
                     } else {
                         entityBuilder.setPropertyEntityValuesInLocale(
                                 property.getShortURI(),
                                 document.getValues(property.getShortURI()),
-                                locale,
-                                property.getDomains()
+                                locale
                         );
                     }
                 } catch (IOException e) {
@@ -212,34 +203,34 @@ class EntityBuilder {
         return new Entity(IRI, types, propertyValues);
     }
 
-    private <T> void setPropertyValue(String property, T value, Stream<Schema.Class> possibleTypes) {
-        if (value != null && hasOneType(possibleTypes)) {
+    private <T> void setPropertyValue(String property, T value) {
+        if (value != null) {
             propertyValues.put(property, value);
         }
     }
 
-    private void setPropertyCalendarValue(String property, String value, Stream<Schema.Class> possibleTypes) {
-        if (value != null && hasOneType(possibleTypes)) {
+    private void setPropertyCalendarValue(String property, String value) {
+        if (value != null) {
             propertyValues.put(property, new CalendarValue(value));
         }
     }
 
-    private void setPropertyCalendarValues(String property, String[] values, Stream<Schema.Class> possibleTypes) {
-        if (values != null && hasOneType(possibleTypes)) {
+    private void setPropertyCalendarValues(String property, String[] values) {
+        if (values != null) {
             propertyValues.put(property, Arrays.stream(values).map(CalendarValue::new).collect(Collectors.toList()));
         }
     }
 
-    private void setPropertyEntityValueInLocale(String property, String value, Locale locale, Stream<Schema.Class> possibleTypes) throws IOException {
-        if (value != null && hasOneType(possibleTypes)) {
+    private void setPropertyEntityValueInLocale(String property, String value, Locale locale) throws IOException {
+        if (value != null) {
             indexReader.getDocumentForIRI(value).ifPresent(entity ->
                     propertyValues.put(property, buildSimpleEntityInLanguage(entity, locale, indexReader))
             );
         }
     }
 
-    private void setPropertyEntityValuesInLocale(String property, String[] values, Locale locale, Stream<Schema.Class> possibleTypes) throws IOException {
-        if (values != null && hasOneType(possibleTypes)) {
+    private void setPropertyEntityValuesInLocale(String property, String[] values, Locale locale) throws IOException {
+        if (values != null) {
             List<Entity> entities = new ArrayList<>();
             for (String value : values) {
                 indexReader.getDocumentForIRI(value).ifPresent(entity ->
@@ -248,9 +239,5 @@ class EntityBuilder {
             }
             propertyValues.put(property, entities);
         }
-    }
-
-    private boolean hasOneType(Stream<Schema.Class> possibleTypes) {
-        return possibleTypes.anyMatch(type -> types.contains(type.getShortURI()) || type.getShortURI().equals("Thing"));
     }
 }
