@@ -59,7 +59,7 @@ public class SearchActionsTest extends JerseyTest {
         JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
                 target("/api/v1/search/simple").request().get(RESULT_TYPE);
         Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
-        assertElementCount(result.getContent(), 3);
+        assertElementCount(result.getContent(), 5);
         assertEnglishIndividual(result.getContent().getElements().get(0).getResult());
         assertEnglishSmallFoo(result.getContent().getElements().get(1).getResult());
         assertEnglishDummy(result.getContent().getElements().get(2).getResult());
@@ -235,6 +235,6 @@ public class SearchActionsTest extends JerseyTest {
         Assert.assertEquals(Arrays.asList("Property", "DatatypeProperty"), result.getTypes());
         Assert.assertEquals("xsd:string", result.getPropertyValue("range"));
         Assert.assertNull(result.getPropertyValue("url"));
-        Assert.assertNull(result.getPropertyValue("sameAs"));
+        Assert.assertEquals(Collections.emptyList(), result.getPropertyValue("sameAs"));
     }
 }
