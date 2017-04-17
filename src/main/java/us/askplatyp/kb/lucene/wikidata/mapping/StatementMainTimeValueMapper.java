@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ import org.apache.lucene.document.Field;
 import org.wikidata.wdtk.datamodel.interfaces.TimeValue;
 import org.wikidata.wdtk.datamodel.interfaces.Value;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
@@ -29,12 +29,12 @@ import java.util.List;
 interface StatementMainTimeValueMapper extends StatementMainValueMapper {
 
     @Override
-    default List<Field> mapMainValue(Value value) throws InvalidWikibaseValueException {
+    default Stream<Field> mapMainValue(Value value) throws InvalidWikibaseValueException {
         if (!(value instanceof TimeValue)) {
             throw new InvalidWikibaseValueException(value + " should be a TimeValue");
         }
         return mapMainTimeValue((TimeValue) value);
     }
 
-    List<Field> mapMainTimeValue(TimeValue value) throws InvalidWikibaseValueException;
+    Stream<Field> mapMainTimeValue(TimeValue value) throws InvalidWikibaseValueException;
 }

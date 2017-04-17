@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,8 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.wikidata.wdtk.datamodel.interfaces.StringValue;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
@@ -38,11 +37,11 @@ class ExternalIdentifierStatementMapper implements StatementMainStringValueMappe
     }
 
     @Override
-    public List<Field> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
+    public Stream<Field> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
         if (!pattern.matcher(value.getString()).matches()) {
             throw new InvalidWikibaseValueException(value + " is not a valid identifier. It does not matches the pattern " + pattern);
         }
-        return Collections.singletonList(new StringField("sameAs", URITemplate.replace("$1", value.getString()), Field.Store.YES));
+        return Stream.of(new StringField("sameAs", URITemplate.replace("$1", value.getString()), Field.Store.YES));
     }
 }
 

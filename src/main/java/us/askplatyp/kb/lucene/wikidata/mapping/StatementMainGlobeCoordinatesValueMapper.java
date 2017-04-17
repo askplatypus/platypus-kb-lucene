@@ -21,7 +21,7 @@ import org.apache.lucene.document.Field;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
 import org.wikidata.wdtk.datamodel.interfaces.Value;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
@@ -29,12 +29,12 @@ import java.util.List;
 interface StatementMainGlobeCoordinatesValueMapper extends StatementMainValueMapper {
 
     @Override
-    default List<Field> mapMainValue(Value value) throws InvalidWikibaseValueException {
+    default Stream<Field> mapMainValue(Value value) throws InvalidWikibaseValueException {
         if (!(value instanceof GlobeCoordinatesValue)) {
             throw new InvalidWikibaseValueException(value + " should be a GlobeCoordinatesValue");
         }
         return mapMainGlobeCoordinatesValue((GlobeCoordinatesValue) value);
     }
 
-    List<Field> mapMainGlobeCoordinatesValue(GlobeCoordinatesValue value) throws InvalidWikibaseValueException;
+    Stream<Field> mapMainGlobeCoordinatesValue(GlobeCoordinatesValue value) throws InvalidWikibaseValueException;
 }

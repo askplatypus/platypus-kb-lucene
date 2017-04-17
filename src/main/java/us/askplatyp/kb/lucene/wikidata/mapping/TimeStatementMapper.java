@@ -26,8 +26,7 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigInteger;
-import java.util.Collections;
-import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
@@ -51,8 +50,8 @@ class TimeStatementMapper implements StatementMainTimeValueMapper {
     }
 
     @Override
-    public List<Field> mapMainTimeValue(TimeValue value) throws InvalidWikibaseValueException {
-        return Collections.singletonList(new StringField(targetFieldName, convertTimeValue(value).toXMLFormat(), Field.Store.YES));
+    public Stream<Field> mapMainTimeValue(TimeValue value) throws InvalidWikibaseValueException {
+        return Stream.of(new StringField(targetFieldName, convertTimeValue(value).toXMLFormat(), Field.Store.YES));
     }
 
     private XMLGregorianCalendar convertTimeValue(TimeValue value) throws InvalidWikibaseValueException {

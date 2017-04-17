@@ -22,8 +22,7 @@ import org.apache.lucene.document.StringField;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
 import us.askplatyp.kb.lucene.model.value.GeoCoordinatesValue;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
@@ -37,12 +36,12 @@ class GlobeCoordinatesStatementMapper implements StatementMainGlobeCoordinatesVa
     }
 
     @Override
-    public List<Field> mapMainGlobeCoordinatesValue(GlobeCoordinatesValue value) throws InvalidWikibaseValueException {
+    public Stream<Field> mapMainGlobeCoordinatesValue(GlobeCoordinatesValue value) throws InvalidWikibaseValueException {
         if (!value.getGlobe().equals(GlobeCoordinatesValue.GLOBE_EARTH)) {
-            return Collections.emptyList(); //TODO: support other globes
+            return Stream.empty(); //TODO: support other globes
         }
 
-        return Collections.singletonList(
+        return Stream.of(
                 new StringField(targetFieldName, valueToWKT(value), Field.Store.YES)
         );
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,11 +20,11 @@ package us.askplatyp.kb.lucene.wikidata.mapping;
 import org.apache.lucene.document.Field;
 import org.wikidata.wdtk.datamodel.interfaces.Statement;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
  */
 public interface StatementMapper {
-    List<Field> mapStatement(Statement statement) throws InvalidWikibaseValueException;
+    Stream<Field> mapStatement(Statement statement) throws InvalidWikibaseValueException;
 }

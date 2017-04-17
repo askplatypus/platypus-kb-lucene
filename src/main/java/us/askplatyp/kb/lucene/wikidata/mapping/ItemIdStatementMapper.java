@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,7 @@ import org.apache.lucene.document.StringField;
 import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
 import us.askplatyp.kb.lucene.model.Namespaces;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
@@ -37,7 +36,7 @@ class ItemIdStatementMapper implements StatementMainItemIdValueMapper {
     }
 
     @Override
-    public List<Field> mapMainItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException {
-        return Collections.singletonList(new StringField(targetFieldName, Namespaces.reduce(value.getIri()), Field.Store.YES));
+    public Stream<Field> mapMainItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException {
+        return Stream.of(new StringField(targetFieldName, Namespaces.reduce(value.getIri()), Field.Store.YES));
     }
 }

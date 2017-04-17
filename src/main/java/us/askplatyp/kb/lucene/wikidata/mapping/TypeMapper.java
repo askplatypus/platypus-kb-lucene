@@ -96,10 +96,9 @@ public class TypeMapper implements StatementMainItemIdValueMapper {
     }
 
     @Override
-    public List<Field> mapMainItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException {
+    public Stream<Field> mapMainItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException {
         return mapClass(value).stream()
-                .map(type -> new StringField("@type", type, Field.Store.YES))
-                .collect(Collectors.toList());
+                .map(type -> new StringField("@type", type, Field.Store.YES));
     }
 
     private Set<String> mapClass(ItemIdValue itemId) {

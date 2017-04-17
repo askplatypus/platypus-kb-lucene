@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,7 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.wikidata.wdtk.datamodel.interfaces.StringValue;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
@@ -31,11 +30,11 @@ import java.util.List;
 class ISSNStatementMapper implements StatementMainStringValueMapper {
 
     @Override
-    public List<Field> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
+    public Stream<Field> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
         String ISSN = (String) ISSNValidator.getInstance().validate(value.getString());
         if (ISSN == null) {
-            return Collections.emptyList();
+            return Stream.empty();
         }
-        return Collections.singletonList(new StringField("issn", ISSN, Field.Store.YES));
+        return Stream.of(new StringField("issn", ISSN, Field.Store.YES));
     }
 }

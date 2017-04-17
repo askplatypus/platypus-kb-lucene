@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,7 @@ import org.apache.lucene.document.Field;
 import org.wikidata.wdtk.datamodel.interfaces.Statement;
 import org.wikidata.wdtk.datamodel.interfaces.Value;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
@@ -30,13 +29,13 @@ import java.util.List;
 interface StatementMainValueMapper extends StatementMapper {
 
     @Override
-    default List<Field> mapStatement(Statement statement) throws InvalidWikibaseValueException {
+    default Stream<Field> mapStatement(Statement statement) throws InvalidWikibaseValueException {
         Value value = statement.getValue();
         if (value == null) {
-            return Collections.emptyList();
+            return Stream.empty();
         }
         return mapMainValue(value);
     }
 
-    List<Field> mapMainValue(Value value) throws InvalidWikibaseValueException;
+    Stream<Field> mapMainValue(Value value) throws InvalidWikibaseValueException;
 }

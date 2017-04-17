@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,7 @@ import org.wikidata.wdtk.datamodel.interfaces.StringValue;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
@@ -38,13 +37,13 @@ class URIStatementMapper implements StatementMainStringValueMapper {
     }
 
     @Override
-    public List<Field> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
+    public Stream<Field> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
         try {
             URI parsedURL = new URI(value.getString()).normalize();
             if ((parsedURL.getScheme().equals("http") || parsedURL.getScheme().equals("https")) && parsedURL.getPath().isEmpty()) {
                 parsedURL = parsedURL.resolve("/");
             }
-            return Collections.singletonList(new StringField(targetFieldName, parsedURL.toString(), Field.Store.YES));
+            return Stream.of(new StringField(targetFieldName, parsedURL.toString(), Field.Store.YES));
         } catch (URISyntaxException e) {
             throw new InvalidWikibaseValueException(value + " is an invalid URI", e);
         }
