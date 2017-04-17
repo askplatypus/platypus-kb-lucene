@@ -40,7 +40,7 @@ public class MapperRegistry {
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P25"), new ItemIdStatementMapper("parent"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P26"), new ItemIdStatementMapper("spouse"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P27"), new ItemIdStatementMapper("nationality"));
-        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P31"), new P31StatementMapper());
+        MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P31"), TypeMapper.getInstance());
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P40"), new ItemIdStatementMapper("children"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P50"), new ItemIdStatementMapper("author"));
         MAPPER_FOR_PROPERTY.put(Datamodel.makeWikidataPropertyIdValue("P57"), new ItemIdStatementMapper("director"));

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
-import java.util.TreeSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -62,7 +61,7 @@ public class WikidataLuceneIndexFactory implements Factory<LuceneIndex> {
     private static void loadData() throws IOException {
         DumpProcessingController dumpProcessingController = new DumpProcessingController("wikidatawiki");
         dumpProcessingController.setDownloadDirectory(Configuration.getInstance().getWikidataDirectory());
-        dumpProcessingController.setLanguageFilter(new TreeSet<>(WikidataTypes.WIKIMEDIA_LANGUAGE_CODES.values()));
+        dumpProcessingController.setLanguageFilter(LuceneUpdateProcessor.SUPPORTED_LANGUAGES);
         dumpProcessingController.registerEntityDocumentProcessor(
                 new LuceneUpdateProcessor(index, dumpProcessingController.getSitesInformation()),
                 null,

@@ -17,6 +17,7 @@
 
 package us.askplatyp.kb.lucene.wikidata;
 
+import com.google.common.collect.Sets;
 import org.apache.lucene.document.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,7 @@ import us.askplatyp.kb.lucene.lucene.LuceneIndex;
 import us.askplatyp.kb.lucene.model.Namespaces;
 import us.askplatyp.kb.lucene.wikidata.mapping.InvalidWikibaseValueException;
 import us.askplatyp.kb.lucene.wikidata.mapping.MapperRegistry;
+import us.askplatyp.kb.lucene.wikidata.mapping.TypeMapper;
 
 import java.io.IOException;
 import java.util.*;
@@ -35,10 +37,47 @@ import java.util.*;
  */
 class LuceneUpdateProcessor implements EntityDocumentProcessor {
 
-    private static final Set<String> SUPPORTED_LANGUAGES = new TreeSet<>(WikidataTypes.WIKIMEDIA_LANGUAGE_CODES.values());
+    static final Set<String> SUPPORTED_LANGUAGES = Sets.newHashSet(
+            "ar", "am",
+            "bg", "bn",
+            "ca", "cs",
+            "da", "de",
+            "el", "en", "en-ca", "en-gb", "es", "et",
+            "fa", "fi", "fr",
+            "gu",
+            "he", "hi", "hr", "hu",
+            "id", "it",
+            "ja",
+            "kn", "ko",
+            "la", "lt", "lv",
+            "ml", "mr", "ms",
+            "nl", "no",
+            "pl", "pt", "pt-br",
+            "ro", "ru",
+            "sk", "sl", "sr", "sv", "sw",
+            "ta", "te", "tl", "th", "tr",
+            "uk",
+            "vi",
+            "zh", "zh-hans", "zh-hant"
+    );
+    //TODO Fits for Wikidata Query service but should be improved
+    private static final Map<String, String> XSD_FOR_DATATYPE = new HashMap<>();
     private static final Logger LOGGER = LoggerFactory.getLogger(LuceneUpdateProcessor.class);
-
     private static final PropertyIdValue P31 = Datamodel.makeWikidataPropertyIdValue("P31");
+
+    static {
+        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_ITEM, "NamedIndividual");
+        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_PROPERTY, "Property");
+        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_STRING, "xsd:string");
+        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_URL, "xsd:anyURI");
+        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_COMMONS_MEDIA, "xsd:string");
+        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_TIME, "xsd:dateTime");
+        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_GLOBE_COORDINATES, "geo:wktLiteral");
+        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_QUANTITY, "xsd:decimal");
+        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_MONOLINGUAL_TEXT, "rdf:langString");
+        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_EXTERNAL_ID, "xsd:string");
+        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_MATH, "xsd:string");
+    }
 
     private LuceneIndex index;
     private Sites sites;
@@ -66,10 +105,10 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
     private boolean isGoodItem(ItemDocument itemDocument) {
         //TODO: filter elements without statements?
         return getBestStatements(itemDocument, P31).stream()
-                .noneMatch(statement -> {
-                    Value value = statement.getValue();
-                    return value instanceof ItemIdValue && WikidataTypes.isFilteredType((ItemIdValue) statement.getValue());
-                });
+                .map(Statement::getValue)
+                .noneMatch(value -> value instanceof ItemIdValue &&
+                        TypeMapper.getInstance().isFilteredClass((ItemIdValue) value)
+                );
     }
 
     public void processPropertyDocument(PropertyDocument propertyDocument) {
@@ -77,15 +116,19 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
         document.add(new StringField("@id", IRIforPropertyId(propertyDocument.getPropertyId()), Field.Store.YES));
         addTermsToDocument(propertyDocument, document);
         document.add(new StringField("@type", "Property", Field.Store.YES));
-        if (WikidataTypes.isObjectRange(propertyDocument.getDatatype())) {
+        if (isObjectRange(propertyDocument.getDatatype())) {
             document.add(new StringField("@type", "ObjectProperty", Field.Store.YES));
         } else {
             document.add(new StringField("@type", "DatatypeProperty", Field.Store.YES));
         }
-        for (String range : WikidataTypes.getRangeForDatatype(propertyDocument.getDatatype())) {
-            document.add(new StoredField("range", range));
-        }
+        Optional.ofNullable(XSD_FOR_DATATYPE.get(propertyDocument.getDatatype().getIri()))
+                .ifPresent(range -> document.add(new StoredField("range", range)));
         writeDocument(document);
+    }
+
+    private boolean isObjectRange(DatatypeIdValue datatypeIdValue) {
+        return datatypeIdValue.getIri().equals(DatatypeIdValue.DT_ITEM) ||
+                datatypeIdValue.getIri().equals(DatatypeIdValue.DT_PROPERTY);
     }
 
     private String IRIforPropertyId(PropertyIdValue propertyId) {
