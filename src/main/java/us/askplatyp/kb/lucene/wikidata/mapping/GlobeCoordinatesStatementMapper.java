@@ -20,7 +20,6 @@ package us.askplatyp.kb.lucene.wikidata.mapping;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
-import us.askplatyp.kb.lucene.model.value.GeoCoordinatesValue;
 
 import java.util.stream.Stream;
 
@@ -47,10 +46,7 @@ class GlobeCoordinatesStatementMapper implements StatementMainGlobeCoordinatesVa
     }
 
     private String valueToWKT(GlobeCoordinatesValue value) {
-        return (new GeoCoordinatesValue(
-                roundDegrees(value.getLatitude(), value.getPrecision()),
-                roundDegrees(value.getLongitude(), value.getPrecision())
-        )).getAsWKT();
+        return "POINT(" + roundDegrees(value.getLongitude(), value.getPrecision()) + ' ' + roundDegrees(value.getLatitude(), value.getPrecision()) + ')';
     }
 
     private double roundDegrees(double degrees, double precision) {

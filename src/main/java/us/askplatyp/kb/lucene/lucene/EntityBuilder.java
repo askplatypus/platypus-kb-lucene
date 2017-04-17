@@ -18,6 +18,7 @@
 package us.askplatyp.kb.lucene.lucene;
 
 import com.google.common.collect.Sets;
+import com.vividsolutions.jts.geom.Geometry;
 import org.apache.lucene.document.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +26,10 @@ import org.wikidata.wdtk.datamodel.interfaces.WikimediaLanguageCodes;
 import us.askplatyp.kb.lucene.model.Entity;
 import us.askplatyp.kb.lucene.model.Namespaces;
 import us.askplatyp.kb.lucene.model.Schema;
-import us.askplatyp.kb.lucene.model.value.*;
+import us.askplatyp.kb.lucene.model.value.Article;
+import us.askplatyp.kb.lucene.model.value.CalendarValue;
+import us.askplatyp.kb.lucene.model.value.GeoValue;
+import us.askplatyp.kb.lucene.model.value.Image;
 import us.askplatyp.kb.lucene.wikimedia.rest.KartographerAPI;
 import us.askplatyp.kb.lucene.wikimedia.rest.WikimediaREST;
 import us.askplatyp.kb.lucene.wikimedia.rest.model.Summary;
@@ -159,13 +163,12 @@ class EntityBuilder {
 
     private static Optional<Object> buildGeoValue(Document document) {
         try {
-            Optional<Object> shape = KartographerAPI.getInstance()
-                    .getShapeForItemId(Namespaces.expand(document.get("@id")))
-                    .map(GeoShapeValue::new);
-            if (shape.isPresent()) {
-                return shape;
+            Geometry shape = KartographerAPI.getInstance()
+                    .getShapeForItemId(Namespaces.expand(document.get("@id")));
+            if (!shape.isEmpty()) {
+                return Optional.of(GeoValue.buildGeoValue(shape));
             }
-            return Optional.ofNullable(document.get("geo")).map(GeoCoordinatesValue::new);
+            return Optional.ofNullable(document.get("geo")).map(GeoValue::buildGeoValue);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
             return Optional.empty();

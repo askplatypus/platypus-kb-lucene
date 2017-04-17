@@ -30,6 +30,7 @@
         <commonsValidatorVersion>1.6</commonsValidatorVersion>
         <graphqlVersion>2.4.0</graphqlVersion>
         <jerseyVersion>2.25.1</jerseyVersion>
+        <jtsVersion>1.14.0</jtsVersion>
         <junitVersion>4.12</junitVersion>
         <luceneVersion>6.5.0</luceneVersion>
         <rdf4jVersion>2.2</rdf4jVersion>
@@ -60,6 +61,11 @@
             <groupId>com.graphql-java</groupId>
             <artifactId>graphql-java</artifactId>
             <version>${graphqlVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vividsolutions</groupId>
+            <artifactId>jts-io</artifactId>
+            <version>${jtsVersion}</version>
         </dependency>
         <dependency>
             <groupId>io.swagger</groupId>

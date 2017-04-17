@@ -18,60 +18,19 @@
 package us.askplatyp.kb.lucene.model.value;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.lucene.geo.Polygon;
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-public class GeoShapeValue {
+public class GeoShapeValue extends GeoValue {
 
-    private Polygon[] polygons;
-
-    public GeoShapeValue(Polygon[] polygons) {
-        this.polygons = polygons;
-    }
-
-    private static String serializePolygonInner(org.apache.lucene.geo.Polygon polygon) {
-        StringBuilder builder = new StringBuilder();
-        builder.append('(');
-        double[] lats = polygon.getPolyLats();
-        double[] longs = polygon.getPolyLons();
-        for (int i = 0; i < longs.length; i++) {
-            if (i > 0) {
-                builder.append(',').append(' ');
-            }
-            builder.append(longs[i]);
-            builder.append(' ');
-            builder.append(lats[i]);
-        }
-        builder.append(')');
-        for (org.apache.lucene.geo.Polygon hole : polygon.getHoles()) {
-            builder.append(',').append(' ');
-            builder.append(serializePolygonInner(hole));
-        }
-        return builder.toString();
+    GeoShapeValue(Geometry geometry) {
+        super(geometry);
     }
 
     @JsonProperty("@type")
     public String getType() {
         return "GeoShape";
-    }
-
-    @JsonProperty("geo:asWKT")
-    public String getAsWKT() {
-        if (polygons.length == 1) {
-            return "POLYGON(" + serializePolygonInner(polygons[0]) + ")";
-        }
-
-        StringBuilder builder = new StringBuilder();
-        builder.append("MULTIPOLYGON(");
-        for (int i = 0; i < polygons.length; i++) {
-            if (i > 0) {
-                builder.append(',').append(' ');
-            }
-            builder.append(serializePolygonInner(polygons[i]));
-        }
-        builder.append(')');
-        return builder.toString();
     }
 }

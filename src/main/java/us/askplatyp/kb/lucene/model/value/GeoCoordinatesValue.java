@@ -18,38 +18,24 @@
 package us.askplatyp.kb.lucene.model.value;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.vividsolutions.jts.geom.Point;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-public class GeoCoordinatesValue {
+public class GeoCoordinatesValue extends GeoValue {
 
-    private final static Pattern WKT_PATTERN = Pattern.compile(" *POINT\\( *([+-]?\\d+\\.?\\d*), *([+-]?\\d+\\.?\\d*) *\\) *");
+    private Point point;
 
-    private double latitude;
-    private double longitude;
+    GeoCoordinatesValue(Point point) {
+        super(point);
 
-    public GeoCoordinatesValue(String WKT) {
-        Matcher matcher = WKT_PATTERN.matcher(WKT);
-        if (matcher.matches()) {
-            longitude = Double.valueOf(matcher.group(1));
-            latitude = Double.valueOf(matcher.group(2));
-        } else {
-            throw new IllegalArgumentException("Invalid POINT WKT: " + WKT);
-        }
-    }
-
-    public GeoCoordinatesValue(double latitude, double longitude) {
-        this.latitude = latitude;
-        this.longitude = longitude;
+        this.point = point;
     }
 
     @JsonProperty("@id")
     public String getIRI() {
-        return "geo:" + latitude + "," + longitude;
+        return "geo:" + getLatitude() + "," + getLongitude();
     }
 
     @JsonProperty("@type")
@@ -59,16 +45,11 @@ public class GeoCoordinatesValue {
 
     @JsonProperty("latitude")
     public double getLatitude() {
-        return latitude;
+        return point.getY();
     }
 
     @JsonProperty("longitude")
     public double getLongitude() {
-        return longitude;
-    }
-
-    @JsonProperty("geo:asWKT")
-    public String getAsWKT() {
-        return "POINT(" + longitude + ", " + latitude + ")";
+        return point.getX();
     }
 }

@@ -17,33 +17,41 @@
 
 package us.askplatyp.kb.lucene.wikimedia.rest;
 
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.geojson.GeoJsonReader;
 import jersey.repackaged.com.google.common.cache.CacheBuilder;
 import jersey.repackaged.com.google.common.cache.CacheLoader;
 import jersey.repackaged.com.google.common.cache.LoadingCache;
 import org.apache.commons.io.IOUtils;
-import org.apache.lucene.geo.Polygon;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.text.ParseException;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-public class KartographerAPI { //TODO: check name
+public class KartographerAPI {
 
+    private static final Pattern FEATURE_COLLECTION_PATTERN = Pattern.compile("\\{.*\"features\":\\[\\{.*\"geometry\":(.*)\\}\\].*\\}");
+    private static final String EMPTY_FEATURE_COLLECTION = "{\"type\":\"FeatureCollection\",\"features\":[]}";
+    private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
+    private static final GeoJsonReader GEO_JSON_READER = new GeoJsonReader(GEOMETRY_FACTORY);
+    private static final Geometry EMPTY_GEOMETRY = GEOMETRY_FACTORY.createGeometryCollection(new Geometry[]{});
     private static final KartographerAPI INSTANCE = new KartographerAPI();
-    private LoadingCache<String, Optional<Polygon[]>> shapeCache = CacheBuilder.newBuilder()
+    private LoadingCache<String, Geometry> shapeCache = CacheBuilder.newBuilder()
             .maximumSize(16384) //TODO: configure?
             .expireAfterWrite(1, TimeUnit.DAYS)
-            .build(new CacheLoader<String, Optional<Polygon[]>>() {
+            .build(new CacheLoader<String, Geometry>() {
                 @Override
-                public Optional<Polygon[]> load(String itemId) throws IOException, ParseException {
+                public Geometry load(String itemId) throws IOException, ParseException {
                     return requestShapeForItemId(itemId);
                 }
             });
@@ -55,9 +63,9 @@ public class KartographerAPI { //TODO: check name
         return INSTANCE;
     }
 
-    public Optional<Polygon[]> getShapeForItemId(String itemURI) throws IOException {
+    public Geometry getShapeForItemId(String itemURI) throws IOException {
         if (!itemURI.startsWith("http://www.wikidata.org/entity/")) {
-            return Optional.empty();
+            return EMPTY_GEOMETRY;
         }
 
         String itemId = itemURI.replace("http://www.wikidata.org/entity/", "");
@@ -68,21 +76,34 @@ public class KartographerAPI { //TODO: check name
         }
     }
 
-    private Optional<Polygon[]> requestShapeForItemId(String itemId) throws IOException, ParseException {
-        URL targetURL = UriBuilder.fromUri("https://maps.wikimedia.org/geoshape?getgeojson=1")
+    private Geometry requestShapeForItemId(String itemId) throws IOException, ParseException {
+        URL targetURLShape = UriBuilder.fromUri("https://maps.wikimedia.org/geoshape?getgeojson=1")
                 .queryParam("ids", itemId)
                 .build().toURL();
-        return geoGeoJSONRequest(targetURL);
-        //TODO: support geolines
+        Geometry geoShape = geoGeoJSONRequest(targetURLShape);
+        if (!geoShape.isEmpty()) {
+            return geoShape;
+        }
+
+        URL targetURLLine = UriBuilder.fromUri("https://maps.wikimedia.org/geoline?getgeojson=1")
+                .queryParam("ids", itemId)
+                .build().toURL();
+        return geoGeoJSONRequest(targetURLLine);
     }
 
-    private Optional<Polygon[]> geoGeoJSONRequest(URL targetURL) throws IOException, ParseException {
+    private Geometry geoGeoJSONRequest(URL targetURL) throws IOException, ParseException {
         try (InputStream inputStream = targetURL.openStream()) {
-            String value = IOUtils.toString(inputStream);
-            if (value.equals("{\"type\":\"FeatureCollection\",\"features\":[]}")) {
-                return Optional.empty();
+            String geoJSON = IOUtils.toString(inputStream);
+            if (geoJSON.equals(EMPTY_FEATURE_COLLECTION)) {
+                return EMPTY_GEOMETRY;
             }
-            return Optional.of(Polygon.fromGeoJSON(value));
+
+            Matcher matcher = FEATURE_COLLECTION_PATTERN.matcher(geoJSON);
+            if (matcher.matches()) {
+                return GEO_JSON_READER.read(matcher.group(1));
+            } else {
+                throw new ParseException("The GeoJSON root should be a FeatureCollection");
+            }
         }
     }
 }

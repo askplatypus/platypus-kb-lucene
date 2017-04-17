@@ -59,7 +59,7 @@ public class SearchActionsTest extends JerseyTest {
         JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
                 target("/api/v1/search/simple").request().get(RESULT_TYPE);
         Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
-        assertElementCount(result.getContent(), 5);
+        assertElementCount(result.getContent(), 6);
         assertEnglishIndividual(result.getContent().getElements().get(0).getResult());
         assertEnglishSmallFoo(result.getContent().getElements().get(1).getResult());
         assertEnglishDummy(result.getContent().getElements().get(2).getResult());
