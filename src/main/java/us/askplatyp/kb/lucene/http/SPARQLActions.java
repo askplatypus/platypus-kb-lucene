@@ -17,9 +17,6 @@
 
 package us.askplatyp.kb.lucene.http;
 
-import com.google.common.util.concurrent.SimpleTimeLimiter;
-import com.google.common.util.concurrent.TimeLimiter;
-import com.google.common.util.concurrent.UncheckedTimeoutException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -56,7 +53,6 @@ import javax.ws.rs.core.*;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -66,9 +62,8 @@ import java.util.stream.Collectors;
 @Api
 public class SPARQLActions {
 
-    private static final long QUERY_TIMOUT_IN_S = 30;
+    private static final int QUERY_TIMOUT_IN_S = 30;
     private static final Logger LOGGER = LoggerFactory.getLogger(GraphQLActions.class);
-    private static final TimeLimiter TIME_LIMITER = new SimpleTimeLimiter();
 
     private static final String PREFIX = Namespaces.NAMESPACES.entrySet().stream()
             .map(namespace -> "PREFIX " + namespace.getKey() + ": <" + namespace.getValue() + ">")
@@ -107,37 +102,26 @@ public class SPARQLActions {
     }
 
     private Response executeQuery(String query, String baseIRI, Request request) {
+        ParsedQuery parsedQuery = parseQuery(query, baseIRI);
         try {
-            return TIME_LIMITER.callWithTimeout(() -> {
-                ParsedQuery parsedQuery = parseQuery(query, baseIRI);
-                try {
-                    if (parsedQuery instanceof ParsedBooleanQuery) {
-                        return evaluateBooleanQuery((ParsedBooleanQuery) parsedQuery, request);
-                    } else if (parsedQuery instanceof ParsedGraphQuery) {
-                        return evaluateGraphQuery((ParsedGraphQuery) parsedQuery, request);
-                    } else if (parsedQuery instanceof ParsedTupleQuery) {
-                        return evaluateTupleQuery((ParsedTupleQuery) parsedQuery, request);
-                    } else {
-                        throw new BadRequestException("Unsupported kind of query: " + parsedQuery.toString());
-                    }
-                } catch (QueryEvaluationException e) {
-                    LOGGER.info(e.getMessage(), e);
-                    throw new BadRequestException(e.getMessage(), e);
-                }
-            }, QUERY_TIMOUT_IN_S, TimeUnit.SECONDS, true);
-        } catch (UncheckedTimeoutException e) {
-            throw new InternalServerErrorException("Query timeout limit reached");
-        } catch (Exception e) {
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException) e;
+            if (parsedQuery instanceof ParsedBooleanQuery) {
+                return evaluateBooleanQuery((ParsedBooleanQuery) parsedQuery, request);
+            } else if (parsedQuery instanceof ParsedGraphQuery) {
+                return evaluateGraphQuery((ParsedGraphQuery) parsedQuery, request);
+            } else if (parsedQuery instanceof ParsedTupleQuery) {
+                return evaluateTupleQuery((ParsedTupleQuery) parsedQuery, request);
+            } else {
+                throw new BadRequestException("Unsupported kind of query: " + parsedQuery.toString());
             }
-            LOGGER.error(e.getMessage(), e);
-            throw new InternalServerErrorException(e.getMessage(), e);
+        } catch (QueryEvaluationException e) {
+            LOGGER.info(e.getMessage(), e);
+            throw new BadRequestException(e.getMessage(), e);
         }
     }
 
     private Response evaluateBooleanQuery(ParsedBooleanQuery parsedQuery, Request request) {
         BooleanQuery query = getQueryPreparer().prepare(parsedQuery);
+        query.setMaxExecutionTime(QUERY_TIMOUT_IN_S);
         FormatService<BooleanQueryResultWriterFactory> format = getServiceForFormat(BooleanQueryResultWriterRegistry.getInstance(), request);
         return Response.ok(
                 (StreamingOutput) outputStream -> format.getService().getWriter(outputStream).handleBoolean(query.evaluate()),
@@ -147,6 +131,7 @@ public class SPARQLActions {
 
     private Response evaluateGraphQuery(ParsedGraphQuery parsedQuery, Request request) {
         GraphQuery query = getQueryPreparer().prepare(parsedQuery);
+        query.setMaxExecutionTime(QUERY_TIMOUT_IN_S);
         FormatService<RDFWriterFactory> format = getServiceForFormat(RDFWriterRegistry.getInstance(), request);
         return Response.ok(
                 (StreamingOutput) outputStream -> query.evaluate(format.getService().getWriter(outputStream)),
@@ -156,6 +141,7 @@ public class SPARQLActions {
 
     private Response evaluateTupleQuery(ParsedTupleQuery parsedQuery, Request request) {
         TupleQuery query = getQueryPreparer().prepare(parsedQuery);
+        query.setMaxExecutionTime(QUERY_TIMOUT_IN_S);
         FormatService<TupleQueryResultWriterFactory> format = getServiceForFormat(TupleQueryResultWriterRegistry.getInstance(), request);
         return Response.ok(
                 (StreamingOutput) outputStream -> query.evaluate(format.getService().getWriter(outputStream)),
