@@ -53,9 +53,6 @@ import us.askplatyp.kb.lucene.model.Namespaces;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -103,13 +100,10 @@ public class SPARQLActions {
 
     private Response executeDescription(Request request) {
         FormatService<RDFWriterFactory> format = getServiceForFormat(RDFWriterRegistry.getInstance(), request);
-        try (OutputStream outputStream = new ByteArrayOutputStream()) {
-            Rio.write(getServiceDescription(), format.getService().getWriter(outputStream));
-            return Response.ok(outputStream.toString(), variantForFormat(format.getFormat())).build();
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new InternalServerErrorException(e.getMessage(), e);
-        }
+        return Response.ok(
+                (StreamingOutput) outputStream -> Rio.write(getServiceDescription(), format.getService().getWriter(outputStream)),
+                variantForFormat(format.getFormat())
+        ).build();
     }
 
     private Response executeQuery(String query, String baseIRI, Request request) {
@@ -145,37 +139,28 @@ public class SPARQLActions {
     private Response evaluateBooleanQuery(ParsedBooleanQuery parsedQuery, Request request) {
         BooleanQuery query = getQueryPreparer().prepare(parsedQuery);
         FormatService<BooleanQueryResultWriterFactory> format = getServiceForFormat(BooleanQueryResultWriterRegistry.getInstance(), request);
-        try (OutputStream outputStream = new ByteArrayOutputStream()) {
-            format.getService().getWriter(outputStream).handleBoolean(query.evaluate());
-            return Response.ok(outputStream.toString(), variantForFormat(format.getFormat())).build();
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new InternalServerErrorException(e.getMessage(), e);
-        }
+        return Response.ok(
+                (StreamingOutput) outputStream -> format.getService().getWriter(outputStream).handleBoolean(query.evaluate()),
+                variantForFormat(format.getFormat())
+        ).build();
     }
 
     private Response evaluateGraphQuery(ParsedGraphQuery parsedQuery, Request request) {
         GraphQuery query = getQueryPreparer().prepare(parsedQuery);
         FormatService<RDFWriterFactory> format = getServiceForFormat(RDFWriterRegistry.getInstance(), request);
-        try (OutputStream outputStream = new ByteArrayOutputStream()) {
-            query.evaluate(format.getService().getWriter(outputStream));
-            return Response.ok(outputStream.toString(), variantForFormat(format.getFormat())).build();
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new InternalServerErrorException(e.getMessage(), e);
-        }
+        return Response.ok(
+                (StreamingOutput) outputStream -> query.evaluate(format.getService().getWriter(outputStream)),
+                variantForFormat(format.getFormat())
+        ).build();
     }
 
     private Response evaluateTupleQuery(ParsedTupleQuery parsedQuery, Request request) {
         TupleQuery query = getQueryPreparer().prepare(parsedQuery);
         FormatService<TupleQueryResultWriterFactory> format = getServiceForFormat(TupleQueryResultWriterRegistry.getInstance(), request);
-        try (OutputStream outputStream = new ByteArrayOutputStream()) {
-            query.evaluate(format.getService().getWriter(outputStream));
-            return Response.ok(outputStream.toString(), variantForFormat(format.getFormat())).build();
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new InternalServerErrorException(e.getMessage(), e);
-        }
+        return Response.ok(
+                (StreamingOutput) outputStream -> query.evaluate(format.getService().getWriter(outputStream)),
+                variantForFormat(format.getFormat())
+        ).build();
     }
 
     private ParsedQuery parseQuery(String query, String baseIRI) {
