@@ -63,7 +63,7 @@ import java.util.stream.Collectors;
 public class SPARQLActions {
 
     private static final int QUERY_TIMOUT_IN_S = 30;
-    private static final Logger LOGGER = LoggerFactory.getLogger(GraphQLActions.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SPARQLActions.class);
 
     private static final String PREFIX = Namespaces.NAMESPACES.entrySet().stream()
             .map(namespace -> "PREFIX " + namespace.getKey() + ": <" + namespace.getValue() + ">")
