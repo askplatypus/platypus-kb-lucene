@@ -69,9 +69,13 @@ public class WikidataLuceneIndexFactory implements Factory<LuceneIndex> {
         );
         for (MwDumpFile dump : getNewDumpsToProcess(dumpProcessingController.getWmfDumpFileManager()).toArray(MwDumpFile[]::new)) {
             LOGGER.info("Processing " + dump.getProjectName() + " " + dump.getDumpContentType() + " of the " + dump.getDateStamp());
-            dumpProcessingController.processDump(dump);
-            LAST_PROCESSED_DUMP_INFO.setDateStamp(dump.getDateStamp());
-            index.refreshReaders();
+            try {
+                dumpProcessingController.processDump(dump);
+                LAST_PROCESSED_DUMP_INFO.setDateStamp(dump.getDateStamp());
+                index.refreshReaders();
+            } catch (Exception e) {
+                LOGGER.error(e.getMessage(), e);
+            }
         }
 
         registerAtThreePM(() -> {
@@ -80,7 +84,7 @@ public class WikidataLuceneIndexFactory implements Factory<LuceneIndex> {
                 dumpProcessingController.processDump(dump);
                 LAST_PROCESSED_DUMP_INFO.setDateStamp(dump.getDateStamp());
                 index.refreshReaders();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 LOGGER.error(e.getMessage(), e);
             }
         });
