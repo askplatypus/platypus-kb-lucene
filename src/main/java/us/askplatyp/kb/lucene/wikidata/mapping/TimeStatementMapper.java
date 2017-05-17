@@ -51,10 +51,12 @@ class TimeStatementMapper implements StatementMainTimeValueMapper {
 
     @Override
     public Stream<Field> mapMainTimeValue(TimeValue value) throws InvalidWikibaseValueException {
-        return Stream.of(new StringField(targetFieldName, convertTimeValue(value).toXMLFormat(), Field.Store.YES));
+        return convertTimeValue(value).map(calendarValue ->
+                new StringField(targetFieldName, calendarValue.toXMLFormat(), Field.Store.YES)
+        );
     }
 
-    private XMLGregorianCalendar convertTimeValue(TimeValue value) throws InvalidWikibaseValueException {
+    private Stream<XMLGregorianCalendar> convertTimeValue(TimeValue value) throws InvalidWikibaseValueException {
         if (value.getBeforeTolerance() != 0 || value.getAfterTolerance() != 0) {
             throw new InvalidWikibaseValueException("Time values with before/after tolerances are not supported.");
         }
@@ -70,6 +72,8 @@ class TimeStatementMapper implements StatementMainTimeValueMapper {
                 second = value.getSecond();
                 minute = value.getMinute();
                 hour = value.getHour();
+            case TimeValue.PREC_HOUR:
+            case TimeValue.PREC_MINUTE:
             case TimeValue.PREC_DAY:
                 day = value.getDay();
             case TimeValue.PREC_MONTH:
@@ -78,10 +82,11 @@ class TimeStatementMapper implements StatementMainTimeValueMapper {
                 year = BigInteger.valueOf(value.getYear());
                 break;
             default:
-                throw new InvalidWikibaseValueException(value.getPrecision() + " is not a supported precision.");
+                return Stream.empty(); //TODO: Precision not supported. We ignore the value.
         }
+
         try {
-            return DATATYPE_FACTORY.newXMLGregorianCalendar(year, month, day, hour, minute, second, null, 0);
+            return Stream.of(DATATYPE_FACTORY.newXMLGregorianCalendar(year, month, day, hour, minute, second, null, 0));
         } catch (IllegalArgumentException e) {
             throw new InvalidWikibaseValueException("Calendar value not supported by Java", e);
         }
