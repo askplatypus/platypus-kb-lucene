@@ -26,10 +26,7 @@ import org.apache.lucene.document.StringField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
-import org.wikidata.wdtk.datamodel.interfaces.EntityDocument;
-import org.wikidata.wdtk.datamodel.interfaces.ItemDocument;
-import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
-import org.wikidata.wdtk.datamodel.interfaces.Statement;
+import org.wikidata.wdtk.datamodel.interfaces.*;
 import org.wikidata.wdtk.wikibaseapi.WikibaseDataFetcher;
 import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
 
@@ -225,11 +222,15 @@ public class TypeMapper implements StatementMainItemIdValueMapper {
     }
 
     private List<ItemIdValue> retrieveDirectSuperClasses(ItemIdValue itemId) throws MediaWikiApiErrorException {
-        EntityDocument document = WikibaseDataFetcher.getWikidataDataFetcher().getEntityDocument(itemId.toString());
+        EntityDocument document = WikibaseDataFetcher.getWikidataDataFetcher().getEntityDocument(itemId.getId());
         if (!(document instanceof ItemDocument)) {
             return Collections.emptyList();
         }
-        return ((ItemDocument) document).findStatementGroup("P279").getStatements().stream()
+        StatementGroup statementGroup = ((ItemDocument) document).findStatementGroup("P279");
+        if (statementGroup == null) {
+            return Collections.emptyList();
+        }
+        return statementGroup.getStatements().stream()
                 .map(Statement::getValue)
                 .flatMap(value -> {
                     if (value instanceof ItemIdValue) {
