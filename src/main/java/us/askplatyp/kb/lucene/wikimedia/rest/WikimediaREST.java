@@ -18,9 +18,9 @@
 package us.askplatyp.kb.lucene.wikimedia.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jersey.repackaged.com.google.common.cache.CacheBuilder;
-import jersey.repackaged.com.google.common.cache.CacheLoader;
-import jersey.repackaged.com.google.common.cache.LoadingCache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import us.askplatyp.kb.lucene.wikimedia.rest.model.Summary;
 
 import javax.ws.rs.core.UriBuilder;

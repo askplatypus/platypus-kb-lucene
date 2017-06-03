@@ -17,9 +17,14 @@
 
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
-import jersey.repackaged.com.google.common.collect.Sets;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Sets;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
 import org.wikidata.wdtk.datamodel.interfaces.EntityDocument;
 import org.wikidata.wdtk.datamodel.interfaces.ItemDocument;
@@ -29,6 +34,8 @@ import org.wikidata.wdtk.wikibaseapi.WikibaseDataFetcher;
 import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -46,6 +53,7 @@ public class TypeMapper implements StatementMainItemIdValueMapper {
             Datamodel.makeWikidataItemIdValue("Q18340514")  //article about events in a specific year or time period
     );
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(TypeMapper.class);
     private static final Map<ItemIdValue, List<String>> SCHEMA_TYPES = new HashMap<>();
     private static final TypeMapper INSTANCE = new TypeMapper();
 
@@ -155,7 +163,15 @@ public class TypeMapper implements StatementMainItemIdValueMapper {
         SCHEMA_TYPES.put(Datamodel.makeWikidataItemIdValue("Q27108230"), Arrays.asList("Place", "CivicStructure", "Organization", "LocalBusiness", "LodgingBusiness", "Campground"));
     }
 
-    private Map<ItemIdValue, List<ItemIdValue>> subclassOfCache = new HashMap<>();
+    private LoadingCache<ItemIdValue, List<ItemIdValue>> subclassOfCache = CacheBuilder.newBuilder()
+            .maximumSize(2048) //TODO: configure?
+            .expireAfterWrite(7, TimeUnit.DAYS)
+            .build(new CacheLoader<ItemIdValue, List<ItemIdValue>>() {
+                @Override
+                public List<ItemIdValue> load(ItemIdValue itemId) throws MediaWikiApiErrorException {
+                    return retrieveDirectSuperClasses(itemId);
+                }
+            });
 
     private TypeMapper() {
     }
@@ -200,29 +216,28 @@ public class TypeMapper implements StatementMainItemIdValueMapper {
     }
 
     private List<ItemIdValue> getDirectSuperClasses(ItemIdValue itemId) {
-        if (!subclassOfCache.containsKey(itemId)) {
-            subclassOfCache.put(itemId, retrieveDirectSuperClasses(itemId));
-        }
-        return subclassOfCache.get(itemId);
-    }
-
-    private List<ItemIdValue> retrieveDirectSuperClasses(ItemIdValue itemId) {
         try {
-            EntityDocument document = WikibaseDataFetcher.getWikidataDataFetcher().getEntityDocument(itemId.toString());
-            if (!(document instanceof ItemDocument)) {
-                return Collections.emptyList();
-            }
-            return ((ItemDocument) document).findStatementGroup("P279").getStatements().stream()
-                    .map(Statement::getValue)
-                    .flatMap(value -> {
-                        if (value instanceof ItemIdValue) {
-                            return Stream.of((ItemIdValue) value);
-                        } else {
-                            return Stream.empty();
-                        }
-                    }).collect(Collectors.toList());
-        } catch (MediaWikiApiErrorException e) {
+            return subclassOfCache.get(itemId);
+        } catch (ExecutionException e) {
+            LOGGER.warn(e.getMessage(), e);
             return Collections.emptyList();
         }
+    }
+
+    private List<ItemIdValue> retrieveDirectSuperClasses(ItemIdValue itemId) throws MediaWikiApiErrorException {
+        EntityDocument document = WikibaseDataFetcher.getWikidataDataFetcher().getEntityDocument(itemId.toString());
+        if (!(document instanceof ItemDocument)) {
+            return Collections.emptyList();
+        }
+        return ((ItemDocument) document).findStatementGroup("P279").getStatements().stream()
+                .map(Statement::getValue)
+                .flatMap(value -> {
+                    if (value instanceof ItemIdValue) {
+                        return Stream.of((ItemIdValue) value);
+                    } else {
+                        return Stream.empty();
+                    }
+                }).collect(Collectors.toList());
+
     }
 }
