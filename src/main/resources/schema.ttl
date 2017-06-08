@@ -7,11 +7,6 @@
 
 # classes
 
-rdf:Property a rdfs:Class ;
-    rdfs:label "Property" ;
-    rdfs:comment "A property (for internal use only)" ;
-    rdfs:subClassOf owl:Thing .
-
 owl:NamedIndividual a rdfs:Class ;
     rdfs:label "NamedIndividual" ;
     rdfs:comment "An entity described by the knowledge base (i.e. not a property or a class)" ;
@@ -245,12 +240,6 @@ schema:name a owl:DatatypeProperty, owl:FunctionalProperty ;
     rdfs:comment "The entity name" ;
     rdfs:domain owl:Thing ;
     rdfs:range rdf:langString .
-
-schema:range a owl:DatatypeProperty, owl:FunctionalProperty ; #TODO: bad
-    rdfs:label "range" ;
-    rdfs:comment "Property range" ;
-    rdfs:domain rdf:Property ;
-    rdfs:range xsd:anyURI .
 
 schema:sameAs a owl:DatatypeProperty ;
     rdfs:label "sameAs" ;

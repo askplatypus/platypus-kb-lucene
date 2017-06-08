@@ -67,20 +67,9 @@ public class SPARQLActionsTest extends JerseyTest {
                         VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q111"),
                         VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q91"),
                         VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q90"),
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q2108"),
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/prop/direct/P42")
+                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q2108")
                 ),
                 doSparqlQuerySingleSelect("SELECT DISTINCT ?s WHERE { ?s ?p ?o }")
-        );
-    }
-
-    @Test
-    public void testGetProperties() throws IOException {
-        Assert.assertEquals(
-                Sets.newHashSet(
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/prop/direct/P42")
-                ),
-                doSparqlQuerySingleSelect("SELECT DISTINCT ?s WHERE { ?s a rdf:Property }")
         );
     }
 

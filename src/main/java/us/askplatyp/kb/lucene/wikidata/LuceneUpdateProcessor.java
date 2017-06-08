@@ -18,7 +18,10 @@
 package us.askplatyp.kb.lucene.wikidata;
 
 import com.google.common.collect.Sets;
-import org.apache.lucene.document.*;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.NumericDocValuesField;
+import org.apache.lucene.document.StringField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
@@ -60,24 +63,8 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
             "vi",
             "zh", "zh-hans", "zh-hant"
     );
-    //TODO Fits for Wikidata Query service but should be improved
-    private static final Map<String, String> XSD_FOR_DATATYPE = new HashMap<>();
     private static final Logger LOGGER = LoggerFactory.getLogger(LuceneUpdateProcessor.class);
     private static final PropertyIdValue P31 = Datamodel.makeWikidataPropertyIdValue("P31");
-
-    static {
-        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_ITEM, "NamedIndividual");
-        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_PROPERTY, "Property");
-        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_STRING, "xsd:string");
-        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_URL, "xsd:anyURI");
-        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_COMMONS_MEDIA, "xsd:string");
-        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_TIME, "xsd:dateTime");
-        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_GLOBE_COORDINATES, "geo:wktLiteral");
-        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_QUANTITY, "xsd:decimal");
-        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_MONOLINGUAL_TEXT, "rdf:langString");
-        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_EXTERNAL_ID, "xsd:string");
-        XSD_FOR_DATATYPE.put(DatatypeIdValue.DT_MATH, "xsd:string");
-    }
 
     private LuceneIndex index;
     private Sites sites;
@@ -87,6 +74,7 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
         this.sites = sites;
     }
 
+    @Override
     public void processItemDocument(ItemDocument itemDocument) {
         if (!isGoodItem(itemDocument)) {
             return;
@@ -102,6 +90,10 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
         writeDocument(document);
     }
 
+    @Override
+    public void processPropertyDocument(PropertyDocument propertyDocument) {
+    }
+
     private boolean isGoodItem(ItemDocument itemDocument) {
         //TODO: filter elements without statements?
         return getBestStatements(itemDocument, P31).stream()
@@ -109,21 +101,6 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
                 .noneMatch(value -> value instanceof ItemIdValue &&
                         TypeMapper.getInstance().isFilteredClass((ItemIdValue) value)
                 );
-    }
-
-    public void processPropertyDocument(PropertyDocument propertyDocument) {
-        Document document = new Document();
-        document.add(new StringField("@id", IRIforPropertyId(propertyDocument.getPropertyId()), Field.Store.YES));
-        addTermsToDocument(propertyDocument, document);
-        document.add(new StringField("@type", "Property", Field.Store.YES));
-        if (isObjectRange(propertyDocument.getDatatype())) {
-            document.add(new StringField("@type", "ObjectProperty", Field.Store.YES));
-        } else {
-            document.add(new StringField("@type", "DatatypeProperty", Field.Store.YES));
-        }
-        Optional.ofNullable(XSD_FOR_DATATYPE.get(propertyDocument.getDatatype().getIri()))
-                .ifPresent(range -> document.add(new StoredField("range", range)));
-        writeDocument(document);
     }
 
     private boolean isObjectRange(DatatypeIdValue datatypeIdValue) {

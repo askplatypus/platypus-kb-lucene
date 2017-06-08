@@ -50,8 +50,6 @@ public class Context {
         BASIC_CONTEXT.put("hydra:next", ID_CONTEXT);
         BASIC_CONTEXT.put("ObjectProperty", "owl:ObjectProperty");
         BASIC_CONTEXT.put("Property", "rdf:Property");
-        BASIC_CONTEXT.put("range", "rdfs:range");
-        BASIC_CONTEXT.put("rdfs:range", ID_CONTEXT);
         BASIC_CONTEXT.put("resultScore", "goog:resultScore");
         BASIC_CONTEXT.put("sameAs", ID_CONTEXT);
         BASIC_CONTEXT.put("totalItems", "hydra:totalItems");

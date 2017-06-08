@@ -111,14 +111,6 @@ public class EntityActionsTest extends JerseyTest {
     }
 
     @Test
-    public void testProperty() {
-        JsonLdRoot<Entity> result =
-                target("/api/v1/entity/wdt:P42").request().get(RESULT_TYPE);
-        Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
-        assertEnglishProperty(result.getContent());
-    }
-
-    @Test
     public void test404() {
         Response response = target("/api/v1/entity/wd:Q00").request().get();
         Assert.assertEquals(404, response.getStatus());
@@ -174,20 +166,6 @@ public class EntityActionsTest extends JerseyTest {
     private void assertNotLanguageBaseDummy(Entity result) {
         Assert.assertEquals("wd:Q111", result.getIRI());
         Assert.assertEquals(Collections.singletonList("NamedIndividual"), result.getTypes());
-        Assert.assertNull(result.getPropertyValue("url"));
-        Assert.assertEquals(Collections.emptyList(), result.getPropertyValue("sameAs"));
-    }
-
-    private void assertEnglishProperty(Entity result) {
-        Assert.assertEquals("Foo-Bar", result.getPropertyValue("name"));
-        Assert.assertNull(result.getPropertyValue("description"));
-        assertNotLanguageBaseProperty(result);
-    }
-
-    private void assertNotLanguageBaseProperty(Entity result) {
-        Assert.assertEquals("wdt:P42", result.getIRI());
-        Assert.assertEquals(Arrays.asList("Property", "DatatypeProperty"), result.getTypes());
-        Assert.assertEquals("xsd:string", result.getPropertyValue("range"));
         Assert.assertNull(result.getPropertyValue("url"));
         Assert.assertEquals(Collections.emptyList(), result.getPropertyValue("sameAs"));
     }

@@ -133,24 +133,6 @@ public class SearchActionsTest extends JerseyTest {
     }
 
     @Test
-    public void testPropertySearch() {
-        JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
-                target("/api/v1/search/simple").queryParam("type", "Property").request().get(RESULT_TYPE);
-        Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
-        assertElementCount(result.getContent(), 1);
-        assertEnglishProperty(result.getContent().getElements().get(0).getResult());
-    }
-
-    @Test
-    public void testKeywordPropertySearch() {
-        JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
-                target("/api/v1/search/simple").queryParam("q", "Foo Bar").queryParam("type", "rdf:Property").request().get(RESULT_TYPE);
-        Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
-        assertElementCount(result.getContent(), 1);
-        assertEnglishProperty(result.getContent().getElements().get(0).getResult());
-    }
-
-    @Test
     public void testSearchWithoutResults() {
         JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
                 target("/api/v1/search/simple").queryParam("q", "TitiToto").request().get(RESULT_TYPE);
@@ -220,20 +202,6 @@ public class SearchActionsTest extends JerseyTest {
     private void assertNotLanguageBaseSmallFoo(Entity result) {
         Assert.assertEquals("wd:Q222", result.getIRI());
         Assert.assertEquals(Collections.singletonList("NamedIndividual"), result.getTypes());
-        Assert.assertNull(result.getPropertyValue("url"));
-        Assert.assertEquals(Collections.emptyList(), result.getPropertyValue("sameAs"));
-    }
-
-    private void assertEnglishProperty(Entity result) {
-        Assert.assertEquals("Foo-Bar", result.getPropertyValue("name"));
-        Assert.assertNull(result.getPropertyValue("description"));
-        assertNotLanguageBaseProperty(result);
-    }
-
-    private void assertNotLanguageBaseProperty(Entity result) {
-        Assert.assertEquals("wdt:P42", result.getIRI());
-        Assert.assertEquals(Arrays.asList("Property", "DatatypeProperty"), result.getTypes());
-        Assert.assertEquals("xsd:string", result.getPropertyValue("range"));
         Assert.assertNull(result.getPropertyValue("url"));
         Assert.assertEquals(Collections.emptyList(), result.getPropertyValue("sameAs"));
     }
