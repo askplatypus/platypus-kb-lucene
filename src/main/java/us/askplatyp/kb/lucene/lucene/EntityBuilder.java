@@ -194,7 +194,7 @@ class EntityBuilder {
     private static Optional<Image> buildWikipediaImage(String articleIRI) {
         try {
             return WikimediaREST.getInstance().getSummary(articleIRI).getThumbnail().map(thumbnail ->
-                    new Image(thumbnail.getSource()) //TODO: license
+                    new Image(thumbnail.getSource(), thumbnail.getWidth(), thumbnail.getHeight()) //TODO: license
             );
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);

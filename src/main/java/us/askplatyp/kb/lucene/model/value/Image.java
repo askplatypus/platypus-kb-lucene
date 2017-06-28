@@ -28,10 +28,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Image {
 
     private String contentURL;
+    private int width;
+    private int height;
 
     @JsonCreator
-    public Image(@JsonProperty("contentUrl") String contentURL) {
+    public Image(
+            @JsonProperty("contentUrl") String contentURL,
+            @JsonProperty("width") int width,
+            @JsonProperty("height") int height
+    ) {
         this.contentURL = contentURL;
+        this.width = width;
+        this.height = height;
     }
 
     @JsonProperty("@type")
@@ -42,5 +50,15 @@ public class Image {
     @JsonProperty("contentUrl")
     public String getContentURL() {
         return contentURL;
+    }
+
+    @JsonProperty("width")
+    public int getWidth() {
+        return width;
+    }
+
+    @JsonProperty("height")
+    public int getHeight() {
+        return height;
     }
 }

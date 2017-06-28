@@ -71,6 +71,7 @@ public class WikimediaREST {
         return UriBuilder.fromUri("https://host/api/rest_v1/page/")
                 .host(pageURL.getHost())
                 .segment(action, pageURL.getPath().replaceFirst("/wiki/", ""))
+                .queryParam("redirect", "false")
                 .build().toURL();
     }
 }
