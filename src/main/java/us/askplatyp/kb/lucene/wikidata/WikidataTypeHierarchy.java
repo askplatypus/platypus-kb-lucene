@@ -39,7 +39,7 @@ public class WikidataTypeHierarchy implements AutoCloseable {
     private ConcurrentMap<ItemIdValue, List<ItemIdValue>> typeHierarchy;
 
     WikidataTypeHierarchy(Path file) {
-        datatabase = DBMaker.fileDB(file.toFile()).fileMmapEnable().make();
+        datatabase = DBMaker.fileDB(file.toFile()).fileMmapEnableIfSupported().make();
         typeHierarchy = datatabase
                 .hashMap("wd-type-hierachy", new WikidataItemIdValueSerializer(), new WikidataItemIdValuesSerializer())
                 .createOrOpen();
