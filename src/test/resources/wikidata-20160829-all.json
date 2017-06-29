@@ -44,8 +44,8 @@
             "datavalue": {
               "value": {
                 "entity-type": "item",
-                "numeric-id": 5,
-                "id": "Q11"
+                "numeric-id": 111,
+                "id": "Q111"
               },
               "type": "wikibase-entityid"
             },
@@ -54,6 +54,24 @@
           "type": "statement",
           "rank": "normal",
           "id": "Q222-foo"
+        },
+        {
+          "mainsnak": {
+            "snaktype": "value",
+            "property": "P31",
+            "datavalue": {
+              "value": {
+                "entity-type": "item",
+                "numeric-id": 11111111,
+                "id": "Q11111111"
+              },
+              "type": "wikibase-entityid"
+            },
+            "datatype": "wikibase-item"
+          },
+          "type": "statement",
+          "rank": "normal",
+          "id": "Q222-foo2"
         }
       ],
       "P569": [

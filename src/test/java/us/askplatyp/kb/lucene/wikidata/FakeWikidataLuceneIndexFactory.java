@@ -38,8 +38,9 @@ public class FakeWikidataLuceneIndexFactory implements Factory<LuceneIndex> {
         TemporaryFolder temporaryFolder = new TemporaryFolder();
         temporaryFolder.create();
 
-        File fakeDump = temporaryFolder.newFile("wikidata-20160829-all.json.gz");
-        compressFileToGzip(new File(FakeWikidataLuceneIndexFactory.class.getResource("/wikidata-20160829-all.json").getPath()), fakeDump);
+        File fakeDumpFile = temporaryFolder.newFile("wikidata-20160829-all.json.gz");
+        compressFileToGzip(new File(FakeWikidataLuceneIndexFactory.class.getResource("/wikidata-20160829-all.json").getPath()), fakeDumpFile);
+        MwLocalDumpFile fakeDump = new MwLocalDumpFile(fakeDumpFile.getPath());
 
         File dbFile = temporaryFolder.newFile();
         dbFile.delete();
@@ -48,14 +49,14 @@ public class FakeWikidataLuceneIndexFactory implements Factory<LuceneIndex> {
         DumpProcessingController dumpProcessingController = new DumpProcessingController("wikidatawiki");
         dumpProcessingController.setDownloadDirectory(temporaryFolder.newFolder().toString());
         dumpProcessingController.registerEntityDocumentProcessor(typeHierarchy.getUpdateProcessor(), null, true);
-        dumpProcessingController.processDump(new MwLocalDumpFile(fakeDump.getPath()));
+        dumpProcessingController.processDump(fakeDump);
 
         dumpProcessingController.registerEntityDocumentProcessor(
                 new LuceneUpdateProcessor(index, dumpProcessingController.getSitesInformation(), typeHierarchy),
                 null,
                 true
         );
-        dumpProcessingController.processDump(new MwLocalDumpFile(fakeDump.getPath()));
+        dumpProcessingController.processDump(fakeDump);
         index.refreshReaders();
 
     }

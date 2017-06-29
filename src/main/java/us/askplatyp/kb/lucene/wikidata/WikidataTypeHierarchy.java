@@ -17,12 +17,12 @@
 
 package us.askplatyp.kb.lucene.wikidata;
 
-import org.mapdb.*;
-import org.mapdb.serializer.GroupSerializerObjectArray;
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
+import org.mapdb.Serializer;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
 import org.wikidata.wdtk.datamodel.interfaces.*;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,17 +36,23 @@ import java.util.stream.Stream;
  */
 public class WikidataTypeHierarchy implements AutoCloseable {
     private DB datatabase;
-    private ConcurrentMap<ItemIdValue, List<ItemIdValue>> typeHierarchy;
+    private ConcurrentMap<String, String> typeHierarchy;
 
     WikidataTypeHierarchy(Path file) {
         datatabase = DBMaker.fileDB(file.toFile()).fileMmapEnableIfSupported().make();
         typeHierarchy = datatabase
-                .hashMap("wd-type-hierachy", new WikidataItemIdValueSerializer(), new WikidataItemIdValuesSerializer())
+                .hashMap("wd-type-hierachy", Serializer.STRING, Serializer.STRING)
                 .createOrOpen();
     }
 
     public List<ItemIdValue> getSuperClasses(ItemIdValue item) {
-        return typeHierarchy.getOrDefault(item, Collections.emptyList());
+        String parents = typeHierarchy.get(item.getId());
+        if (parents == null) {
+            return Collections.emptyList();
+        }
+        return Arrays.stream(parents.split(" "))
+                .map(Datamodel::makeWikidataItemIdValue)
+                .collect(Collectors.toList());
     }
 
     EntityDocumentProcessor getUpdateProcessor() {
@@ -55,16 +61,18 @@ public class WikidataTypeHierarchy implements AutoCloseable {
             public void processItemDocument(ItemDocument itemDocument) {
                 StatementGroup statementGroup = itemDocument.findStatementGroup("P279");
                 if (statementGroup != null) {
-                    List<ItemIdValue> parents = statementGroup.getStatements().stream()
+                    String parents = statementGroup.getStatements().stream()
                             .map(Statement::getValue)
                             .flatMap(value -> {
                                 if (value instanceof ItemIdValue) {
-                                    return Stream.of((ItemIdValue) value);
+                                    return Stream.of(((ItemIdValue) value).getId());
                                 } else {
                                     return Stream.empty();
                                 }
-                            }).collect(Collectors.toList());
-                    typeHierarchy.put(itemDocument.getItemId(), parents);
+                            }).collect(Collectors.joining(" "));
+                    if (!parents.equals("")) {
+                        typeHierarchy.put(itemDocument.getItemId().getId(), parents);
+                    }
                 }
             }
 
@@ -77,44 +85,5 @@ public class WikidataTypeHierarchy implements AutoCloseable {
     @Override
     public void close() throws Exception {
         datatabase.close();
-    }
-
-    private static class WikidataItemIdValueSerializer extends GroupSerializerObjectArray<ItemIdValue> {
-        public void serialize(DataOutput2 out, ItemIdValue value) throws IOException {
-            Serializer.STRING_ASCII.serialize(out, value.getId());
-        }
-
-        public ItemIdValue deserialize(DataInput2 in, int available) throws IOException {
-            return Datamodel.makeWikidataItemIdValue(Serializer.STRING_ASCII.deserialize(in, available));
-        }
-
-        public boolean isTrusted() {
-            return true;
-        }
-
-        public int hashCode(ItemIdValue value, int seed) {
-            return Serializer.STRING_ASCII.hashCode(value.getId(), seed);
-        }
-    }
-
-    private static class WikidataItemIdValuesSerializer extends GroupSerializerObjectArray<List<ItemIdValue>> {
-        public void serialize(DataOutput2 out, List<ItemIdValue> values) throws IOException {
-            String value = values.stream().map(ItemIdValue::getId).collect(Collectors.joining(" "));
-            Serializer.STRING_ASCII.serialize(out, value);
-        }
-
-        public List<ItemIdValue> deserialize(DataInput2 in, int available) throws IOException {
-            String value = Serializer.STRING_ASCII.deserialize(in, available);
-            return Arrays.stream(value.split(" ")).map(Datamodel::makeWikidataItemIdValue).collect(Collectors.toList());
-        }
-
-        public boolean isTrusted() {
-            return true;
-        }
-
-        public int hashCode(List<ItemIdValue> values, int seed) {
-            String value = values.stream().map(ItemIdValue::getId).collect(Collectors.joining(" "));
-            return Serializer.STRING_ASCII.hashCode(value, seed);
-        }
     }
 }
