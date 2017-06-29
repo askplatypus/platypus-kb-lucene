@@ -181,11 +181,6 @@
             <artifactId>wdtk-dumpfiles</artifactId>
             <version>${wdtkVersion}</version>
         </dependency>
-        <dependency>
-            <groupId>org.wikidata.wdtk</groupId>
-            <artifactId>wdtk-wikibaseapi</artifactId>
-            <version>${wdtkVersion}</version>
-        </dependency>
     </dependencies>
 
     <build>
