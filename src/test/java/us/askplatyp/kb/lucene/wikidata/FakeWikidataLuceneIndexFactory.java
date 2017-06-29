@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,16 +38,23 @@ public class FakeWikidataLuceneIndexFactory implements Factory<LuceneIndex> {
         TemporaryFolder temporaryFolder = new TemporaryFolder();
         temporaryFolder.create();
 
+        File fakeDump = temporaryFolder.newFile("wikidata-20160829-all.json.gz");
+        compressFileToGzip(new File(FakeWikidataLuceneIndexFactory.class.getResource("/wikidata-20160829-all.json").getPath()), fakeDump);
+
+        File dbFile = temporaryFolder.newFile();
+        dbFile.delete();
+        WikidataTypeHierarchy typeHierarchy = new WikidataTypeHierarchy(dbFile.toPath());
         index = new LuceneIndex(temporaryFolder.newFolder().toPath());
         DumpProcessingController dumpProcessingController = new DumpProcessingController("wikidatawiki");
         dumpProcessingController.setDownloadDirectory(temporaryFolder.newFolder().toString());
+        dumpProcessingController.registerEntityDocumentProcessor(typeHierarchy.getUpdateProcessor(), null, true);
+        dumpProcessingController.processDump(new MwLocalDumpFile(fakeDump.getPath()));
+
         dumpProcessingController.registerEntityDocumentProcessor(
-                new LuceneUpdateProcessor(index, dumpProcessingController.getSitesInformation()),
+                new LuceneUpdateProcessor(index, dumpProcessingController.getSitesInformation(), typeHierarchy),
                 null,
                 true
         );
-        File fakeDump = temporaryFolder.newFile("wikidata-20160829-all.json.gz");
-        compressFileToGzip(new File(FakeWikidataLuceneIndexFactory.class.getResource("/wikidata-20160829-all.json").getPath()), fakeDump);
         dumpProcessingController.processDump(new MwLocalDumpFile(fakeDump.getPath()));
         index.refreshReaders();
 

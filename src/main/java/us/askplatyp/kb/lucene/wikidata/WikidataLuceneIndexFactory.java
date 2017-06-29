@@ -49,12 +49,14 @@ public class WikidataLuceneIndexFactory implements Factory<LuceneIndex> {
     private static final LastProcessedDumpInfo LAST_PROCESSED_DUMP_INFO = new LastProcessedDumpInfo();
 
     private static LuceneIndex index;
+    private static WikidataTypeHierarchy typeHierarchy;
 
     public static void init(String luceneDirectoryPath) throws IOException {
         if (index != null) {
             throw new IOException("Wikidata Lucene index already initialized");
         }
         index = new LuceneIndex(Paths.get(luceneDirectoryPath));
+        typeHierarchy = new WikidataTypeHierarchy(Paths.get(luceneDirectoryPath, "wd-builder"));
         loadData();
     }
 
@@ -62,11 +64,17 @@ public class WikidataLuceneIndexFactory implements Factory<LuceneIndex> {
         DumpProcessingController dumpProcessingController = new DumpProcessingController("wikidatawiki");
         dumpProcessingController.setDownloadDirectory(Configuration.getInstance().getWikidataDirectory());
         dumpProcessingController.setLanguageFilter(LuceneUpdateProcessor.SUPPORTED_LANGUAGES);
+        dumpProcessingController.registerEntityDocumentProcessor(typeHierarchy.getUpdateProcessor(), null, true);
+
+        //We load first the type hierarchy
+        dumpProcessingController.processMostRecentJsonDump();
+
+        //We do now the regular loading
         dumpProcessingController.registerEntityDocumentProcessor(
-                new LuceneUpdateProcessor(index, dumpProcessingController.getSitesInformation()),
-                null,
-                true
+                new LuceneUpdateProcessor(index, dumpProcessingController.getSitesInformation(), typeHierarchy),
+                null, true
         );
+
         for (MwDumpFile dump : getNewDumpsToProcess(dumpProcessingController.getWmfDumpFileManager()).toArray(MwDumpFile[]::new)) {
             LOGGER.info("Processing " + dump.getProjectName() + " " + dump.getDumpContentType() + " of the " + dump.getDateStamp());
             try {

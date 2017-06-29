@@ -68,10 +68,14 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
 
     private LuceneIndex index;
     private Sites sites;
+    private TypeMapper typeMapper;
+    private MapperRegistry mapperRegistry;
 
-    LuceneUpdateProcessor(LuceneIndex index, Sites sites) {
+    LuceneUpdateProcessor(LuceneIndex index, Sites sites, WikidataTypeHierarchy typeHierarchy) {
         this.index = index;
         this.sites = sites;
+        this.typeMapper = new TypeMapper(typeHierarchy);
+        this.mapperRegistry = new MapperRegistry(typeHierarchy);
     }
 
     @Override
@@ -98,22 +102,7 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
         //TODO: filter elements without statements?
         return getBestStatements(itemDocument, P31).stream()
                 .map(Statement::getValue)
-                .noneMatch(value -> value instanceof ItemIdValue &&
-                        TypeMapper.getInstance().isFilteredClass((ItemIdValue) value)
-                );
-    }
-
-    private boolean isObjectRange(DatatypeIdValue datatypeIdValue) {
-        return datatypeIdValue.getIri().equals(DatatypeIdValue.DT_ITEM) ||
-                datatypeIdValue.getIri().equals(DatatypeIdValue.DT_PROPERTY);
-    }
-
-    private String IRIforPropertyId(PropertyIdValue propertyId) {
-        if (propertyId.getSiteIri().equals(Datamodel.SITE_WIKIDATA)) {
-            return "wdt:" + propertyId.getId();
-        } else {
-            return Namespaces.reduce(propertyId.getIri());
-        }
+                .noneMatch(value -> value instanceof ItemIdValue && typeMapper.isFilteredClass((ItemIdValue) value));
     }
 
     private void addTermsToDocument(TermedDocument termedDocument, Document document) {
@@ -144,7 +133,7 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
     private void addStatementsToDocument(StatementDocument statementDocument, Document document) {
         statementDocument.getStatementGroups().forEach(group ->
                 getBestStatements(group).forEach(statement ->
-                        MapperRegistry.getMapperForProperty(statement.getClaim().getMainSnak().getPropertyId()).ifPresent(mapper -> {
+                        mapperRegistry.getMapperForProperty(statement.getClaim().getMainSnak().getPropertyId()).ifPresent(mapper -> {
                             try {
                                 mapper.mapStatement(statement).forEach(document::add);
                             } catch (InvalidWikibaseValueException e) {

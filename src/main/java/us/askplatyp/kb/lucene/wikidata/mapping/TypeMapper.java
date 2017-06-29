@@ -17,22 +17,16 @@
 
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Sets;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
-import org.wikidata.wdtk.datamodel.interfaces.*;
-import org.wikidata.wdtk.wikibaseapi.WikibaseDataFetcher;
-import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
+import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
+import us.askplatyp.kb.lucene.wikidata.WikidataTypeHierarchy;
 
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,7 +46,6 @@ public class TypeMapper implements StatementMainItemIdValueMapper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TypeMapper.class);
     private static final Map<ItemIdValue, List<String>> SCHEMA_TYPES = new HashMap<>();
-    private static final TypeMapper INSTANCE = new TypeMapper();
 
     static {
         SCHEMA_TYPES.put(Datamodel.makeWikidataItemIdValue("Q5"), Collections.singletonList("Person")); //human
@@ -160,21 +153,10 @@ public class TypeMapper implements StatementMainItemIdValueMapper {
         SCHEMA_TYPES.put(Datamodel.makeWikidataItemIdValue("Q27108230"), Arrays.asList("Place", "CivicStructure", "Organization", "LocalBusiness", "LodgingBusiness", "Campground"));
     }
 
-    private LoadingCache<ItemIdValue, List<ItemIdValue>> subclassOfCache = CacheBuilder.newBuilder()
-            .maximumSize(2048) //TODO: configure?
-            .expireAfterWrite(7, TimeUnit.DAYS)
-            .build(new CacheLoader<ItemIdValue, List<ItemIdValue>>() {
-                @Override
-                public List<ItemIdValue> load(ItemIdValue itemId) throws MediaWikiApiErrorException {
-                    return retrieveDirectSuperClasses(itemId);
-                }
-            });
+    private WikidataTypeHierarchy typeHierarchy;
 
-    private TypeMapper() {
-    }
-
-    public static TypeMapper getInstance() {
-        return INSTANCE;
+    public TypeMapper(WikidataTypeHierarchy typeHierarchy) {
+        this.typeHierarchy = typeHierarchy;
     }
 
     @Override
@@ -201,7 +183,7 @@ public class TypeMapper implements StatementMainItemIdValueMapper {
         Stack<ItemIdValue> toGet = new Stack<>();
         toGet.add(itemId);
         while (!toGet.empty()) {
-            for (ItemIdValue superClass : getDirectSuperClasses(toGet.pop())) {
+            for (ItemIdValue superClass : typeHierarchy.getSuperClasses(toGet.pop())) {
                 if (!superClasses.contains(superClass)) {
                     superClasses.add(superClass);
                     toGet.add(superClass);
@@ -210,35 +192,5 @@ public class TypeMapper implements StatementMainItemIdValueMapper {
         }
 
         return superClasses;
-    }
-
-    private List<ItemIdValue> getDirectSuperClasses(ItemIdValue itemId) {
-        try {
-            return subclassOfCache.get(itemId);
-        } catch (ExecutionException e) {
-            LOGGER.warn(e.getMessage(), e);
-            return Collections.emptyList();
-        }
-    }
-
-    private List<ItemIdValue> retrieveDirectSuperClasses(ItemIdValue itemId) throws MediaWikiApiErrorException {
-        EntityDocument document = WikibaseDataFetcher.getWikidataDataFetcher().getEntityDocument(itemId.getId());
-        if (!(document instanceof ItemDocument)) {
-            return Collections.emptyList();
-        }
-        StatementGroup statementGroup = ((ItemDocument) document).findStatementGroup("P279");
-        if (statementGroup == null) {
-            return Collections.emptyList();
-        }
-        return statementGroup.getStatements().stream()
-                .map(Statement::getValue)
-                .flatMap(value -> {
-                    if (value instanceof ItemIdValue) {
-                        return Stream.of((ItemIdValue) value);
-                    } else {
-                        return Stream.empty();
-                    }
-                }).collect(Collectors.toList());
-
     }
 }

@@ -45,7 +45,7 @@
               "value": {
                 "entity-type": "item",
                 "numeric-id": 5,
-                "id": "Q5"
+                "id": "Q11"
               },
               "type": "wikibase-entityid"
             },
@@ -222,7 +222,28 @@
         }
       ]
     },
-    "claims": [],
+    "claims": {
+      "P279": [
+        {
+          "mainsnak": {
+            "snaktype": "value",
+            "property": "P279",
+            "datavalue": {
+              "value": {
+                "entity-type": "item",
+                "numeric-id": 5,
+                "id": "Q5"
+              },
+              "type": "wikibase-entityid"
+            },
+            "datatype": "wikibase-item"
+          },
+          "type": "statement",
+          "rank": "normal",
+          "id": "Q111-bar"
+        }
+      ]
+    },
     "sitelinks": []
   },
   {

@@ -33,6 +33,7 @@
         <jtsVersion>1.14.0</jtsVersion>
         <junitVersion>4.12</junitVersion>
         <luceneVersion>6.5.0</luceneVersion>
+        <mapDbVersion>3.0.4</mapDbVersion>
         <rdf4jVersion>2.2</rdf4jVersion>
         <servletVersion>3.1.0</servletVersion>
         <swaggerVersion>1.5.13</swaggerVersion>
@@ -164,6 +165,11 @@
             <artifactId>jersey-test-framework-provider-inmemory</artifactId>
             <version>${jerseyVersion}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mapdb</groupId>
+            <artifactId>mapdb</artifactId>
+            <version>${mapDbVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
