@@ -44,21 +44,21 @@ public class FakeWikidataLuceneIndexFactory implements Factory<LuceneIndex> {
 
         File dbFile = temporaryFolder.newFile();
         dbFile.delete();
-        WikidataTypeHierarchy typeHierarchy = new WikidataTypeHierarchy(dbFile.toPath());
-        index = new LuceneIndex(temporaryFolder.newFolder().toPath());
-        DumpProcessingController dumpProcessingController = new DumpProcessingController("wikidatawiki");
-        dumpProcessingController.setDownloadDirectory(temporaryFolder.newFolder().toString());
-        dumpProcessingController.registerEntityDocumentProcessor(typeHierarchy.getUpdateProcessor(), null, true);
-        dumpProcessingController.processDump(fakeDump);
+        try (WikidataTypeHierarchy typeHierarchy = new WikidataTypeHierarchy(dbFile.toPath())) {
+            index = new LuceneIndex(temporaryFolder.newFolder().toPath());
+            DumpProcessingController dumpProcessingController = new DumpProcessingController("wikidatawiki");
+            dumpProcessingController.setDownloadDirectory(temporaryFolder.newFolder().toString());
+            dumpProcessingController.registerEntityDocumentProcessor(typeHierarchy.getUpdateProcessor(), null, true);
+            dumpProcessingController.processDump(fakeDump);
 
-        dumpProcessingController.registerEntityDocumentProcessor(
-                new LuceneUpdateProcessor(index, dumpProcessingController.getSitesInformation(), typeHierarchy),
-                null,
-                true
-        );
-        dumpProcessingController.processDump(fakeDump);
-        index.refreshReaders();
-
+            dumpProcessingController.registerEntityDocumentProcessor(
+                    new LuceneUpdateProcessor(index, dumpProcessingController.getSitesInformation(), typeHierarchy),
+                    null,
+                    true
+            );
+            dumpProcessingController.processDump(fakeDump);
+            index.refreshReaders();
+        }
     }
 
     private static void compressFileToGzip(File input, File output) throws IOException {

@@ -57,6 +57,14 @@ public class WikidataLuceneIndexFactory implements Factory<LuceneIndex> {
         }
         index = new LuceneIndex(Paths.get(luceneDirectoryPath));
         typeHierarchy = new WikidataTypeHierarchy(Paths.get(luceneDirectoryPath, "wd-builder"));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                index.close();
+                typeHierarchy.close();
+            } catch (Exception e) {
+                LOGGER.error(e.getMessage(), e);
+            }
+        }));
         loadData();
     }
 

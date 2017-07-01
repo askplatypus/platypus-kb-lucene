@@ -83,7 +83,7 @@ public class WikidataTypeHierarchy implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         datatabase.close();
     }
 }
