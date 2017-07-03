@@ -20,8 +20,6 @@ package us.askplatyp.kb.lucene.wikidata.mapping;
 import com.google.common.collect.Sets;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
 import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
 import us.askplatyp.kb.lucene.wikidata.WikidataTypeHierarchy;
@@ -44,7 +42,6 @@ public class TypeMapper implements StatementMainItemIdValueMapper {
             Datamodel.makeWikidataItemIdValue("Q18340514")  //article about events in a specific year or time period
     );
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TypeMapper.class);
     private static final Map<ItemIdValue, List<String>> SCHEMA_TYPES = new HashMap<>();
 
     static {
