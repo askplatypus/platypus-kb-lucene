@@ -163,10 +163,13 @@ class EntityBuilder {
 
     private static Optional<Object> buildGeoValue(Document document) {
         try {
-            Geometry shape = KartographerAPI.getInstance()
-                    .getShapeForItemId(Namespaces.expand(document.get("@id")));
-            if (!shape.isEmpty()) {
-                return Optional.of(GeoValue.buildGeoValue(shape));
+            //We only do geoshape lookup for Places in order to don't overload the servers
+            if (Arrays.stream(document.getValues("@type")).anyMatch(type -> type.equals("Place"))) {
+                Geometry shape = KartographerAPI.getInstance()
+                        .getShapeForItemId(Namespaces.expand(document.get("@id")));
+                if (!shape.isEmpty()) {
+                    return Optional.of(GeoValue.buildGeoValue(shape));
+                }
             }
             return Optional.ofNullable(document.get("geo")).map(GeoValue::buildGeoValue);
         } catch (IOException e) {
