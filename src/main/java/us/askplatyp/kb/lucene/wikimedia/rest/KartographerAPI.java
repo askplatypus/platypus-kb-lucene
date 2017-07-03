@@ -48,7 +48,7 @@ public class KartographerAPI {
     private static final KartographerAPI INSTANCE = new KartographerAPI();
     private LoadingCache<String, Geometry> shapeCache = CacheBuilder.newBuilder()
             .maximumSize(16384) //TODO: configure?
-            .expireAfterWrite(1, TimeUnit.DAYS)
+            .expireAfterWrite(7, TimeUnit.DAYS)
             .build(new CacheLoader<String, Geometry>() {
                 @Override
                 public Geometry load(String itemId) throws IOException, ParseException {
