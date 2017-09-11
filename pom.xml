@@ -35,7 +35,7 @@
         <mapDbVersion>3.0.5</mapDbVersion>
         <rdf4jVersion>2.2.2</rdf4jVersion>
         <servletVersion>3.1.0</servletVersion>
-        <swaggerVersion>1.5.16</swaggerVersion>
+        <swaggerVersion>1.5.13</swaggerVersion><!-- Warning: issues with Guava dependency version with 1.5.16 -->
         <slf4jVersion>1.7.25</slf4jVersion>
         <wdtkVersion>0.8.0-SNAPSHOT</wdtkVersion>
     </properties>
