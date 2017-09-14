@@ -17,21 +17,18 @@
 
 package us.askplatyp.kb.lucene.model;
 
-import us.askplatyp.kb.lucene.model.value.LocaleStringValue;
 import us.askplatyp.kb.lucene.model.value.ResourceValue;
 import us.askplatyp.kb.lucene.model.value.Value;
 
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Stream;
 
 
 public class Resource {
     private String IRI;
     private Set<String> types = new HashSet<>();
-    private Set<LocaleStringValue> labels = new HashSet<>();
     private Set<Claim> claims = new HashSet<>();
-    private int score = 0;
 
     public Resource(String IRI) {
         this.IRI = Namespaces.reduce(IRI);
@@ -41,32 +38,28 @@ public class Resource {
         return IRI;
     }
 
-    public Set<String> getTypes() {
-        return types;
+    public Stream<String> getTypes() {
+        return types.stream();
     }
 
     public void addType(String typeIRI) {
         types.add(Namespaces.reduce(typeIRI));
     }
 
-    public Set<LocaleStringValue> getLabels() {
-        return labels;
+    public Stream<Claim> getClaims() {
+        return claims.stream();
     }
 
-    public void addLabel(LocaleStringValue value) {
-        labels.add(value);
+    public Stream<Claim> getClaimsForProperty(String propertyIRI) {
+        return claims.stream().filter(claim -> claim.getProperty().equals(propertyIRI));
     }
 
-    public void addLabel(String text, Locale locale) {
-        addLabel(new LocaleStringValue(text, locale));
+    public Stream<Value> getValuesForProperty(String propertyIRI) {
+        return getClaimsForProperty(propertyIRI).map(Claim::getValue);
     }
 
-    public void addLabel(String text, String languageCode) {
-        addLabel(new LocaleStringValue(text, languageCode));
-    }
-
-    public Set<Claim> getClaims() {
-        return claims;
+    public Stream<String> getStringValuesForProperty(String propertyIRI) {
+        return getValuesForProperty(propertyIRI).map(Value::toString);
     }
 
     public void addClaim(Claim claim) {
@@ -83,17 +76,5 @@ public class Resource {
 
     public void addClaim(String property, Value value) {
         addClaim(new Claim(property, value));
-    }
-
-    public int getScore() {
-        return score;
-    }
-
-    public void addToScore(int val) {
-        score += val;
-    }
-
-    public void incrementScore() {
-        score++;
     }
 }

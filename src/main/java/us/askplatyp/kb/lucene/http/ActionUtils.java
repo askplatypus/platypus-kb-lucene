@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.askplatyp.kb.lucene.Configuration;
-import us.askplatyp.kb.lucene.model.ApiException;
 
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.core.MediaType;
@@ -50,23 +49,7 @@ class ActionUtils {
         if (bestResponseVariant == null) {
             return Response.notAcceptable(variants).build();
         }
-        try {
-            return Response.ok(serialize(resultBuilder.buildResult(bestResponseVariant.getLanguage())), bestResponseVariant)
-                    .build();
-        } catch (ApiException e) {
-            return resultForApiException(e, bestResponseVariant);
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            return resultForApiException(new ApiException(e), bestResponseVariant);
-        }
-    }
-
-    private static Response resultForApiException(ApiException e, Variant variant) {
-        return Response
-                .status(e.getStatus())
-                .variant(variant)
-                .entity(serialize(e))
-                .build();
+        return Response.ok(serialize(resultBuilder.buildResult(bestResponseVariant.getLanguage())), bestResponseVariant).build();
     }
 
     private static String serialize(Object model) {
@@ -79,6 +62,6 @@ class ActionUtils {
 
     @FunctionalInterface
     interface JsonResultBuilder<R> {
-        R buildResult(Locale locale) throws Exception;
+        R buildResult(Locale locale);
     }
 }

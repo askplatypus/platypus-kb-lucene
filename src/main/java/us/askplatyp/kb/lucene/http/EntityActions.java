@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,16 +18,16 @@
 package us.askplatyp.kb.lucene.http;
 
 import io.swagger.annotations.*;
+import us.askplatyp.kb.lucene.jsonld.JsonLdBuilder;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
-import us.askplatyp.kb.lucene.lucene.LuceneSearcher;
+import us.askplatyp.kb.lucene.lucene.LuceneLookup;
 
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 
 /**
  * @author Thomas Pellissier Tanon
@@ -56,10 +56,12 @@ public class EntityActions {
     ) {
         return ActionUtils.jsonContentNegotiation(request, (locale) -> {
             try (LuceneIndex.Reader indexReader = index.getReader()) {
-                return new LuceneSearcher(indexReader).getEntityForIRI(
-                        IRI,
-                        locale
-                );
+                LuceneLookup luceneLookup = new LuceneLookup(indexReader);
+                return luceneLookup.getResourceForIRI(IRI).map(resource ->
+                        (new JsonLdBuilder(luceneLookup)).buildEntityInLanguage(resource, locale)
+                ).orElseThrow(() -> new NotFoundException("The entity " + IRI + " does not seems to exist in the knowledge base"));
+            } catch (IOException e) {
+                throw new InternalServerErrorException("Database error.", e);
             }
         });
     }

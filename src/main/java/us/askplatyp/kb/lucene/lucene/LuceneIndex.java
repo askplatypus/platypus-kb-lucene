@@ -54,7 +54,7 @@ public class LuceneIndex implements Closeable {
         return new Reader();
     }
 
-    public void putDocument(Document document, Term identifier) throws IOException {
+    void putDocument(Document document, Term identifier) throws IOException {
         indexWriter.updateDocument(identifier, document); //TODO use revision
     }
 
@@ -92,11 +92,8 @@ public class LuceneIndex implements Closeable {
             return analyzer;
         }
 
-        /**
-         * @param IRI The entity IRI (IRIs should have been reduced)
-         */
-        public Optional<Document> getDocumentForIRI(String IRI) throws IOException {
-            OptionalInt docID = getDocIdForIRI(IRI);
+        public Optional<Document> getDocumentForTerm(Term term) throws IOException {
+            OptionalInt docID = getDocIdForTerm(term);
             if (docID.isPresent()) {
                 return Optional.of(indexSearcher.doc(docID.getAsInt()));
             } else {
@@ -104,18 +101,15 @@ public class LuceneIndex implements Closeable {
             }
         }
 
-        /**
-         * @param IRI The entity IRI (IRIs should have been reduced)
-         */
-        OptionalInt getDocIdForIRI(String IRI) throws IOException {
-            ScoreDoc[] scoreDocs = indexSearcher.search(new TermQuery(new Term("@id", IRI)), 1).scoreDocs;
+        OptionalInt getDocIdForTerm(Term term) throws IOException {
+            ScoreDoc[] scoreDocs = indexSearcher.search(new TermQuery(term), 1).scoreDocs;
             switch (scoreDocs.length) {
                 case 0:
                     return OptionalInt.empty();
                 case 1:
                     return OptionalInt.of(scoreDocs[0].doc);
                 default:
-                    throw new RuntimeException("More than one document found for IRI " + IRI);
+                    throw new RuntimeException("More than one document found for term " + term.toString());
             }
         }
 

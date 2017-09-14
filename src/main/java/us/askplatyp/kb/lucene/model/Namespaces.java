@@ -26,7 +26,7 @@ import java.util.TreeMap;
 public class Namespaces {
 
     public static final Map<String, String> NAMESPACES = new TreeMap<>();
-    static final String DEFAULT_NAMESPACE = "http://schema.org/";
+    public static final String DEFAULT_NAMESPACE = "http://schema.org/";
     private static final Map<String, String> SPECIAL_CASES = new TreeMap<>();
 
     static {

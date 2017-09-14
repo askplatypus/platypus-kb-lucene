@@ -17,6 +17,34 @@
 
 package us.askplatyp.kb.lucene.model;
 
-public interface Loader {
-    void addResource(Resource resource);
+import java.util.List;
+
+public class ResourceSearchResult {
+
+    private List<ScoredResource> resources;
+    private int totalHits;
+    private String currentContinue;
+    private String nextContinue;
+
+    public ResourceSearchResult(List<ScoredResource> resources, int totalHits, String currentContinue, String nextContinue) {
+        this.resources = resources;
+        this.totalHits = totalHits;
+        this.currentContinue = currentContinue;
+    }
+
+    public List<ScoredResource> getResources() {
+        return resources;
+    }
+
+    public int getTotalHits() {
+        return totalHits;
+    }
+
+    public String getCurrentContinue() {
+        return currentContinue;
+    }
+
+    public String getNextContinue() {
+        return nextContinue;
+    }
 }

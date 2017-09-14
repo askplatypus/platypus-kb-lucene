@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,31 +17,20 @@
 
 package us.askplatyp.kb.lucene.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
+public class ScoredResource {
+    private Resource resource;
+    private float score;
 
-/**
- * @author Thomas Pellissier Tanon
- */
-public class JsonLdRoot<T> {
-
-    private Context context;
-    private T content;
-
-    @JsonCreator
-    public JsonLdRoot(@JsonProperty("@context") Context context, @JsonUnwrapped T content) {
-        this.context = context;
-        this.content = content;
+    public ScoredResource(Resource resource, float score) {
+        this.resource = resource;
+        this.score = score;
     }
 
-    @JsonProperty("@context")
-    public Context getContext() {
-        return context;
+    public Resource getResource() {
+        return resource;
     }
 
-    @JsonUnwrapped
-    public T getContent() {
-        return content;
+    public float getScore() {
+        return score;
     }
 }

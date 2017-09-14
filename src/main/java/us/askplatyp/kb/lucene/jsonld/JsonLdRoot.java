@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,41 +15,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package us.askplatyp.kb.lucene.model;
+package us.askplatyp.kb.lucene.jsonld;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class Collection<T> {
+public class JsonLdRoot<T> {
 
-    private List<T> elements;
-    private int totalNumber;
+    private Context context;
+    private T content;
 
     @JsonCreator
-    Collection(@JsonProperty("member") List<T> elements, @JsonProperty("totalItems") int totalNumber) {
-        this.elements = elements;
-        this.totalNumber = totalNumber;
+    JsonLdRoot(@JsonProperty("@context") Context context, @JsonUnwrapped T content) {
+        this.context = context;
+        this.content = content;
     }
 
-    @JsonProperty("@type")
-    public String getType() {
-        return "hydra:Collection";
+    @JsonProperty("@context")
+    public Context getContext() {
+        return context;
     }
 
-    @JsonProperty("member")
-    public List<T> getElements() {
-        return this.elements;
-    }
-
-    @JsonProperty("totalItems")
-    public int getTotalNumber() {
-        return this.totalNumber;
+    @JsonUnwrapped
+    public T getContent() {
+        return content;
     }
 }

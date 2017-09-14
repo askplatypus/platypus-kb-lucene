@@ -30,6 +30,7 @@ import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -93,7 +94,7 @@ public class KartographerAPI {
 
     private Geometry geoGeoJSONRequest(URL targetURL) throws IOException, ParseException {
         try (InputStream inputStream = targetURL.openStream()) {
-            String geoJSON = IOUtils.toString(inputStream);
+            String geoJSON = IOUtils.toString(inputStream, Charset.defaultCharset());
             if (geoJSON.equals(EMPTY_FEATURE_COLLECTION)) {
                 return EMPTY_GEOMETRY;
             }

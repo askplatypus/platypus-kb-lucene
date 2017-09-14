@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,23 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package us.askplatyp.kb.lucene.model;
+package us.askplatyp.kb.lucene.jsonld;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.Map;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-interface ApiError {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class EntitySearchResult<T> extends SearchResult<T> {
 
-    @JsonProperty("@context")
-    Map<String, Object> getContext();
+    @JsonCreator
+    EntitySearchResult(@JsonProperty("result") T result, @JsonProperty("resultScore") float score) {
+        super(result, score);
+    }
 
-    @JsonProperty("@type")
-    String getType();
-
-    @JsonProperty("message")
-    String getMessage();
+    @Override
+    public String getType() {
+        return "EntitySearchResult";
+    }
 }

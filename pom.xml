@@ -33,7 +33,9 @@
         <junitVersion>4.12</junitVersion>
         <luceneVersion>6.6.1</luceneVersion>
         <mapDbVersion>3.0.5</mapDbVersion>
-        <rdf4jVersion>2.2.2</rdf4jVersion>
+        <owlapiVersion>5.1.1</owlapiVersion>
+        <rdf4jVersion>2.1.4
+        </rdf4jVersion><!-- Warning: should be synchronized with the version number used by OWL API -->
         <servletVersion>3.1.0</servletVersion>
         <swaggerVersion>1.5.13</swaggerVersion><!-- Warning: issues with Guava dependency version with 1.5.16 -->
         <slf4jVersion>1.7.25</slf4jVersion>
@@ -78,6 +80,11 @@
             <artifactId>junit</artifactId>
             <version>${junitVersion}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.sourceforge.owlapi</groupId>
+            <artifactId>owlapi-distribution</artifactId>
+            <version>${owlapiVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>

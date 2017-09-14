@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,23 +17,12 @@
 
 package us.askplatyp.kb.lucene.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.IOException;
+import java.util.Locale;
+import java.util.Optional;
 
-/**
- * @author Thomas Pellissier Tanon
- */
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class EntitySearchResult<T> extends SearchResult<T> {
+public interface StorageLookup {
+    Optional<Resource> getResourceForIRI(String IRI) throws IOException;
 
-    @JsonCreator
-    public EntitySearchResult(@JsonProperty("result") T result, @JsonProperty("resultScore") float score) {
-        super(result, score);
-    }
-
-    @Override
-    public String getType() {
-        return "EntitySearchResult";
-    }
+    ResourceSearchResult getResourcesForLabel(String label, String type, Locale inputLocale, String currentContinue, int limit) throws IOException;
 }

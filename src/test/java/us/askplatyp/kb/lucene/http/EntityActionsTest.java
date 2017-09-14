@@ -23,9 +23,9 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Assert;
 import org.junit.Test;
+import us.askplatyp.kb.lucene.jsonld.Entity;
+import us.askplatyp.kb.lucene.jsonld.JsonLdRoot;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
-import us.askplatyp.kb.lucene.model.Entity;
-import us.askplatyp.kb.lucene.model.JsonLdRoot;
 import us.askplatyp.kb.lucene.wikidata.FakeWikidataLuceneIndexFactory;
 
 import javax.ws.rs.core.Application;
@@ -165,6 +165,6 @@ public class EntityActionsTest extends JerseyTest {
         Assert.assertEquals("wd:Q111", result.getIRI());
         Assert.assertEquals(Collections.singletonList("NamedIndividual"), result.getTypes());
         Assert.assertNull(result.getPropertyValue("url"));
-        Assert.assertEquals(Collections.emptyList(), result.getPropertyValue("sameAs"));
+        Assert.assertNull(result.getPropertyValue("sameAs"));
     }
 }

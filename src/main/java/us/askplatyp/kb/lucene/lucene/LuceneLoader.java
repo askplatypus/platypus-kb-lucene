@@ -24,15 +24,14 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import us.askplatyp.kb.lucene.model.Claim;
-import us.askplatyp.kb.lucene.model.Loader;
-import us.askplatyp.kb.lucene.model.Resource;
+import us.askplatyp.kb.lucene.model.IndexableResource;
+import us.askplatyp.kb.lucene.model.StorageLoader;
 import us.askplatyp.kb.lucene.model.value.LocaleStringValue;
 import us.askplatyp.kb.lucene.model.value.Value;
 
 import java.io.IOException;
 
-public class LuceneLoader implements Loader {
+public class LuceneLoader implements StorageLoader {
     private static final Logger LOGGER = LoggerFactory.getLogger(LuceneLoader.class);
 
     private LuceneIndex index;
@@ -42,24 +41,20 @@ public class LuceneLoader implements Loader {
     }
 
     @Override
-    public void addResource(Resource resource) {
+    public void addResource(IndexableResource resource) {
         Document document = new Document();
 
         document.add(new StringField("@id", resource.getIRI(), Field.Store.YES));
 
-        for (String type : resource.getTypes()) {
-            document.add(new StringField("@type", type, Field.Store.YES));
-        }
+        resource.getTypes().forEach(typeIRI -> document.add(new StringField("@type", typeIRI, Field.Store.YES)));
 
-        for (LocaleStringValue label : resource.getLabels()) {
-            document.add(new StringField(
-                    "label@" + label.getLocale().getLanguage(), //TODO: variants
-                    label.toString().toLowerCase(label.getLocale()),
-                    Field.Store.NO
-            ));
-        }
+        resource.getLabels().forEach(label -> document.add(new StringField(
+                "label@" + label.getLocale().getLanguage(), //TODO: variants
+                label.toString().toLowerCase(label.getLocale()),
+                Field.Store.NO
+        )));
 
-        for (Claim claim : resource.getClaims()) {
+        resource.getClaims().forEach(claim -> {
             Value value = claim.getValue();
             if (value instanceof LocaleStringValue) {
                 document.add(new StringField(
@@ -70,9 +65,9 @@ public class LuceneLoader implements Loader {
             } else {
                 document.add(new StringField(claim.getProperty(), value.toString(), Field.Store.YES));
             }
-        }
+        });
 
-        document.add(new NumericDocValuesField("score", resource.getScore()));
+        document.add(new NumericDocValuesField("score", resource.getRank()));
 
         writeDocument(document);
     }

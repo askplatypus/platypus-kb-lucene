@@ -5,6 +5,11 @@
 @prefix schema: <http://schema.org/> .
 
 
+<http://kb.askplatyp.us/api/v1/schema> a owl:Ontology ;
+    rdfs:label "Platypus knowledge base ontology" ;
+    rdfs:comment "Ontology used by Platypus knowledge base. It is a restricted version of schema.org." .
+
+
 # classes
 
 owl:NamedIndividual a rdfs:Class ;
@@ -73,7 +78,7 @@ schema:author a owl:ObjectProperty ;
     rdfs:label "author" ;
     rdfs:comment "Agent that has created this work" ;
     rdfs:domain schema:CreativeWork ;
-    rdfs:range [ owl:unionOf ( schema:Person schema:Organization ) ] .
+    rdfs:range [ a rdfs:Class ; owl:unionOf ( schema:Person schema:Organization ) ] .
 
 schema:birthPlace a owl:ObjectProperty, owl:FunctionalProperty ;
     rdfs:label "birthPlace" ;
@@ -103,13 +108,13 @@ schema:contributor a owl:ObjectProperty ;
     rdfs:label "contributor" ;
     rdfs:comment "A secondary contributor to the CreativeWork" ;
     rdfs:domain schema:CreativeWork ;
-    rdfs:range [ owl:unionOf ( schema:Person schema:Organization ) ] .
+    rdfs:range [ a rdfs:Class ; owl:unionOf ( schema:Person schema:Organization ) ] .
 
 schema:creator a owl:ObjectProperty ;
     rdfs:label "creator" ;
     rdfs:comment "The creator/author of this CreativeWork" ;
     rdfs:domain schema:CreativeWork ;
-    rdfs:range [ owl:unionOf ( schema:Person schema:Organization ) ] .
+    rdfs:range [ a rdfs:Class ; owl:unionOf ( schema:Person schema:Organization ) ] .
 
 schema:deathPlace a owl:ObjectProperty, owl:FunctionalProperty ;
     rdfs:label "deathPlace" ;
@@ -129,6 +134,12 @@ schema:genre a owl:ObjectProperty ;
     rdfs:domain schema:CreativeWork ;
     rdfs:range owl:NamedIndividual .
 
+schema:geo a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "geo" ;
+    rdfs:comment "The geographic localisation of a place" ;
+    rdfs:domain schema:Place ;
+    rdfs:range [ a rdfs:Class ; owl:unionOf ( schema:GeoCoordinates schema:GeoShape ) ] .
+
 schema:hasPart a owl:ObjectProperty ;
     rdfs:label "hasPart" ;
     rdfs:comment "Indicates a CreativeWork that is (in some sense) a part of this CreativeWork" ;
@@ -140,7 +151,7 @@ schema:illustrator a owl:ObjectProperty ;
     rdfs:label "illustrator" ;
     rdfs:comment "Agent that have illustrated this work" ;
     rdfs:domain schema:Book ;
-    rdfs:range [ owl:unionOf ( schema:Person schema:Organization ) ] .
+    rdfs:range [ a rdfs:Class ; owl:unionOf ( schema:Person schema:Organization ) ] .
 
 schema:isPartOf a owl:ObjectProperty ;
     rdfs:label "isPartOf" ;
@@ -165,13 +176,13 @@ schema:publisher a owl:ObjectProperty ;
     rdfs:label "publisher" ;
     rdfs:comment "The publisher of the creative work" ;
     rdfs:domain schema:CreativeWork ;
-    rdfs:range [ owl:unionOf ( schema:Person schema:Organization ) ] .
+    rdfs:range [ a rdfs:Class ; owl:unionOf ( schema:Person schema:Organization ) ] .
 
 schema:translator a owl:ObjectProperty ;
     rdfs:label "translator" ;
     rdfs:comment "Agent that have translated this work" ;
     rdfs:domain schema:CreativeWork ;
-    rdfs:range [ owl:unionOf ( schema:Person schema:Organization ) ] .
+    rdfs:range [ a rdfs:Class ; owl:unionOf ( schema:Person schema:Organization ) ] .
 
 # datatype properties
 
@@ -185,25 +196,25 @@ schema:birthDate a owl:DatatypeProperty, owl:FunctionalProperty ;
     rdfs:label "birthDate" ;
     rdfs:comment "Birth date of the person" ;
     rdfs:domain schema:Person ;
-    rdfs:range rdfs:Literal .
+    rdfs:range [ a rdfs:Datatype ; owl:unionOf ( xsd:dateTime xsd:date xsd:gYearMonth xsd:gYear ) ] .
 
 schema:dateCreated a owl:DatatypeProperty, owl:FunctionalProperty ;
     rdfs:label "dateCreated" ;
     rdfs:comment "The date on which the CreativeWork was created" ;
     rdfs:domain schema:CreativeWork ;
-    rdfs:range rdfs:Literal .
+    rdfs:range [ a rdfs:Datatype ; owl:unionOf ( xsd:dateTime xsd:date xsd:gYearMonth xsd:gYear ) ] .
 
 schema:datePublished a owl:DatatypeProperty, owl:FunctionalProperty ;
     rdfs:label "datePublished" ;
     rdfs:comment "Date of first broadcast/publication" ;
     rdfs:domain schema:CreativeWork ;
-    rdfs:range rdfs:Literal .
+    rdfs:range [ a rdfs:Datatype ; owl:unionOf ( xsd:dateTime xsd:date xsd:gYearMonth xsd:gYear ) ] .
 
 schema:deathDate a owl:DatatypeProperty, owl:FunctionalProperty ;
     rdfs:label "deathDate" ;
     rdfs:comment "Death date of the person" ;
     rdfs:domain schema:Person ;
-    rdfs:range rdfs:Literal .
+    rdfs:range [ a rdfs:Datatype ; owl:unionOf ( xsd:dateTime xsd:date xsd:gYearMonth xsd:gYear ) ] .
 
 schema:description a owl:DatatypeProperty, owl:FunctionalProperty ;
     rdfs:label "description" ;
@@ -211,25 +222,25 @@ schema:description a owl:DatatypeProperty, owl:FunctionalProperty ;
     rdfs:domain owl:Thing ;
     rdfs:range rdf:langString .
 
-schema:iataCode a owl:DatatypeProperty, owl:FunctionalProperty, owl:InverseFunctionalProperty ;
+schema:iataCode a owl:DatatypeProperty, owl:FunctionalProperty ;
     rdfs:label "iataCode" ;
     rdfs:comment "IATA code of a company, an airport or a city" ;
-    rdfs:domain [ owl:unionOf ( schema:Airline schema:Airport schema:City ) ] ;
+    rdfs:domain [ a rdfs:Class ; owl:unionOf ( schema:Airline schema:Airport schema:City ) ] ;
     rdfs:range xsd:string .
 
-schema:icaoCode a owl:DatatypeProperty, owl:FunctionalProperty, owl:InverseFunctionalProperty ;
+schema:icaoCode a owl:DatatypeProperty, owl:FunctionalProperty ;
     rdfs:label "icaoCode" ;
     rdfs:comment "ICAO code of an airport of a company" ;
-    rdfs:domain [ owl:unionOf ( schema:Airline schema:Airport ) ] ;
+    rdfs:domain [ a rdfs:Class ; owl:unionOf ( schema:Airline schema:Airport ) ] ;
     rdfs:range xsd:string .
 
-schema:isbn a owl:DatatypeProperty, owl:InverseFunctionalProperty ;
+schema:isbn a owl:DatatypeProperty ;
     rdfs:label "isbn" ;
     rdfs:comment "The ISBN of a book" ;
     rdfs:domain schema:Book ;
     rdfs:range xsd:string .
 
-schema:issn a owl:DatatypeProperty, owl:InverseFunctionalProperty ;
+schema:issn a owl:DatatypeProperty ;
     rdfs:label "issn" ;
     rdfs:comment "The International Standard Serial Number (ISSN) that identifies this periodical" ;
     rdfs:domain schema:Periodical ;

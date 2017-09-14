@@ -15,9 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package us.askplatyp.kb.lucene.model;
+package us.askplatyp.kb.lucene.jsonld;
 
 import com.fasterxml.jackson.annotation.*;
+import us.askplatyp.kb.lucene.model.Namespaces;
 
 import java.util.Collections;
 import java.util.Locale;
@@ -58,7 +59,7 @@ public class Context {
 
     private Locale locale;
 
-    public Context(Locale locale) {
+    Context(Locale locale) {
         this.locale = locale;
     }
 

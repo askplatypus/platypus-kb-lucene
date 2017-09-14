@@ -23,8 +23,8 @@ import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
 import org.wikidata.wdtk.datamodel.interfaces.*;
 import us.askplatyp.kb.lucene.model.Claim;
-import us.askplatyp.kb.lucene.model.Loader;
-import us.askplatyp.kb.lucene.model.Resource;
+import us.askplatyp.kb.lucene.model.IndexableResource;
+import us.askplatyp.kb.lucene.model.StorageLoader;
 import us.askplatyp.kb.lucene.model.value.LocaleStringValue;
 import us.askplatyp.kb.lucene.wikidata.mapping.InvalidWikibaseValueException;
 import us.askplatyp.kb.lucene.wikidata.mapping.MapperRegistry;
@@ -63,12 +63,12 @@ public class WikidataResourceProcessor implements EntityDocumentProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(WikidataResourceProcessor.class);
     private static final PropertyIdValue P31 = Datamodel.makeWikidataPropertyIdValue("P31");
 
-    private Loader loader;
+    private StorageLoader loader;
     private Sites sites;
     private TypeMapper typeMapper;
     private MapperRegistry mapperRegistry;
 
-    public WikidataResourceProcessor(Loader loader, Sites sites, WikidataTypeHierarchy typeHierarchy) {
+    public WikidataResourceProcessor(StorageLoader loader, Sites sites, WikidataTypeHierarchy typeHierarchy) {
         this.loader = loader;
         this.sites = sites;
         this.typeMapper = new TypeMapper(typeHierarchy);
@@ -81,7 +81,7 @@ public class WikidataResourceProcessor implements EntityDocumentProcessor {
             return;
         }
 
-        Resource resource = new Resource(itemDocument.getEntityId().getIri());
+        IndexableResource resource = new IndexableResource(itemDocument.getEntityId().getIri());
         resource.addType("NamedIndividual"); //TODO: remove
         addTermsToResource(itemDocument, resource);
         addSiteLinksToResource(itemDocument, resource);
@@ -101,7 +101,7 @@ public class WikidataResourceProcessor implements EntityDocumentProcessor {
                 .noneMatch(value -> value instanceof ItemIdValue && typeMapper.isFilteredClass((ItemIdValue) value));
     }
 
-    private void addTermsToResource(TermedDocument termedDocument, Resource resource) {
+    private void addTermsToResource(TermedDocument termedDocument, IndexableResource resource) {
         termedDocument.getLabels().values().forEach(label -> {
             LocaleStringValue value = convert(label);
             resource.addClaim("name", value);
@@ -120,7 +120,7 @@ public class WikidataResourceProcessor implements EntityDocumentProcessor {
         );
     }
 
-    private void addSiteLinksToResource(ItemDocument itemDocument, Resource resource) {
+    private void addSiteLinksToResource(ItemDocument itemDocument, IndexableResource resource) {
         itemDocument.getSiteLinks().values().stream()
                 .filter(siteLink ->
                         sites.getGroup(siteLink.getSiteKey()).equals("wikipedia") &&
@@ -131,7 +131,7 @@ public class WikidataResourceProcessor implements EntityDocumentProcessor {
                 );
     }
 
-    private void addStatementsToResource(StatementDocument statementDocument, Resource resource) {
+    private void addStatementsToResource(StatementDocument statementDocument, IndexableResource resource) {
         statementDocument.getStatementGroups().forEach(group ->
                 getBestStatements(group).forEach(statement ->
                         mapperRegistry.getMapperForProperty(statement.getClaim().getMainSnak().getPropertyId()).ifPresent(mapper -> {
@@ -172,7 +172,7 @@ public class WikidataResourceProcessor implements EntityDocumentProcessor {
         return new LocaleStringValue(value.getText(), WikimediaLanguageCodes.getLanguageCode(value.getLanguageCode()));
     }
 
-    private void addScoreToResource(ItemDocument itemDocument, Resource resource) {
-        resource.addToScore(itemDocument.getSiteLinks().size());
+    private void addScoreToResource(ItemDocument itemDocument, IndexableResource resource) {
+        resource.addToRank(itemDocument.getSiteLinks().size());
     }
 }

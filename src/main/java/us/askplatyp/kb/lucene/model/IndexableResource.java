@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,31 +17,33 @@
 
 package us.askplatyp.kb.lucene.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import us.askplatyp.kb.lucene.model.value.LocaleStringValue;
 
-/**
- * @author Thomas Pellissier Tanon
- */
-abstract class SearchResult<T> {
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Stream;
 
-    private T result;
-    private float score;
+public class IndexableResource extends Resource {
+    private Set<LocaleStringValue> labels = new HashSet<>();
+    private int rank = 0;
 
-    SearchResult(T result, float score) {
-        this.result = result;
-        this.score = score;
+    public IndexableResource(String IRI) {
+        super(IRI);
     }
 
-    @JsonProperty("@type")
-    public abstract String getType();
-
-    @JsonProperty("result")
-    public T getResult() {
-        return this.result;
+    public Stream<LocaleStringValue> getLabels() {
+        return labels.stream();
     }
 
-    @JsonProperty("resultScore")
-    public float getScore() {
-        return this.score;
+    public void addLabel(LocaleStringValue value) {
+        labels.add(value);
+    }
+
+    public int getRank() {
+        return rank;
+    }
+
+    public void addToRank(int val) {
+        rank += val;
     }
 }

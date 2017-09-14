@@ -28,63 +28,51 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-public class LuceneSearcher {
+public class LuceneLookup implements StorageLookup {
 
+    private final static LuceneResourceBuilder RESOURCE_BUILDER = new LuceneResourceBuilder();
     private final static TopDocs EMPTY_TOP_DOCS = new TopDocs(0, new ScoreDoc[]{}, 0);
 
     private LuceneIndex.Reader entitiesReader;
 
-    public LuceneSearcher(LuceneIndex.Reader entitiesReader) {
+    public LuceneLookup(LuceneIndex.Reader entitiesReader) {
         this.entitiesReader = entitiesReader;
     }
 
-    public JsonLdRoot<Entity> getEntityForIRI(String IRI, Locale outputLocale) throws ApiException {
-        try {
-            return new JsonLdRoot<>(
-                    new Context(outputLocale),
-                    EntityBuilder.buildFullEntityInLanguage(
-                                    entitiesReader.getDocumentForIRI(Namespaces.reduce(IRI))
-                                            .orElseThrow(() -> new ApiException("Entity with IRI <" + IRI + "> not found.", 404)),
-                            outputLocale,
-                            entitiesReader
-                            )
-            );
-        } catch (IOException e) {
-            throw new ApiException(e);
-        }
+    public Optional<Resource> getResourceForIRI(String IRI) throws IOException {
+        return entitiesReader
+                .getDocumentForTerm(new Term("@id", Namespaces.reduce(IRI)))
+                .map(RESOURCE_BUILDER::buildResource);
     }
 
-    public JsonLdRoot<Collection<EntitySearchResult<Entity>>> getEntitiesForLabel(
-            String label, String type, Locale inputLocale, Locale outputLocale, String baseURI, String currentContinue, int limit
-    ) throws ApiException {
-        try {
-            type = Namespaces.reduce(type);
-            Continue startAfter = parseContinue(currentContinue);
-            TopDocs searchResults = EMPTY_TOP_DOCS;
-            int fuziness;
-            if (startAfter == null) {
-                for (fuziness = 0; fuziness <= 2; fuziness++) {
-                    searchResults = entitiesReader.search(buildQueryForPhraseAndOrType(inputLocale, label, type, fuziness), limit);
-                    if (searchResults.totalHits > 0) {
-                        break;
-                    }
+    public ResourceSearchResult getResourcesForLabel(
+            String label, String type, Locale inputLocale, String currentContinue, int limit
+    ) throws IOException {
+        type = Namespaces.reduce(type);
+        Continue startAfter = parseContinue(currentContinue);
+        TopDocs searchResults = EMPTY_TOP_DOCS;
+        int fuziness;
+        if (startAfter == null) {
+            for (fuziness = 0; fuziness <= 2; fuziness++) {
+                searchResults = entitiesReader.search(buildQueryForPhraseAndOrType(inputLocale, label, type, fuziness), limit);
+                if (searchResults.totalHits > 0) {
+                    break;
                 }
-            } else {
-                fuziness = startAfter.fuziness;
-                searchResults = entitiesReader.searchAfter(startAfter, buildQueryForPhraseAndOrType(inputLocale, label, type, fuziness), limit);
             }
-            ScoreDoc nextStartAfter = (searchResults.scoreDocs.length == limit) ? searchResults.scoreDocs[limit - 1] : null;
-            return buildSearchResults(searchResults, outputLocale, baseURI, startAfter, nextStartAfter, fuziness);
-        } catch (IOException e) {
-            throw new ApiException(e);
+        } else {
+            fuziness = startAfter.fuziness;
+            searchResults = entitiesReader.searchAfter(startAfter, buildQueryForPhraseAndOrType(inputLocale, label, type, fuziness), limit);
         }
+        ScoreDoc nextStartAfter = (searchResults.scoreDocs.length == limit) ? searchResults.scoreDocs[limit - 1] : null;
+        return buildSearchResult(searchResults, startAfter, nextStartAfter, fuziness);
     }
 
-    private Query buildQueryForPhraseAndOrType(Locale locale, String label, String type, int fuziness) throws ApiException {
+    private Query buildQueryForPhraseAndOrType(Locale locale, String label, String type, int fuziness) {
         if (type == null) {
             if (label == null) {
                 return addScoreBoostToQuery(new MatchAllDocsQuery());
@@ -103,7 +91,7 @@ public class LuceneSearcher {
         }
     }
 
-    private Query buildFuzzyQueryForTerm(Locale locale, String label, int fuziness) throws ApiException {
+    private Query buildFuzzyQueryForTerm(Locale locale, String label, int fuziness) {
         String name = "label@" + locale.getLanguage(); //TODO: variants
         Term term = new Term(name, label.toLowerCase(locale));
         if (fuziness == 0) {
@@ -121,22 +109,20 @@ public class LuceneSearcher {
         return new CustomScoreQuery(query, new FunctionQuery(new LongFieldSource("score")));
     }
 
-    private JsonLdRoot<Collection<EntitySearchResult<Entity>>> buildSearchResults(
-            TopDocs topDocs, Locale locale, String baseURI, ScoreDoc currentContinue, ScoreDoc nextContinue, int fuziness
-    ) throws IOException {
+    private ResourceSearchResult buildSearchResult(TopDocs topDocs, ScoreDoc currentContinue, ScoreDoc nextContinue, int fuziness) throws IOException {
         ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-        List<EntitySearchResult<Entity>> searchResults = new ArrayList<>();
+        List<ScoredResource> searchResults = new ArrayList<>();
         for (ScoreDoc scoreDoc : scoreDocs) {
-            searchResults.add(buildSearchResult(scoreDoc, locale));
+            searchResults.add(buildScoredResource(scoreDoc));
         }
-        return new JsonLdRoot<>(new Context(locale), new PartialCollection<>(
-                searchResults, topDocs.totalHits, baseURI, serializeContinue(currentContinue, fuziness), serializeContinue(nextContinue, fuziness)
-        ));
+        return new ResourceSearchResult(
+                searchResults, topDocs.totalHits, serializeContinue(currentContinue, fuziness), serializeContinue(nextContinue, fuziness)
+        );
     }
 
-    private EntitySearchResult<Entity> buildSearchResult(ScoreDoc scoreDoc, Locale locale) throws IOException {
-        return new EntitySearchResult<>(
-                EntityBuilder.buildSimpleEntityInLanguage(entitiesReader.getDocumentForDocId(scoreDoc.doc), locale, entitiesReader),
+    private ScoredResource buildScoredResource(ScoreDoc scoreDoc) throws IOException {
+        return new ScoredResource(
+                RESOURCE_BUILDER.buildResource(entitiesReader.getDocumentForDocId(scoreDoc.doc)),
                 scoreDoc.score
         );
     }

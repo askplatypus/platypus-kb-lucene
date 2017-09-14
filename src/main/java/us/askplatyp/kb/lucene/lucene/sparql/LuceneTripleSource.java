@@ -27,6 +27,7 @@ import org.eclipse.rdf4j.common.iteration.CloseableIteratorIteration;
 import org.eclipse.rdf4j.common.iteration.EmptyIteration;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.evaluation.TripleSource;
 import org.slf4j.Logger;
@@ -51,6 +52,7 @@ public class LuceneTripleSource implements TripleSource {
     private static final Logger LOGGER = LoggerFactory.getLogger(LuceneTripleSource.class);
     private static final int QUERY_LOAD_SIZE = 262144;
     private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
+    private static final Schema SCHEMA = Schema.getSchema();
     private static final DatatypeFactory DATATYPE_FACTORY;
 
     static {
@@ -60,8 +62,6 @@ public class LuceneTripleSource implements TripleSource {
             throw new RuntimeException(e);
         }
     }
-
-    private Schema schema = Schema.getSchema();
     private LuceneIndex index;
 
     public LuceneTripleSource(LuceneIndex index) {
@@ -124,7 +124,7 @@ public class LuceneTripleSource implements TripleSource {
     private CloseableIteration<Statement, QueryEvaluationException> getStatementsForSubject(Resource subj)
             throws IOException {
         try (LuceneIndex.Reader reader = index.getReader()) {
-            return reader.getDocumentForIRI(Namespaces.reduce(subj.stringValue())).map(document ->
+            return reader.getDocumentForTerm(new Term("@id", Namespaces.reduce(subj.stringValue()))).map(document ->
                     (CloseableIteration<Statement, QueryEvaluationException>) new CloseableIteratorIteration<Statement, QueryEvaluationException>(
                             document.getFields().stream()
                                     .filter(field -> !field.name().equals("@id"))
@@ -139,7 +139,7 @@ public class LuceneTripleSource implements TripleSource {
             throws IOException {
         try (LuceneIndex.Reader reader = index.getReader()) {
             //TODO: selective load
-            return reader.getDocumentForIRI(Namespaces.reduce(subj.stringValue())).map(document ->
+            return reader.getDocumentForTerm(new Term("@id", Namespaces.reduce(subj.stringValue()))).map(document ->
                     (CloseableIteration<Statement, QueryEvaluationException>) new CloseableIteratorIteration<Statement, QueryEvaluationException>(
                             statementFromDocumentSubjectProperty(document, subj, pred).iterator()
                     )
@@ -152,7 +152,7 @@ public class LuceneTripleSource implements TripleSource {
         Statement inputStatement = VALUE_FACTORY.createStatement(subj, pred, obj);
         try (LuceneIndex.Reader reader = index.getReader()) {
             //TODO: selective load
-            return reader.getDocumentForIRI(Namespaces.reduce(subj.stringValue())).map(document ->
+            return reader.getDocumentForTerm(new Term("@id", Namespaces.reduce(subj.stringValue()))).map(document ->
                     (CloseableIteration<Statement, QueryEvaluationException>) new CloseableIteratorIteration<Statement, QueryEvaluationException>(
                             statementFromDocumentSubjectProperty(document, subj, pred)
                                     .filter(statement -> statement.equals(inputStatement))
@@ -224,10 +224,8 @@ public class LuceneTripleSource implements TripleSource {
 
     private Stream<String> fieldsFromPropertyIRI(IRI propertyIRI) {
         String name = Namespaces.reduce(propertyIRI.stringValue());
-        return schema.getProperty(propertyIRI.stringValue()).map(property -> {
-            if (
-                    property instanceof Schema.DatatypeProperty &&
-                            ((Schema.DatatypeProperty) property).getRange() == Schema.Datatype.LANGUAGE_TAGGED_STRING) {
+        return SCHEMA.getProperty(name).map(property -> {
+            if (property.getSimpleRange() == Schema.Range.LOCAL_STRING) {
                 return Arrays.stream(Configuration.SUPPORTED_LOCALES)
                         .map(locale -> name + "@" + locale.getLanguage());
             } else {
@@ -251,21 +249,24 @@ public class LuceneTripleSource implements TripleSource {
         if (propertyName.equals("@type")) {
             return Stream.of(VALUE_FACTORY.createIRI(Namespaces.expand(value)));
         }
-        return schema.getProperty(propertyName).flatMap(property -> {
-            if (property instanceof Schema.ObjectProperty) {
-                return Optional.of(VALUE_FACTORY.createIRI(Namespaces.expand(value)));
-            } else if (property instanceof Schema.DatatypeProperty) {
-                switch (((Schema.DatatypeProperty) property).getRange()) {
-                    case STRING:
-                        return Optional.of(VALUE_FACTORY.createLiteral(value));
-                    case LANGUAGE_TAGGED_STRING:
-                        return Optional.of(VALUE_FACTORY.createLiteral(value, name.split("@")[1]));
-                    case CALENDAR:
-                        return Optional.of(VALUE_FACTORY.createLiteral(DATATYPE_FACTORY.newXMLGregorianCalendar(value)));
-                    //TODO: other types
-                }
+        return SCHEMA.getProperty(propertyName).flatMap(property -> {
+            switch (property.getSimpleRange()) {
+                case CALENDAR:
+                    return Optional.of(VALUE_FACTORY.createLiteral(DATATYPE_FACTORY.newXMLGregorianCalendar(value)));
+                case LOCAL_STRING:
+                    return Optional.of(VALUE_FACTORY.createLiteral(value, name.split("@")[1]));
+                case RESOURCE:
+                    return Optional.of(VALUE_FACTORY.createIRI(Namespaces.expand(value)));
+                case STRING:
+                    return Optional.of(VALUE_FACTORY.createLiteral(value));
+                case IRI:
+                    return Optional.of(VALUE_FACTORY.createLiteral(value, XMLSchema.ANYURI));
+                case GEO:
+                default:
+                    //TODO: add missing fields
+                    LOGGER.warn("Unsupported simple range type: " + property.getSimpleRange().toString());
+                    return Optional.empty();
             }
-            return Optional.empty();
         }).map(Stream::of).orElseGet(() -> {
             LOGGER.info("Unsupported field " + name);
             return Stream.empty();

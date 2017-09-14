@@ -17,27 +17,14 @@
 
 package us.askplatyp.kb.lucene.model;
 
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.model.util.Models;
-import org.eclipse.rdf4j.model.util.RDFCollections;
-import org.eclipse.rdf4j.model.vocabulary.OWL;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
-import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.rio.RDFParser;
-import org.eclipse.rdf4j.rio.Rio;
-import org.eclipse.rdf4j.rio.helpers.StatementCollector;
+import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.reasoner.OWLReasoner;
+import org.semanticweb.owlapi.reasoner.structural.StructuralReasonerFactory;
+import org.semanticweb.owlapi.vocab.XSDVocabulary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -48,155 +35,173 @@ import java.util.stream.Stream;
  */
 public class Schema {
 
+    private static final IRI ONTOLOGY_IRI = IRI.create("http://kb.askplatyp.us/api/v1/schema");
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Schema.class);
+    private static final OWLDataFactory DATA_FACTORY = OWLManager.getOWLDataFactory();
+    private static final OWLDataRange CALENDAR_DATARANGE = DATA_FACTORY.getOWLDataUnionOf(
+            DATA_FACTORY.getOWLDatatype(XSDVocabulary.DATE_TIME),
+            DATA_FACTORY.getOWLDatatype(XSDVocabulary.DATE),
+            DATA_FACTORY.getOWLDatatype(XSDVocabulary.G_YEAR_MONTH),
+            DATA_FACTORY.getOWLDatatype(XSDVocabulary.G_YEAR)
+    );
+    private static final OWLDatatype LOCAL_STRING_DATARANGE = DATA_FACTORY.getOWLDatatype(
+            "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
+    );
+    private static final OWLDatatype STRING_DATARANGE = DATA_FACTORY.getStringOWLDatatype();
+    private static final OWLClassExpression GEO_CLASS = DATA_FACTORY.getOWLObjectUnionOf(
+            DATA_FACTORY.getOWLClass("http://schema.org/GeoCoordinates"),
+            DATA_FACTORY.getOWLClass("http://schema.org/GeoShape")
+    );
+    private static final OWLDatatype ANY_URI_DATARANGE = DATA_FACTORY.getOWLDatatype(XSDVocabulary.ANY_URI);
+    private OWLOntology ontology;
+
     private static Schema SCHEMA;
-    private Model model;
-    private Map<String, Class> classes = new HashMap<>();
+    private OWLReasoner reasoner;
     private Map<String, Property> properties = new HashMap<>();
 
-    private Schema(Model model) {
-        this.model = model;
-        for (Resource subject : model.subjects()) {
-            if (model.contains(subject, RDF.TYPE, RDFS.CLASS)) {
-                classes.put(subject.toString(), new Class(subject));
-            } else if (model.contains(subject, RDF.TYPE, OWL.OBJECTPROPERTY)) {
-                properties.put(subject.toString(), new ObjectProperty(subject));
-            } else if (model.contains(subject, RDF.TYPE, OWL.DATATYPEPROPERTY)) {
-                properties.put(subject.toString(), new DatatypeProperty(subject));
-            }
-        }
+    private Schema(OWLOntology ontology) {
+        this.ontology = ontology;
+        reasoner = (new StructuralReasonerFactory()).createReasoner(ontology);
+        loadProperties();
     }
 
     public static Schema getSchema() {
         if (SCHEMA == null) {
-            try {
-                RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE);
-                Model model = new LinkedHashModel();
-                rdfParser.setRDFHandler(new StatementCollector(model));
-                try (InputStream inputStream = Schema.class.getResourceAsStream("/schema.ttl")) {
-                    rdfParser.parse(inputStream, "http://schema.org/");
-                } catch (IOException e) {
-                    LOGGER.error(e.getMessage(), e);
-                }
-                SCHEMA = new Schema(model);
-            } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
-            }
+            SCHEMA = new Schema(loadOntology());
         }
         return SCHEMA;
     }
 
-    private Stream<Class> getPropertyClasses(Resource subject, IRI predicate) {
-        return Models.getPropertyIRIs(model, subject, predicate).stream()
-                .map(iri -> Schema.this.getClass(iri.toString()));
-    }
-
-    public Class getClass(String URI) {
-        URI = Namespaces.expand(URI);
-        Class result = classes.get(Namespaces.expand(URI));
-        if (result == null) {
-            result = new Class(SimpleValueFactory.getInstance().createIRI(URI));
+    private static OWLOntology loadOntology() {
+        OWLOntologyManager ontologyManager = OWLManager.createOWLOntologyManager();
+        try {
+            ontologyManager.loadOntologyFromOntologyDocument(Schema.class.getResourceAsStream("/schema.ttl"));
+        } catch (OWLOntologyCreationException e) {
+            LOGGER.error(e.getMessage(), e);
         }
-        return result;
+        return ontologyManager.getOntology(ONTOLOGY_IRI);
     }
 
-    public Optional<Property> getProperty(String URI) {
-        return Optional.ofNullable(properties.get(Namespaces.expand(URI)));
+    private void loadProperties() {
+        ontology.dataPropertiesInSignature().map(DataProperty::new)
+                .forEach(property -> properties.put(property.getIRI(), property));
+        ontology.objectPropertiesInSignature().map(ObjectProperty::new)
+                .forEach(property -> properties.put(property.getIRI(), property));
+    }
+
+    public Optional<Property> getProperty(String propertyIRI) {
+        return Optional.ofNullable(properties.get(propertyIRI));
     }
 
     public Stream<Property> getProperties() {
         return properties.values().stream();
     }
 
-    public enum Datatype {STRING, LANGUAGE_TAGGED_STRING, CALENDAR}
-
-    private abstract class SchemaResource {
-        protected Resource iri;
-
-        private SchemaResource(Resource iri) {
-            this.iri = iri;
-        }
-
-        public String getLabel() {
-            return Models.getPropertyString(model, iri, RDFS.LABEL).orElseThrow(() ->
-                    new IllegalArgumentException("Schema resource without a rdfs:label: " + iri.toString())
-            );
-        }
-
-        public String getDescription() {
-            return Models.getPropertyString(model, iri, RDFS.COMMENT).orElseThrow(() ->
-                    new IllegalArgumentException("Schema resource without a rdfs:comment: " + iri.toString())
-            );
-        }
-
-        public String getShortURI() {
-            return Namespaces.reduce(iri.stringValue());
-        }
+    public enum Range {
+        CALENDAR,
+        GEO,
+        LOCAL_STRING,
+        RESOURCE,
+        STRING,
+        IRI
     }
 
-    public class Class extends SchemaResource {
-        private Class(Resource iri) {
-            super(iri);
+    public interface Property {
+        String getIRI();
+
+        boolean isFunctionalProperty();
+
+        Range getSimpleRange();
+    }
+
+    public class Class {
+        private OWLClass self;
+
+        private Class(OWLClass self) {
+            this.self = self;
+        }
+
+        public String getIRI() {
+            return Namespaces.reduce(self.getIRI().getIRIString());
         }
 
         public boolean isSubClassOf(Class other) {
-            return this.equals(other) || getPropertyClasses(iri, RDFS.SUBCLASSOF).anyMatch(superClass -> superClass.isSubClassOf(other));
+            return reasoner.getSubClasses(other.self).containsEntity(self);
         }
     }
 
-    public abstract class Property extends SchemaResource {
-        private Property(Resource iri) {
-            super(iri);
+    private class ObjectProperty implements Property {
+        private OWLObjectProperty self;
+
+        private ObjectProperty(OWLObjectProperty self) {
+            this.self = self;
         }
 
-        public Stream<Class> getDomains() {
-            return Models.getPropertyResources(model, iri, RDFS.DOMAIN).stream().flatMap(this::expandClass);
+        @Override
+        public String getIRI() {
+            return Namespaces.reduce(self.getIRI().getIRIString());
         }
 
-        Stream<Class> expandClass(Resource resource) {
-            if (resource instanceof IRI) {
-                return Stream.of(Schema.this.getClass(resource.toString()));
+        @Override
+        public Range getSimpleRange() {
+            OWLClassExpression range = ontology.objectPropertyRangeAxioms(self)
+                    .map(OWLObjectPropertyRangeAxiom::getRange)
+                    .findAny().orElseGet(() -> {
+                        LOGGER.warn("The object property " + self.toStringID() + " has no range in the schema");
+                        return DATA_FACTORY.getOWLThing();
+                    });
+            if (range.equals(GEO_CLASS)) {
+                return Range.GEO;
             } else {
-                return Models.getPropertyIRIs(model, resource, OWL.UNIONOF).stream()
-                        .flatMap(collection -> RDFCollections.asValues(model, resource, new ArrayList<>()).stream())
-                        .map(iri -> Schema.this.getClass(iri.toString()));
+                return Range.RESOURCE;
             }
         }
 
+        @Override
         public boolean isFunctionalProperty() {
-            return model.contains(iri, RDF.TYPE, OWL.FUNCTIONALPROPERTY);
+            return ontology.functionalObjectPropertyAxioms(self).count() > 0;
         }
     }
 
-    public class ObjectProperty extends Property {
-        private ObjectProperty(Resource iri) {
-            super(iri);
+    private class DataProperty implements Property {
+        private OWLDataProperty self;
+
+        private DataProperty(OWLDataProperty self) {
+            this.self = self;
         }
 
-        public Stream<Class> getRanges() {
-            return Models.getPropertyResources(model, iri, RDFS.RANGE).stream().flatMap(this::expandClass);
-        }
-    }
-
-    public class DatatypeProperty extends Property {
-        private DatatypeProperty(Resource iri) {
-            super(iri);
+        @Override
+        public String getIRI() {
+            return Namespaces.reduce(self.getIRI().getIRIString());
         }
 
-        public Datatype getRange() {
-            return Models.getPropertyIRIs(model, iri, RDFS.RANGE).stream().flatMap(datatype -> {
-                if (datatype.equals(XMLSchema.STRING) || datatype.equals(XMLSchema.ANYURI)) {
-                    return Stream.of(Datatype.STRING);
-                } else if (datatype.equals(RDF.LANGSTRING)) {
-                    return Stream.of(Datatype.LANGUAGE_TAGGED_STRING);
-                } else if (datatype.equals(RDFS.LITERAL)) {
-                    return Stream.of(Datatype.CALENDAR); //TODO: improve
-                } else {
-                    return Stream.empty(); //TODO
-                }
-            }).findAny().orElseThrow(() ->
-                    new IllegalArgumentException("Schema datatype property without a rdfs:range: " + iri.toString())
-            );
+        @Override
+        public Range getSimpleRange() {
+            OWLDataRange range = ontology.dataPropertyRangeAxioms(self)
+                    .map(OWLDataPropertyRangeAxiom::getRange)
+                    .findAny().orElseGet(() -> {
+                        LOGGER.warn("The data property " + self.toStringID() + " has no range in the schema");
+                        return STRING_DATARANGE;
+                    });
+
+            if (range.equals(CALENDAR_DATARANGE)) {
+                return Range.CALENDAR;
+            } else if (range.equals(LOCAL_STRING_DATARANGE)) {
+                return Range.LOCAL_STRING;
+            } else if (range.equals(ANY_URI_DATARANGE)) {
+                return Range.IRI;
+            } else if (range.equals(STRING_DATARANGE)) {
+                return Range.STRING;
+            } else {
+                LOGGER.warn("Unknown data range for property: " + self.toStringID());
+                return Range.STRING;
+            }
+        }
+
+        @Override
+        public boolean isFunctionalProperty() {
+            return reasoner.getRootOntology().functionalDataPropertyAxioms(self).count() > 0;
         }
     }
 }
