@@ -17,9 +17,8 @@
 
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StringField;
 import org.wikidata.wdtk.datamodel.interfaces.StringValue;
+import us.askplatyp.kb.lucene.model.Claim;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -37,13 +36,13 @@ class URIStatementMapper implements StatementMainStringValueMapper {
     }
 
     @Override
-    public Stream<Field> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
+    public Stream<Claim> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
         try {
             URI parsedURL = new URI(value.getString()).normalize();
             if ((parsedURL.getScheme().equals("http") || parsedURL.getScheme().equals("https")) && parsedURL.getPath().isEmpty()) {
                 parsedURL = parsedURL.resolve("/");
             }
-            return Stream.of(new StringField(targetFieldName, parsedURL.toString(), Field.Store.YES));
+            return Stream.of(new Claim(targetFieldName, parsedURL.toString()));
         } catch (URISyntaxException e) {
             throw new InvalidWikibaseValueException(value + " is an invalid URI", e);
         }

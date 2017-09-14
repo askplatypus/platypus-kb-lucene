@@ -23,6 +23,7 @@ import org.junit.rules.TemporaryFolder;
 import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
 import org.wikidata.wdtk.dumpfiles.MwLocalDumpFile;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
+import us.askplatyp.kb.lucene.lucene.LuceneLoader;
 
 import java.io.*;
 import java.util.zip.GZIPOutputStream;
@@ -52,7 +53,7 @@ public class FakeWikidataLuceneIndexFactory implements Factory<LuceneIndex> {
             dumpProcessingController.processDump(fakeDump);
 
             dumpProcessingController.registerEntityDocumentProcessor(
-                    new LuceneUpdateProcessor(index, dumpProcessingController.getSitesInformation(), typeHierarchy),
+                    new WikidataResourceProcessor(new LuceneLoader(index), dumpProcessingController.getSitesInformation(), typeHierarchy),
                     null,
                     true
             );

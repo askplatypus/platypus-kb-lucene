@@ -18,39 +18,53 @@
 package us.askplatyp.kb.lucene.model.value;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.vividsolutions.jts.geom.Point;
+
+import java.util.Locale;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-public class GeoCoordinatesValue extends GeoValue {
+public class LocaleStringValue implements Value {
 
-    private Point point;
+    private String value;
 
-    GeoCoordinatesValue(Point point) {
-        super(point);
+    private Locale locale;
 
-        this.point = point;
+    public LocaleStringValue(String value, Locale locale) {
+        this.value = value;
+        this.locale = locale;
     }
 
-    @JsonProperty("@id")
-    public String getIRI() {
-        return "geo:" + getLatitude() + "," + getLongitude();
+    public LocaleStringValue(String value, String languageCode) {
+        this(value, Locale.forLanguageTag(languageCode));
+    }
+
+    public String getType() {
+        return "rdf:langString";
+    }
+
+    public Locale getLocale() {
+        return locale;
+    }
+
+    @JsonProperty("@language")
+    public String getLanguageCode() {
+        return locale.toLanguageTag();
     }
 
     @Override
-    @JsonProperty("@type")
-    public String getType() {
-        return "GeoCoordinates";
+    @JsonProperty("@value")
+    public String toString() {
+        return value;
     }
 
-    @JsonProperty("latitude")
-    public double getLatitude() {
-        return point.getY();
+    @Override
+    public int hashCode() {
+        return value.hashCode();
     }
 
-    @JsonProperty("longitude")
-    public double getLongitude() {
-        return point.getX();
+    @Override
+    public boolean equals(Object value) {
+        return (value instanceof LocaleStringValue) && ((LocaleStringValue) value).value.equals(value);
     }
 }

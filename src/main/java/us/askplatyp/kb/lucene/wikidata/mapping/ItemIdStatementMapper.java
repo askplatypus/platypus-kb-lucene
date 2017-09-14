@@ -17,10 +17,9 @@
 
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StringField;
 import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
-import us.askplatyp.kb.lucene.model.Namespaces;
+import us.askplatyp.kb.lucene.model.Claim;
+import us.askplatyp.kb.lucene.model.value.ResourceValue;
 
 import java.util.stream.Stream;
 
@@ -36,7 +35,7 @@ class ItemIdStatementMapper implements StatementMainItemIdValueMapper {
     }
 
     @Override
-    public Stream<Field> mapMainItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException {
-        return Stream.of(new StringField(targetFieldName, Namespaces.reduce(value.getIri()), Field.Store.YES));
+    public Stream<Claim> mapMainItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException {
+        return Stream.of(new Claim(targetFieldName, new ResourceValue(value.getIri())));
     }
 }

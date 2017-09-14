@@ -18,9 +18,8 @@
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
 import org.apache.commons.validator.routines.ISSNValidator;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StringField;
 import org.wikidata.wdtk.datamodel.interfaces.StringValue;
+import us.askplatyp.kb.lucene.model.Claim;
 
 import java.util.stream.Stream;
 
@@ -30,11 +29,11 @@ import java.util.stream.Stream;
 class ISSNStatementMapper implements StatementMainStringValueMapper {
 
     @Override
-    public Stream<Field> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
+    public Stream<Claim> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
         String ISSN = (String) ISSNValidator.getInstance().validate(value.getString());
         if (ISSN == null) {
             return Stream.empty();
         }
-        return Stream.of(new StringField("issn", ISSN, Field.Store.YES));
+        return Stream.of(new Claim("issn", ISSN));
     }
 }

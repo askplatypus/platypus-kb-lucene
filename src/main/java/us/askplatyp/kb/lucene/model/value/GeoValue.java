@@ -27,7 +27,7 @@ import com.vividsolutions.jts.io.WKTWriter;
 /**
  * @author Thomas Pellissier Tanon
  */
-public abstract class GeoValue {
+public abstract class GeoValue implements Value {
 
     private static final WKTReader WKT_READER = new WKTReader();
     private static final WKTWriter WKT_WRITER = new WKTWriter();
@@ -53,8 +53,19 @@ public abstract class GeoValue {
         }
     }
 
+    @Override
     @JsonProperty("geo:asWKT")
-    public String getAsWKT() {
+    public String toString() {
         return WKT_WRITER.write(geometry);
+    }
+
+    @Override
+    public int hashCode() {
+        return geometry.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object value) {
+        return (value instanceof GeoValue) && ((GeoValue) value).geometry.equals(value);
     }
 }

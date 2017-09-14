@@ -17,9 +17,8 @@
 
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StringField;
 import org.wikidata.wdtk.datamodel.interfaces.TimeValue;
+import us.askplatyp.kb.lucene.model.Claim;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
@@ -50,9 +49,9 @@ class TimeStatementMapper implements StatementMainTimeValueMapper {
     }
 
     @Override
-    public Stream<Field> mapMainTimeValue(TimeValue value) throws InvalidWikibaseValueException {
+    public Stream<Claim> mapMainTimeValue(TimeValue value) throws InvalidWikibaseValueException {
         return convertTimeValue(value).map(calendarValue ->
-                new StringField(targetFieldName, calendarValue.toXMLFormat(), Field.Store.YES)
+                new Claim(targetFieldName, calendarValue)
         );
     }
 

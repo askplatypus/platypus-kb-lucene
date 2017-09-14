@@ -15,27 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package us.askplatyp.kb.lucene.wikidata.mapping;
+package us.askplatyp.kb.lucene.model;
 
-import org.wikidata.wdtk.datamodel.interfaces.Statement;
-import org.wikidata.wdtk.datamodel.interfaces.Value;
-import us.askplatyp.kb.lucene.model.Claim;
-
-import java.util.stream.Stream;
-
-/**
- * @author Thomas Pellissier Tanon
- */
-interface StatementMainValueMapper extends StatementMapper {
-
-    @Override
-    default Stream<Claim> mapStatement(Statement statement) throws InvalidWikibaseValueException {
-        Value value = statement.getValue();
-        if (value == null) {
-            return Stream.empty();
-        }
-        return mapMainValue(value);
-    }
-
-    Stream<Claim> mapMainValue(Value value) throws InvalidWikibaseValueException;
+public interface Loader {
+    void addResource(Resource resource);
 }

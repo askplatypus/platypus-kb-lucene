@@ -17,6 +17,7 @@
 
 package us.askplatyp.kb.lucene.http;
 
+import jersey.repackaged.com.google.common.collect.Sets;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
@@ -35,6 +36,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 public class SearchActionsTest extends JerseyTest {
@@ -167,14 +169,14 @@ public class SearchActionsTest extends JerseyTest {
         Assert.assertEquals("wd:Q42", result.getIRI());
         Assert.assertEquals(Arrays.asList("NamedIndividual", "Person"), result.getTypes());
         Assert.assertEquals("http://foobar.com/", result.getPropertyValue("url"));
-        Assert.assertEquals(Arrays.asList(
+        Assert.assertEquals(Sets.newHashSet(
                 "http://fr.wikipedia.org/wiki/Douglas_Adams",
                 "http://twitter.com/BarackObama",
                 "http://www.instagram.com/barackobama",
                 "http://www.facebook.com/barackobama",
                 "http://www.youtube.com/channel/UCdn86UYrf54lXfVli9CB6Aw",
                 "http://plus.google.com/+BarackObama"
-        ), result.getPropertyValue("sameAs"));
+        ), Sets.newHashSet((List) result.getPropertyValue("sameAs")));
     }
 
     private void assertEnglishDummy(Entity result) {

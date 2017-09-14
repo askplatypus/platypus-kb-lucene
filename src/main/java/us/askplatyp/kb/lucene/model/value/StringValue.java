@@ -18,39 +18,37 @@
 package us.askplatyp.kb.lucene.model.value;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.vividsolutions.jts.geom.Point;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-public class GeoCoordinatesValue extends GeoValue {
+public class StringValue implements Value {
 
-    private Point point;
+    private String value;
 
-    GeoCoordinatesValue(Point point) {
-        super(point);
-
-        this.point = point;
-    }
-
-    @JsonProperty("@id")
-    public String getIRI() {
-        return "geo:" + getLatitude() + "," + getLongitude();
+    public StringValue(String value) {
+        this.value = value;
     }
 
     @Override
     @JsonProperty("@type")
     public String getType() {
-        return "GeoCoordinates";
+        return "xsd:string";
     }
 
-    @JsonProperty("latitude")
-    public double getLatitude() {
-        return point.getY();
+    @Override
+    @JsonProperty("@value")
+    public String toString() {
+        return value;
     }
 
-    @JsonProperty("longitude")
-    public double getLongitude() {
-        return point.getX();
+    @Override
+    public int hashCode() {
+        return value.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object value) {
+        return (value instanceof StringValue) && ((StringValue) value).value.equals(value);
     }
 }

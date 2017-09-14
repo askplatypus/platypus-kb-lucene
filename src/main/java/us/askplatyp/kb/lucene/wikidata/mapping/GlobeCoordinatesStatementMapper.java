@@ -17,9 +17,12 @@
 
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StringField;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
+import us.askplatyp.kb.lucene.model.Claim;
+import us.askplatyp.kb.lucene.model.value.GeoValue;
 
 import java.util.stream.Stream;
 
@@ -27,6 +30,7 @@ import java.util.stream.Stream;
  * @author Thomas Pellissier Tanon
  */
 class GlobeCoordinatesStatementMapper implements StatementMainGlobeCoordinatesValueMapper {
+    private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
 
     private String targetFieldName;
 
@@ -35,18 +39,21 @@ class GlobeCoordinatesStatementMapper implements StatementMainGlobeCoordinatesVa
     }
 
     @Override
-    public Stream<Field> mapMainGlobeCoordinatesValue(GlobeCoordinatesValue value) throws InvalidWikibaseValueException {
+    public Stream<Claim> mapMainGlobeCoordinatesValue(GlobeCoordinatesValue value) throws InvalidWikibaseValueException {
         if (!value.getGlobe().equals(GlobeCoordinatesValue.GLOBE_EARTH)) {
             return Stream.empty(); //TODO: support other globes
         }
 
         return Stream.of(
-                new StringField(targetFieldName, valueToWKT(value), Field.Store.YES)
+                new Claim(targetFieldName, GeoValue.buildGeoValue(valueToGeometry(value)))
         );
     }
 
-    private String valueToWKT(GlobeCoordinatesValue value) {
-        return "POINT(" + roundDegrees(value.getLongitude(), value.getPrecision()) + ' ' + roundDegrees(value.getLatitude(), value.getPrecision()) + ')';
+    private Geometry valueToGeometry(GlobeCoordinatesValue value) {
+        return GEOMETRY_FACTORY.createPoint(new Coordinate(
+                roundDegrees(value.getLongitude(), value.getPrecision()),
+                roundDegrees(value.getLatitude(), value.getPrecision())
+        ));
     }
 
     private double roundDegrees(double degrees, double precision) {

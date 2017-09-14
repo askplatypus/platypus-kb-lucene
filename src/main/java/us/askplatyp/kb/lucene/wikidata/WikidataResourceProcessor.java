@@ -18,29 +18,26 @@
 package us.askplatyp.kb.lucene.wikidata;
 
 import com.google.common.collect.Sets;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.NumericDocValuesField;
-import org.apache.lucene.document.StringField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
 import org.wikidata.wdtk.datamodel.interfaces.*;
-import us.askplatyp.kb.lucene.lucene.LuceneIndex;
-import us.askplatyp.kb.lucene.model.Namespaces;
+import us.askplatyp.kb.lucene.model.Claim;
+import us.askplatyp.kb.lucene.model.Loader;
+import us.askplatyp.kb.lucene.model.Resource;
+import us.askplatyp.kb.lucene.model.value.LocaleStringValue;
 import us.askplatyp.kb.lucene.wikidata.mapping.InvalidWikibaseValueException;
 import us.askplatyp.kb.lucene.wikidata.mapping.MapperRegistry;
 import us.askplatyp.kb.lucene.wikidata.mapping.TypeMapper;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-class LuceneUpdateProcessor implements EntityDocumentProcessor {
+public class WikidataResourceProcessor implements EntityDocumentProcessor {
 
-    static final Set<String> SUPPORTED_LANGUAGES = Sets.newHashSet(
+    public static final Set<String> SUPPORTED_LANGUAGES = Sets.newHashSet(
             "ar", "am",
             "bg", "bn",
             "ca", "cs",
@@ -63,16 +60,16 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
             "vi",
             "zh", "zh-hans", "zh-hant"
     );
-    private static final Logger LOGGER = LoggerFactory.getLogger(LuceneUpdateProcessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WikidataResourceProcessor.class);
     private static final PropertyIdValue P31 = Datamodel.makeWikidataPropertyIdValue("P31");
 
-    private LuceneIndex index;
+    private Loader loader;
     private Sites sites;
     private TypeMapper typeMapper;
     private MapperRegistry mapperRegistry;
 
-    LuceneUpdateProcessor(LuceneIndex index, Sites sites, WikidataTypeHierarchy typeHierarchy) {
-        this.index = index;
+    public WikidataResourceProcessor(Loader loader, Sites sites, WikidataTypeHierarchy typeHierarchy) {
+        this.loader = loader;
         this.sites = sites;
         this.typeMapper = new TypeMapper(typeHierarchy);
         this.mapperRegistry = new MapperRegistry(typeHierarchy);
@@ -84,14 +81,13 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
             return;
         }
 
-        Document document = new Document();
-        document.add(new StringField("@id", Namespaces.reduce(itemDocument.getEntityId().getIri()), Field.Store.YES));
-        document.add(new StringField("@type", "NamedIndividual", Field.Store.YES));
-        addTermsToDocument(itemDocument, document);
-        addSiteLinksToDocument(itemDocument, document);
-        addStatementsToDocument(itemDocument, document);
-        addScoreToDocument(itemDocument, document);
-        writeDocument(document);
+        Resource resource = new Resource(itemDocument.getEntityId().getIri());
+        resource.addType("NamedIndividual"); //TODO: remove
+        addTermsToResource(itemDocument, resource);
+        addSiteLinksToResource(itemDocument, resource);
+        addStatementsToResource(itemDocument, resource);
+        addScoreToResource(itemDocument, resource);
+        loader.addResource(resource);
     }
 
     @Override
@@ -105,37 +101,42 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
                 .noneMatch(value -> value instanceof ItemIdValue && typeMapper.isFilteredClass((ItemIdValue) value));
     }
 
-    private void addTermsToDocument(TermedDocument termedDocument, Document document) {
+    private void addTermsToResource(TermedDocument termedDocument, Resource resource) {
         termedDocument.getLabels().values().forEach(label -> {
-            document.add(toLabelField(label));
-            document.add(toField("name", label));
+            LocaleStringValue value = convert(label);
+            resource.addClaim("name", value);
+            resource.addLabel(value);
+
         });
         termedDocument.getDescriptions().values().forEach(description ->
-                document.add(toField("description", description))
+                resource.addClaim("description", convert(description))
         );
         termedDocument.getAliases().values().forEach(aliases ->
                 aliases.forEach(alias -> {
-                    document.add(toLabelField(alias));
-                    document.add(toField("alternateName", alias));
+                    LocaleStringValue value = convert(alias);
+                    resource.addClaim("alternateName", value);
+                    resource.addLabel(value);
                 })
         );
     }
 
-    private void addSiteLinksToDocument(ItemDocument itemDocument, Document document) {
+    private void addSiteLinksToResource(ItemDocument itemDocument, Resource resource) {
         itemDocument.getSiteLinks().values().stream()
                 .filter(siteLink ->
                         sites.getGroup(siteLink.getSiteKey()).equals("wikipedia") &&
                                 SUPPORTED_LANGUAGES.contains(sites.getLanguageCode(siteLink.getSiteKey()))
                 )
-                .forEach(siteLink -> document.add(new StringField("sameAs", sites.getSiteLinkUrl(siteLink).replace("https://", "http://"), Field.Store.YES)));
+                .forEach(siteLink ->
+                        resource.addClaim(new Claim("sameAs", sites.getSiteLinkUrl(siteLink).replace("https://", "http://")))
+                );
     }
 
-    private void addStatementsToDocument(StatementDocument statementDocument, Document document) {
+    private void addStatementsToResource(StatementDocument statementDocument, Resource resource) {
         statementDocument.getStatementGroups().forEach(group ->
                 getBestStatements(group).forEach(statement ->
                         mapperRegistry.getMapperForProperty(statement.getClaim().getMainSnak().getPropertyId()).ifPresent(mapper -> {
                             try {
-                                mapper.mapStatement(statement).forEach(document::add);
+                                mapper.mapStatement(statement).forEach(resource::addClaim);
                             } catch (InvalidWikibaseValueException e) {
                                 LOGGER.warn(e.getMessage(), e);
                             }
@@ -167,32 +168,11 @@ class LuceneUpdateProcessor implements EntityDocumentProcessor {
         }
     }
 
-    private StringField toField(String name, MonolingualTextValue value) {
-        return new StringField(
-                name + "@" + WikimediaLanguageCodes.getLanguageCode(value.getLanguageCode()),
-                value.getText(),
-                Field.Store.YES
-        );
+    private LocaleStringValue convert(MonolingualTextValue value) {
+        return new LocaleStringValue(value.getText(), WikimediaLanguageCodes.getLanguageCode(value.getLanguageCode()));
     }
 
-    private StringField toLabelField(MonolingualTextValue value) {
-        Locale locale = Locale.forLanguageTag(WikimediaLanguageCodes.getLanguageCode(value.getLanguageCode()));
-        return new StringField(
-                "label@" + locale.getLanguage(), //TODO: variants
-                value.getText().toLowerCase(locale),
-                Field.Store.NO
-        );
-    }
-
-    private void addScoreToDocument(ItemDocument itemDocument, Document document) {
-        document.add(new NumericDocValuesField("score", itemDocument.getSiteLinks().size()));
-    }
-
-    private void writeDocument(Document document) {
-        try {
-            this.index.putDocument(document);
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
+    private void addScoreToResource(ItemDocument itemDocument, Resource resource) {
+        resource.addToScore(itemDocument.getSiteLinks().size());
     }
 }

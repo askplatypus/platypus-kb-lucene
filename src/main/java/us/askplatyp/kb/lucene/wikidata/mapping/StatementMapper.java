@@ -17,8 +17,8 @@
 
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
-import org.apache.lucene.document.Field;
 import org.wikidata.wdtk.datamodel.interfaces.Statement;
+import us.askplatyp.kb.lucene.model.Claim;
 
 import java.util.stream.Stream;
 
@@ -26,5 +26,5 @@ import java.util.stream.Stream;
  * @author Thomas Pellissier Tanon
  */
 public interface StatementMapper {
-    Stream<Field> mapStatement(Statement statement) throws InvalidWikibaseValueException;
+    Stream<Claim> mapStatement(Statement statement) throws InvalidWikibaseValueException;
 }

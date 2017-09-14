@@ -147,7 +147,7 @@ schema:isPartOf a owl:ObjectProperty ;
     rdfs:comment "Indicates a CreativeWork that this CreativeWork is (in some sense) part of" ;
     rdfs:domain schema:CreativeWork ;
     rdfs:range schema:CreativeWork ;
-    owl:inverseOf schema:isPartOf .
+    owl:inverseOf schema:hasPart .
 
 schema:nationality a owl:ObjectProperty ;
     rdfs:label "nationality" ;

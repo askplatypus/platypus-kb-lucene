@@ -35,8 +35,8 @@ import org.glassfish.jersey.server.filter.EncodingFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.askplatyp.kb.lucene.Configuration;
+import us.askplatyp.kb.lucene.WikidataLuceneIndexFactory;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
-import us.askplatyp.kb.lucene.wikidata.WikidataLuceneIndexFactory;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;

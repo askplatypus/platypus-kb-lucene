@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2017 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,8 +54,8 @@ public class LuceneIndex implements Closeable {
         return new Reader();
     }
 
-    public void putDocument(Document document) throws IOException {
-        indexWriter.updateDocument(new Term("@id", document.get("@id")), document); //TODO use revision
+    public void putDocument(Document document, Term identifier) throws IOException {
+        indexWriter.updateDocument(identifier, document); //TODO use revision
     }
 
     public KnowledgeBaseAnalyzer getAnalyzer() {

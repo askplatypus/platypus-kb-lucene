@@ -17,9 +17,8 @@
 
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StringField;
 import org.wikidata.wdtk.datamodel.interfaces.StringValue;
+import us.askplatyp.kb.lucene.model.Claim;
 
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -37,11 +36,11 @@ class ExternalIdentifierStatementMapper implements StatementMainStringValueMappe
     }
 
     @Override
-    public Stream<Field> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
+    public Stream<Claim> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
         if (!pattern.matcher(value.getString()).matches()) {
             throw new InvalidWikibaseValueException(value + " is not a valid identifier. It does not matches the pattern " + pattern);
         }
-        return Stream.of(new StringField("sameAs", URITemplate.replace("$1", value.getString()), Field.Store.YES));
+        return Stream.of(new Claim("sameAs", URITemplate.replace("$1", value.getString())));
     }
 }
 

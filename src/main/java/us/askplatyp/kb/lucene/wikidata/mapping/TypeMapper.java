@@ -18,10 +18,10 @@
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
 import com.google.common.collect.Sets;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StringField;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
 import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
+import us.askplatyp.kb.lucene.model.Claim;
+import us.askplatyp.kb.lucene.model.value.ResourceValue;
 import us.askplatyp.kb.lucene.wikidata.WikidataTypeHierarchy;
 
 import java.util.*;
@@ -157,9 +157,9 @@ public class TypeMapper implements StatementMainItemIdValueMapper {
     }
 
     @Override
-    public Stream<Field> mapMainItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException {
+    public Stream<Claim> mapMainItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException {
         return mapClass(value).stream()
-                .map(type -> new StringField("@type", type, Field.Store.YES));
+                .map(type -> new Claim("@type", new ResourceValue(type)));
     }
 
     private Set<String> mapClass(ItemIdValue itemId) {

@@ -17,9 +17,7 @@
 
 package us.askplatyp.kb.lucene.model.value;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import us.askplatyp.kb.lucene.model.Namespaces;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -28,7 +26,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 /**
  * @author Thomas Pellissier Tanon
  */
-public class CalendarValue {
+public class CalendarValue implements Value {
 
     private static DatatypeFactory DATATYPE_FACTORY;
     static {
@@ -41,26 +39,35 @@ public class CalendarValue {
 
     private XMLGregorianCalendar value;
 
+    public CalendarValue(XMLGregorianCalendar value) {
+        this.value = value;
+    }
+
     public CalendarValue(String value) {
-        this.value = DATATYPE_FACTORY.newXMLGregorianCalendar(value);
+        this(DATATYPE_FACTORY.newXMLGregorianCalendar(value));
     }
 
-    @JsonCreator
-    public CalendarValue(@JsonProperty("@value") String value, @JsonProperty("@type") String type) {
-        this(value);
-
-        if (!this.getType().equals(Namespaces.reduce(type))) {
-            throw new IllegalArgumentException(value + " should have the datatype " + this.getType() + " and not " + type);
-        }
-    }
-
-    @JsonProperty("@value")
-    public String getValue() {
-        return this.value.toXMLFormat();
-    }
-
+    @Override
     @JsonProperty("@type")
     public String getType() {
         return "xsd:" + this.value.getXMLSchemaType().getLocalPart();
     }
+
+    @Override
+    @JsonProperty("@value")
+    public String toString() {
+        return this.value.toXMLFormat();
+    }
+
+    @Override
+    public int hashCode() {
+        return value.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object value) {
+        return (value instanceof CalendarValue) && ((CalendarValue) value).value.equals(value);
+    }
+
+
 }

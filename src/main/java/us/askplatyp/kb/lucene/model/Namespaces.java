@@ -49,6 +49,7 @@ public class Namespaces {
         SPECIAL_CASES.put("rdfs:Class", "Class");
         SPECIAL_CASES.put("owl:Class", "Class");
         SPECIAL_CASES.put("owl:DatatypeProperty", "DatatypeProperty");
+        SPECIAL_CASES.put("owl:Individual", "Individual");
         SPECIAL_CASES.put("owl:ObjectProperty", "ObjectProperty");
         SPECIAL_CASES.put("owl:NamedIndividual", "NamedIndividual");
         SPECIAL_CASES.put("owl:Thing", "Thing");

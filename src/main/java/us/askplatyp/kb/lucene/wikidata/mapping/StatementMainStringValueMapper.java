@@ -17,9 +17,9 @@
 
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
-import org.apache.lucene.document.Field;
 import org.wikidata.wdtk.datamodel.interfaces.StringValue;
 import org.wikidata.wdtk.datamodel.interfaces.Value;
+import us.askplatyp.kb.lucene.model.Claim;
 
 import java.util.stream.Stream;
 
@@ -29,12 +29,12 @@ import java.util.stream.Stream;
 interface StatementMainStringValueMapper extends StatementMainValueMapper {
 
     @Override
-    default Stream<Field> mapMainValue(Value value) throws InvalidWikibaseValueException {
+    default Stream<Claim> mapMainValue(Value value) throws InvalidWikibaseValueException {
         if (!(value instanceof StringValue)) {
             throw new InvalidWikibaseValueException(value + " should be a StringValue");
         }
         return mapMainStringValue((StringValue) value);
     }
 
-    Stream<Field> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException;
+    Stream<Claim> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException;
 }

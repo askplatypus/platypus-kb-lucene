@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package us.askplatyp.kb.lucene.wikidata;
+package us.askplatyp.kb.lucene;
 
 import org.glassfish.hk2.api.Factory;
 import org.slf4j.Logger;
@@ -24,8 +24,10 @@ import org.wikidata.wdtk.dumpfiles.DumpContentType;
 import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
 import org.wikidata.wdtk.dumpfiles.MwDumpFile;
 import org.wikidata.wdtk.dumpfiles.wmf.WmfDumpFileManager;
-import us.askplatyp.kb.lucene.Configuration;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
+import us.askplatyp.kb.lucene.lucene.LuceneLoader;
+import us.askplatyp.kb.lucene.wikidata.WikidataResourceProcessor;
+import us.askplatyp.kb.lucene.wikidata.WikidataTypeHierarchy;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -71,7 +73,7 @@ public class WikidataLuceneIndexFactory implements Factory<LuceneIndex> {
     private static void loadData() throws IOException {
         DumpProcessingController dumpProcessingController = new DumpProcessingController("wikidatawiki");
         dumpProcessingController.setDownloadDirectory(Configuration.getInstance().getWikidataDirectory());
-        dumpProcessingController.setLanguageFilter(LuceneUpdateProcessor.SUPPORTED_LANGUAGES);
+        dumpProcessingController.setLanguageFilter(WikidataResourceProcessor.SUPPORTED_LANGUAGES);
         dumpProcessingController.registerEntityDocumentProcessor(typeHierarchy.getUpdateProcessor(), null, true);
 
         //We load first the type hierarchy
@@ -79,7 +81,7 @@ public class WikidataLuceneIndexFactory implements Factory<LuceneIndex> {
 
         //We do now the regular loading
         dumpProcessingController.registerEntityDocumentProcessor(
-                new LuceneUpdateProcessor(index, dumpProcessingController.getSitesInformation(), typeHierarchy),
+                new WikidataResourceProcessor(new LuceneLoader(index), dumpProcessingController.getSitesInformation(), typeHierarchy),
                 null, true
         );
 
