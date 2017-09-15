@@ -12,15 +12,6 @@
 
 # classes
 
-owl:NamedIndividual a rdfs:Class ;
-    rdfs:label "NamedIndividual" ;
-    rdfs:comment "An entity described by the knowledge base (i.e. not a property or a class)" ;
-    rdfs:subClassOf owl:Thing .
-
-owl:Thing a rdfs:Class ;
-    rdfs:label "Thing" ;
-    rdfs:comment "Any entity of the knowledge base" .
-
 schema:Airline a rdfs:Class ;
     rdfs:label "Airline" ;
     rdfs:comment "An airline company" ;
@@ -48,13 +39,11 @@ schema:Country a rdfs:Class ;
 
 schema:CreativeWork a rdfs:Class ;
     rdfs:label "CreativeWork" ;
-    rdfs:comment "A work" ;
-    rdfs:subClassOf owl:NamedIndividual .
+    rdfs:comment "A work" .
 
 schema:Organization a rdfs:Class ;
     rdfs:label "Organization" ;
-    rdfs:comment "An organization" ;
-    rdfs:subClassOf owl:NamedIndividual .
+    rdfs:comment "An organization" .
 
 schema:Periodical a rdfs:Class ;
     rdfs:label "Periodical" ;
@@ -63,13 +52,11 @@ schema:Periodical a rdfs:Class ;
 
 schema:Person a rdfs:Class ;
     rdfs:label "Person" ;
-    rdfs:comment "A person (real or fictional)" ;
-    rdfs:subClassOf owl:NamedIndividual .
+    rdfs:comment "A person (real or fictional)" .
 
 schema:Place a rdfs:Class ;
     rdfs:label "Place" ;
-    rdfs:comment "Entities that have a somewhat fixed, physical extension" ;
-    rdfs:subClassOf owl:NamedIndividual .
+    rdfs:comment "Entities that have a somewhat fixed, physical extension" .
 
 
 # object properties
@@ -132,7 +119,7 @@ schema:genre a owl:ObjectProperty ;
     rdfs:label "genre" ;
     rdfs:comment "Genre of the creative work" ;
     rdfs:domain schema:CreativeWork ;
-    rdfs:range owl:NamedIndividual .
+    rdfs:range owl:Thing .
 
 schema:geo a owl:ObjectProperty, owl:FunctionalProperty ;
     rdfs:label "geo" ;
@@ -255,11 +242,11 @@ schema:name a owl:DatatypeProperty, owl:FunctionalProperty ;
 schema:sameAs a owl:DatatypeProperty ;
     rdfs:label "sameAs" ;
     rdfs:comment "URL of the official website of the entity" ;
-    rdfs:domain owl:NamedIndividual ;
+    rdfs:domain owl:Thing ;
     rdfs:range xsd:anyURI .
 
 schema:url a owl:DatatypeProperty, owl:FunctionalProperty ;
     rdfs:label "url" ;
     rdfs:comment "URL of the official website of the entity" ;
-    rdfs:domain owl:NamedIndividual ;
+    rdfs:domain owl:Thing ;
     rdfs:range xsd:anyURI .
