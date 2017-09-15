@@ -1,4 +1,4 @@
-FROM openjdk:8
+FROM openjdk:8-jre-alpine
 
 ENV PORT 4567
 EXPOSE $PORT
