@@ -74,6 +74,21 @@ public class SPARQLActionsTest extends JerseyTest {
     }
 
     @Test
+    public void testGetIndividuals() throws IOException {
+        Assert.assertEquals(
+                Sets.newHashSet(
+                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q42"),
+                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q222"),
+                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q111"),
+                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q91"),
+                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q90"),
+                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q2108")
+                ),
+                doSparqlQuerySingleSelect("SELECT DISTINCT ?s WHERE { ?s a owl:Individual }")
+        );
+    }
+
+    @Test
     public void testGetPeople() throws IOException {
         Assert.assertEquals(
                 Sets.newHashSet(

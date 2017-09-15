@@ -82,7 +82,6 @@ public class WikidataResourceProcessor implements EntityDocumentProcessor {
         }
 
         IndexableResource resource = new IndexableResource(itemDocument.getEntityId().getIri());
-        resource.addType("NamedIndividual"); //TODO: remove
         addTermsToResource(itemDocument, resource);
         addSiteLinksToResource(itemDocument, resource);
         addStatementsToResource(itemDocument, resource);

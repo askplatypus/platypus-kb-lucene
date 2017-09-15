@@ -52,7 +52,7 @@ public class SearchActions {
     })
     public Response simple(
             @QueryParam("q") @ApiParam(value = "The query itself. If empty, all entities are returned", example = "Barack Obama") String query,
-            @QueryParam("type") @DefaultValue("NamedIndividual") @ApiParam(value = "A type filter (it uses http://schema.org/ as the default namespace)", example = "Person") String type,
+            @QueryParam("type") @ApiParam(value = "An optional type filter (it uses http://schema.org/ for default namespace)", example = "Person") String type,
             @QueryParam("lang") @DefaultValue("en") @ApiParam(value = "The query language") String lang,
             @QueryParam("continue") @ApiParam(value = "Allows to retrieve more results using a pagination system") String queryContinue,
             @QueryParam("limit") @DefaultValue(LIMIT_DEFAULT) @ApiParam(value = "The number of query results to return") int limit,

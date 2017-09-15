@@ -32,7 +32,10 @@ import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class EntityActionsTest extends JerseyTest {
 
@@ -141,7 +144,7 @@ public class EntityActionsTest extends JerseyTest {
 
     private void assertNotLanguageBaseIndividual(Entity result) {
         Assert.assertEquals("wd:Q42", result.getIRI());
-        Assert.assertEquals(Arrays.asList("NamedIndividual", "Person"), result.getTypes());
+        Assert.assertEquals(Collections.singletonList("Person"), result.getTypes());
         Assert.assertEquals("http://foobar.com/", result.getPropertyValue("url"));
         Assert.assertEquals(Sets.newHashSet(
                 "http://fr.wikipedia.org/wiki/Douglas_Adams",
@@ -163,7 +166,7 @@ public class EntityActionsTest extends JerseyTest {
 
     private void assertNotLanguageBaseDummy(Entity result) {
         Assert.assertEquals("wd:Q111", result.getIRI());
-        Assert.assertEquals(Collections.singletonList("NamedIndividual"), result.getTypes());
+        Assert.assertEquals(Collections.emptyList(), result.getTypes());
         Assert.assertNull(result.getPropertyValue("url"));
         Assert.assertNull(result.getPropertyValue("sameAs"));
     }

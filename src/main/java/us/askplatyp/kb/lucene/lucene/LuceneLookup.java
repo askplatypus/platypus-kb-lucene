@@ -53,7 +53,6 @@ public class LuceneLookup implements StorageLookup {
     public ResourceSearchResult getResourcesForLabel(
             String label, String type, Locale inputLocale, String currentContinue, int limit
     ) throws IOException {
-        type = Namespaces.reduce(type);
         Continue startAfter = parseContinue(currentContinue);
         TopDocs searchResults = EMPTY_TOP_DOCS;
         int fuziness;
@@ -73,6 +72,9 @@ public class LuceneLookup implements StorageLookup {
     }
 
     private Query buildQueryForPhraseAndOrType(Locale locale, String label, String type, int fuziness) {
+        if (Namespaces.TOP_INDIVIDUAL_CLASSES.contains(type)) {
+            type = null; //We ignore top types
+        }
         if (type == null) {
             if (label == null) {
                 return addScoreBoostToQuery(new MatchAllDocsQuery());
@@ -80,6 +82,7 @@ public class LuceneLookup implements StorageLookup {
                 return addScoreBoostToQuery(buildFuzzyQueryForTerm(locale, label, fuziness));
             }
         } else {
+            type = Namespaces.reduce(type);
             if (label == null) {
                 return addScoreBoostToQuery(buildTermQuery("@type", type));
             } else {

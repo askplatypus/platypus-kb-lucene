@@ -17,7 +17,10 @@
 
 package us.askplatyp.kb.lucene.model;
 
+import com.google.common.collect.Sets;
+
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -27,6 +30,7 @@ public class Namespaces {
 
     public static final Map<String, String> NAMESPACES = new TreeMap<>();
     public static final String DEFAULT_NAMESPACE = "http://schema.org/";
+    public static final Set<String> TOP_INDIVIDUAL_CLASSES = Sets.newHashSet("Thing", "Individual", "NamedIndividual");
     private static final Map<String, String> SPECIAL_CASES = new TreeMap<>();
 
     static {

@@ -18,6 +18,7 @@
 package us.askplatyp.kb.lucene.lucene.sparql;
 
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Sets;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
@@ -27,6 +28,8 @@ import org.eclipse.rdf4j.common.iteration.CloseableIteratorIteration;
 import org.eclipse.rdf4j.common.iteration.EmptyIteration;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.OWL;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.evaluation.TripleSource;
@@ -53,6 +56,9 @@ public class LuceneTripleSource implements TripleSource {
     private static final int QUERY_LOAD_SIZE = 262144;
     private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
     private static final Schema SCHEMA = Schema.getSchema();
+    private static final Set<IRI> TOP_INDIVIDUAL_CLASSES = Sets.newHashSet(
+            OWL.THING, OWL.INDIVIDUAL, VALUE_FACTORY.createIRI("http://schema.org/Thing")
+    );
     private static final DatatypeFactory DATATYPE_FACTORY;
 
     static {
@@ -62,6 +68,7 @@ public class LuceneTripleSource implements TripleSource {
             throw new RuntimeException(e);
         }
     }
+
     private LuceneIndex index;
 
     public LuceneTripleSource(LuceneIndex index) {
@@ -163,9 +170,12 @@ public class LuceneTripleSource implements TripleSource {
     }
 
     private CloseableIteration<Statement, QueryEvaluationException> getStatementsForPredicateObject(IRI pred, Value obj) throws IOException {
+        Query query = (pred.equals(RDF.TYPE) && TOP_INDIVIDUAL_CLASSES.contains(obj))
+                ? new MatchAllDocsQuery()
+                : new TermQuery(termForPredicateObject(pred, obj));
         return new QueryIteration(
                 index.getReader(),
-                new TermQuery(termForPredicateObject(pred, obj)), //TODO: better query?
+                query,
                 document -> Iterators.singletonIterator(VALUE_FACTORY.createStatement(getIRIFromDocument(document), pred, obj)),
                 Collections.singleton("@id")
         );

@@ -34,7 +34,6 @@ import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -60,6 +59,18 @@ public class SearchActionsTest extends JerseyTest {
     public void testDefault() {
         JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
                 target("/api/v1/search/simple").request().get(RESULT_TYPE);
+        Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
+        assertElementCount(result.getContent(), 6);
+        assertEnglishIndividual(result.getContent().getElements().get(0).getResult());
+        assertEnglishSmallFoo(result.getContent().getElements().get(1).getResult());
+        assertEnglishDummy(result.getContent().getElements().get(2).getResult());
+
+    }
+
+    @Test
+    public void testTopTypeSearch() {
+        JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
+                target("/api/v1/search/simple").queryParam("type", "Thing").request().get(RESULT_TYPE);
         Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
         assertElementCount(result.getContent(), 6);
         assertEnglishIndividual(result.getContent().getElements().get(0).getResult());
@@ -167,7 +178,7 @@ public class SearchActionsTest extends JerseyTest {
 
     private void assertNotLanguageBaseIndividual(Entity result) {
         Assert.assertEquals("wd:Q42", result.getIRI());
-        Assert.assertEquals(Arrays.asList("NamedIndividual", "Person"), result.getTypes());
+        Assert.assertEquals(Collections.singletonList("Person"), result.getTypes());
         Assert.assertEquals("http://foobar.com/", result.getPropertyValue("url"));
         Assert.assertEquals(Sets.newHashSet(
                 "http://fr.wikipedia.org/wiki/Douglas_Adams",
@@ -203,7 +214,7 @@ public class SearchActionsTest extends JerseyTest {
 
     private void assertNotLanguageBaseSmallFoo(Entity result) {
         Assert.assertEquals("wd:Q222", result.getIRI());
-        Assert.assertEquals(Collections.singletonList("NamedIndividual"), result.getTypes());
+        Assert.assertEquals(Collections.emptyList(), result.getTypes());
         Assert.assertNull(result.getPropertyValue("url"));
         Assert.assertNull(result.getPropertyValue("sameAs"));
     }
