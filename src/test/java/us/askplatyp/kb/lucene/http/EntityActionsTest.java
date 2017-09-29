@@ -113,13 +113,13 @@ public class EntityActionsTest extends JerseyTest {
 
     @Test
     public void test404() {
-        Response response = target("/api/v1/entity/wd:Q00").request().get();
+        Response response = target("/api/v1/entity/wd:Q01").request().get();
         Assert.assertEquals(404, response.getStatus());
     }
 
     @Test
     public void testUnsupportedContentType() {
-        Response response = target("/api/v1/entity/wdt:Q00").request(MediaType.APPLICATION_XML_TYPE).get();
+        Response response = target("/api/v1/entity/wdt:Q01").request(MediaType.APPLICATION_XML_TYPE).get();
         Assert.assertEquals(406, response.getStatus());
     }
 
