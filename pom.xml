@@ -27,7 +27,9 @@
 
     <properties>
         <jdkVersion>1.8</jdkVersion>
+        <activationVersion>1.1.1</activationVersion>
         <commonsValidatorVersion>1.6</commonsValidatorVersion>
+        <jaxbVersion>2.3.0</jaxbVersion>
         <jerseyVersion>2.25.1</jerseyVersion>
         <jtsVersion>1.14.0</jtsVersion>
         <junitVersion>4.12</junitVersion>
@@ -74,6 +76,16 @@
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <version>${servletVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>${jaxbVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+            <version>${activationVersion}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
