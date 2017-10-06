@@ -39,7 +39,7 @@ public class WikidataTypeHierarchy implements AutoCloseable {
     private ConcurrentMap<String, String> typeHierarchy;
 
     public WikidataTypeHierarchy(Path file) {
-        datatabase = DBMaker.fileDB(file.toFile()).checksumHeaderBypass().fileMmapEnableIfSupported().make();
+        datatabase = DBMaker.fileDB(file.toFile()).transactionEnable().checksumHeaderBypass().fileMmapEnableIfSupported().make();
         typeHierarchy = datatabase
                 .hashMap("wd-type-hierachy", Serializer.STRING, Serializer.STRING)
                 .createOrOpen();
