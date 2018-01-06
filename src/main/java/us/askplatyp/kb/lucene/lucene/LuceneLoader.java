@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,10 +17,7 @@
 
 package us.askplatyp.kb.lucene.lucene;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.NumericDocValuesField;
-import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.*;
 import org.apache.lucene.index.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,13 +54,12 @@ public class LuceneLoader implements StorageLoader {
         resource.getClaims().forEach(claim -> {
             Value value = claim.getValue();
             if (value instanceof LocaleStringValue) {
-                document.add(new StringField(
+                document.add(new StoredField(
                         claim.getProperty() + "@" + ((LocaleStringValue) value).getLocale().getLanguage(),
-                        value.toString(),
-                        Field.Store.YES
+                        value.toString()
                 ));
             } else {
-                document.add(new StringField(claim.getProperty(), value.toString(), Field.Store.YES));
+                document.add(new StoredField(claim.getProperty(), value.toString()));
             }
         });
 
