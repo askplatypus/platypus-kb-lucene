@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@ import org.apache.commons.compress.utils.IOUtils;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,25 +34,25 @@ public class SwaggerActions {
 
     @GET
     public Response main() throws IOException {
-        return Response.temporaryRedirect(URI.create("/api/v1/swagger/index.html")).build();
+        return Response.temporaryRedirect(URI.create("/api/v1/swagger.html")).build();
     }
 
     @Path("/api")
     @GET
     public Response api() throws IOException {
-        return Response.temporaryRedirect(URI.create("/api/v1/swagger/index.html")).build();
+        return Response.temporaryRedirect(URI.create("/api/v1/swagger.html")).build();
     }
 
     @Path("/api/v1")
     @GET
     public Response apiV1() throws IOException {
-        return Response.temporaryRedirect(URI.create("/api/v1/swagger/index.html")).build();
+        return Response.temporaryRedirect(URI.create("/api/v1/swagger.html")).build();
     }
 
-    @Path("/api/v1/swagger/{path:.*}")
+    @Path("/api/v1/swagger.html")
     @GET
-    public Response dependencies(@PathParam("path") String path) throws IOException {
-        return outputFile("/swagger/" + path);
+    public Response dependencies() throws IOException {
+        return outputFile("/swagger.html");
     }
 
     private Response outputFile(String filePath) throws IOException {
