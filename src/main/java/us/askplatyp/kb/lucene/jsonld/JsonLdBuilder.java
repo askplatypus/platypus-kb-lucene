@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -149,9 +149,9 @@ public class JsonLdBuilder {
                         if (value instanceof ResourceValue && fullEntity) {
                             try {
                                 return storageLookup.getResourceForIRI(value.toString())
-                                        .map(object -> buildEntity(resource, locale, false))
-                                        .map(Stream::of).orElseGet(Stream::empty);
-                            } catch (IOException e) {
+										.map(object -> buildEntity(object, locale, false))
+										.map(Stream::of).orElseGet(Stream::empty);
+							} catch (IOException e) {
                                 LOGGER.warn("Error when retirving the resource: " + value.toString());
                             }
                         }
