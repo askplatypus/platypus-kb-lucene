@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,18 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 public class JsonLdRoot<T> {
 
     private Context context;
+
     private T content;
+
+    /*JsonLdRoot(Context context, T content) {
+        this.context = context;
+        this.content = content;
+    }
+
+    @JsonCreator
+    JsonLdRoot(@JsonProperty("@context") Context context) {
+        this.context = context;
+    }*/
 
     @JsonCreator
     JsonLdRoot(@JsonProperty("@context") Context context, @JsonUnwrapped T content) {

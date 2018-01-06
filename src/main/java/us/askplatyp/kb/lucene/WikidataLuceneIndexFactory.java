@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,13 +17,17 @@
 
 package us.askplatyp.kb.lucene;
 
+import com.bigdata.rdf.sail.BigdataSailRepository;
 import org.glassfish.hk2.api.Factory;
+import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.dumpfiles.DumpContentType;
 import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
 import org.wikidata.wdtk.dumpfiles.MwDumpFile;
 import org.wikidata.wdtk.dumpfiles.wmf.WmfDumpFileManager;
+import us.askplatyp.kb.lucene.blazegraph.SailFactory;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
 import us.askplatyp.kb.lucene.lucene.LuceneLoader;
 import us.askplatyp.kb.lucene.wikidata.WikidataResourceProcessor;
@@ -45,23 +49,27 @@ import java.util.stream.Stream;
 /**
  * @author Thomas Pellissier Tanon
  */
-public class WikidataLuceneIndexFactory implements Factory<LuceneIndex> {
+public class WikidataLuceneIndexFactory implements Factory<CompositeIndex> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WikidataLuceneIndexFactory.class);
     private static final LastProcessedDumpInfo LAST_PROCESSED_DUMP_INFO = new LastProcessedDumpInfo();
 
     private static LuceneIndex index;
+    private static BigdataSailRepository repository;
     private static WikidataTypeHierarchy typeHierarchy;
 
-    public static void init(String luceneDirectoryPath) throws IOException {
-        if (index != null) {
-            throw new IOException("Wikidata Lucene index already initialized");
+    public static void init(String luceneDirectoryPath) throws IOException, RepositoryException {
+        if (index != null || repository != null) {
+            throw new IOException("Wikidata indexes already initialized");
         }
-        index = new LuceneIndex(Paths.get(luceneDirectoryPath));
+        Path path = Paths.get(luceneDirectoryPath);
+        index = new LuceneIndex(path);
+        repository = SailFactory.openNoInferenceTripleRepository(path.resolve("blazegraph.jnl").getFileName().toString());
         typeHierarchy = new WikidataTypeHierarchy(Paths.get(luceneDirectoryPath, "wd-builder"));
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 index.close();
+                repository.shutDown();
                 typeHierarchy.close();
             } catch (Exception e) {
                 LOGGER.error(e.getMessage(), e);
@@ -70,42 +78,65 @@ public class WikidataLuceneIndexFactory implements Factory<LuceneIndex> {
         loadData();
     }
 
-    private static void loadData() throws IOException {
-        DumpProcessingController dumpProcessingController = new DumpProcessingController("wikidatawiki");
-        dumpProcessingController.setDownloadDirectory(Configuration.getInstance().getWikidataDirectory());
-        dumpProcessingController.setLanguageFilter(WikidataResourceProcessor.SUPPORTED_LANGUAGES);
-        dumpProcessingController.registerEntityDocumentProcessor(typeHierarchy.getUpdateProcessor(), null, true);
-
-        //We load first the type hierarchy
-        dumpProcessingController.processMostRecentJsonDump();
-
-        //We do now the regular loading
-        dumpProcessingController.registerEntityDocumentProcessor(
-                new WikidataResourceProcessor(new LuceneLoader(index), dumpProcessingController.getSitesInformation(), typeHierarchy),
-                null, true
-        );
-
-        for (MwDumpFile dump : getNewDumpsToProcess(dumpProcessingController.getWmfDumpFileManager()).toArray(MwDumpFile[]::new)) {
-            LOGGER.info("Processing " + dump.getProjectName() + " " + dump.getDumpContentType() + " of the " + dump.getDateStamp());
-            try {
-                dumpProcessingController.processDump(dump);
-                LAST_PROCESSED_DUMP_INFO.setDateStamp(dump.getDateStamp());
-                index.refreshReaders();
-            } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
-            }
-        }
+    private static void loadData() throws IOException, RepositoryException {
+        loadTypeHierarchy();
+        doInitialLoading();
 
         registerAtThreePM(() -> {
             try {
-                MwDumpFile dump = dumpProcessingController.getMostRecentDump(DumpContentType.DAILY);
-                dumpProcessingController.processDump(dump);
-                LAST_PROCESSED_DUMP_INFO.setDateStamp(dump.getDateStamp());
-                index.refreshReaders();
+                RepositoryConnection connection = repository.getConnection();
+                try {
+                    DumpProcessingController dumpProcessingController = buildRegularProcessingControler(connection);
+                    MwDumpFile dump = dumpProcessingController.getMostRecentDump(DumpContentType.DAILY);
+                    dumpProcessingController.processDump(dump);
+                    LAST_PROCESSED_DUMP_INFO.setDateStamp(dump.getDateStamp());
+                    index.refreshReaders();
+                } finally {
+                    connection.close();
+                }
             } catch (Exception e) {
                 LOGGER.error(e.getMessage(), e);
             }
         });
+    }
+
+    private static void loadTypeHierarchy() throws IOException {
+        DumpProcessingController dumpProcessingController = new DumpProcessingController("wikidatawiki");
+        dumpProcessingController.setDownloadDirectory(Configuration.getInstance().getWikidataDirectory());
+        dumpProcessingController.setLanguageFilter(Collections.emptySet());
+        dumpProcessingController.setSiteLinkFilter(Collections.emptySet());
+        dumpProcessingController.registerEntityDocumentProcessor(typeHierarchy.getUpdateProcessor(), null, true);
+        dumpProcessingController.processMostRecentJsonDump();
+    }
+
+    private static void doInitialLoading() throws IOException, RepositoryException {
+        RepositoryConnection connection = repository.getConnection();
+        try {
+            DumpProcessingController dumpProcessingController = buildRegularProcessingControler(connection);
+            for (MwDumpFile dump : getNewDumpsToProcess(dumpProcessingController.getWmfDumpFileManager()).toArray(MwDumpFile[]::new)) {
+                LOGGER.info("Processing " + dump.getProjectName() + " " + dump.getDumpContentType() + " of the " + dump.getDateStamp());
+                try {
+                    dumpProcessingController.processDump(dump);
+                    LAST_PROCESSED_DUMP_INFO.setDateStamp(dump.getDateStamp());
+                    index.refreshReaders();
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage(), e);
+                }
+            }
+        } finally {
+            connection.close();
+        }
+    }
+
+    private static DumpProcessingController buildRegularProcessingControler(RepositoryConnection connection) throws IOException {
+        DumpProcessingController dumpProcessingController = new DumpProcessingController("wikidatawiki");
+        dumpProcessingController.setDownloadDirectory(Configuration.getInstance().getWikidataDirectory());
+        dumpProcessingController.setLanguageFilter(WikidataResourceProcessor.SUPPORTED_LANGUAGES);
+        dumpProcessingController.registerEntityDocumentProcessor(
+                new WikidataResourceProcessor(new LuceneLoader(index), dumpProcessingController.getSitesInformation(), typeHierarchy, connection),
+                null, true
+        );
+        return dumpProcessingController;
     }
 
     private static Stream<MwDumpFile> getNewDumpsToProcess(WmfDumpFileManager dumpFileManager) {
@@ -134,12 +165,12 @@ public class WikidataLuceneIndexFactory implements Factory<LuceneIndex> {
     }
 
     @Override
-    public LuceneIndex provide() {
-        return index;
+    public CompositeIndex provide() {
+        return new CompositeIndex(index, repository);
     }
 
     @Override
-    public void dispose(LuceneIndex luceneIndex) {
+    public void dispose(CompositeIndex index) {
     }
 
     private static class LastProcessedDumpInfo {

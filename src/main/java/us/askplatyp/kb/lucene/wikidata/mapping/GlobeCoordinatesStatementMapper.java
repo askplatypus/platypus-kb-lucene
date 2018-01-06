@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,12 +17,11 @@
 
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
 import us.askplatyp.kb.lucene.model.Claim;
 import us.askplatyp.kb.lucene.model.value.GeoValue;
+import us.askplatyp.kb.lucene.wikidata.WikibaseValueUtils;
 
 import java.util.stream.Stream;
 
@@ -45,24 +44,7 @@ class GlobeCoordinatesStatementMapper implements StatementMainGlobeCoordinatesVa
         }
 
         return Stream.of(
-                new Claim(targetFieldName, GeoValue.buildGeoValue(valueToGeometry(value)))
+                new Claim(targetFieldName, GeoValue.buildGeoValue(WikibaseValueUtils.toGeometry(value)))
         );
-    }
-
-    private Geometry valueToGeometry(GlobeCoordinatesValue value) {
-        return GEOMETRY_FACTORY.createPoint(new Coordinate(
-                roundDegrees(value.getLongitude(), value.getPrecision()),
-                roundDegrees(value.getLatitude(), value.getPrecision())
-        ));
-    }
-
-    private double roundDegrees(double degrees, double precision) {
-        if (precision <= 0) {
-            precision = 1 / 3600;
-        }
-        double sign = degrees > 0 ? 1 : -1;
-        double reduced = Math.round(Math.abs(degrees) / precision);
-        double expanded = reduced * precision;
-        return sign * expanded;
     }
 }

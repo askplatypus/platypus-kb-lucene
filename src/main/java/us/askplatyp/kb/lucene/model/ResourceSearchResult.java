@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,11 +22,11 @@ import java.util.List;
 public class ResourceSearchResult {
 
     private List<ScoredResource> resources;
-    private int totalHits;
+    private long totalHits;
     private String currentContinue;
     private String nextContinue;
 
-    public ResourceSearchResult(List<ScoredResource> resources, int totalHits, String currentContinue, String nextContinue) {
+    public ResourceSearchResult(List<ScoredResource> resources, long totalHits, String currentContinue, String nextContinue) {
         this.resources = resources;
         this.totalHits = totalHits;
         this.currentContinue = currentContinue;
@@ -36,7 +36,7 @@ public class ResourceSearchResult {
         return resources;
     }
 
-    public int getTotalHits() {
+    public long getTotalHits() {
         return totalHits;
     }
 

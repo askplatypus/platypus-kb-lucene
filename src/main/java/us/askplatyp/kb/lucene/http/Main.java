@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,9 +34,9 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import us.askplatyp.kb.lucene.CompositeIndex;
 import us.askplatyp.kb.lucene.Configuration;
 import us.askplatyp.kb.lucene.WikidataLuceneIndexFactory;
-import us.askplatyp.kb.lucene.lucene.LuceneIndex;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
@@ -71,7 +71,7 @@ public class Main extends ResourceConfig {
         register(new AbstractBinder() {
             @Override
             protected void configure() {
-                bindFactory(WikidataLuceneIndexFactory.class).to(LuceneIndex.class);
+                bindFactory(WikidataLuceneIndexFactory.class).to(CompositeIndex.class);
             }
         });
         register(CORSFilter.class);
@@ -91,7 +91,7 @@ public class Main extends ResourceConfig {
             public void run() {
                 try {
                     WikidataLuceneIndexFactory.init(Configuration.getInstance().getLuceneDirectory());
-                } catch (IOException e) {
+                } catch (Exception e) {
                     LOGGER.error(e.getMessage(), e);
                 }
             }

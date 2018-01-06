@@ -10,6 +10,11 @@
     rdfs:comment "Ontology used by Platypus knowledge base. It is a restricted version of schema.org." .
 
 
+# utilities for backward compatibility with RDF 1.0
+
+rdf:langString a rdfs:Datatype .
+
+
 # classes
 
 schema:Airline a rdfs:Class ;

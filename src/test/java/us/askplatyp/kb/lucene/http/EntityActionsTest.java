@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,15 +17,15 @@
 
 package us.askplatyp.kb.lucene.http;
 
-import jersey.repackaged.com.google.common.collect.Sets;
+import com.google.common.collect.Sets;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Assert;
 import org.junit.Test;
+import us.askplatyp.kb.lucene.CompositeIndex;
 import us.askplatyp.kb.lucene.jsonld.Entity;
 import us.askplatyp.kb.lucene.jsonld.JsonLdRoot;
-import us.askplatyp.kb.lucene.lucene.LuceneIndex;
 import us.askplatyp.kb.lucene.wikidata.FakeWikidataLuceneIndexFactory;
 
 import javax.ws.rs.core.Application;
@@ -48,7 +48,7 @@ public class EntityActionsTest extends JerseyTest {
                 .register(new AbstractBinder() {
                     @Override
                     protected void configure() {
-                        bindFactory(FakeWikidataLuceneIndexFactory.class).to(LuceneIndex.class);
+                        bindFactory(FakeWikidataLuceneIndexFactory.class).to(CompositeIndex.class);
                     }
                 });
     }

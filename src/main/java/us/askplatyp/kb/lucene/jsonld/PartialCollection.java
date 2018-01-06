@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ public class PartialCollection<T> extends Collection<T> {
     @JsonCreator
     PartialCollection(
             @JsonProperty("element") List<T> elements,
-            @JsonProperty("totalItems") int totalNumber,
+            @JsonProperty("totalItems") long totalNumber,
             @JsonProperty("hydra:first") String baseIRI,
             String currentContinue, //TODO
             String nextContinue

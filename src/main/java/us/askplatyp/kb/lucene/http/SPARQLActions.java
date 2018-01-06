@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,41 +17,39 @@
 
 package us.askplatyp.kb.lucene.http;
 
+import info.aduna.lang.FileFormat;
+import info.aduna.lang.service.FileFormatServiceRegistry;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.eclipse.rdf4j.common.lang.FileFormat;
-import org.eclipse.rdf4j.common.lang.service.FileFormatServiceRegistry;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.model.impl.TreeModel;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.SD;
-import org.eclipse.rdf4j.query.*;
-import org.eclipse.rdf4j.query.algebra.evaluation.QueryPreparer;
-import org.eclipse.rdf4j.query.parser.*;
-import org.eclipse.rdf4j.query.parser.sparql.SPARQLParserFactory;
-import org.eclipse.rdf4j.query.resultio.BooleanQueryResultWriterFactory;
-import org.eclipse.rdf4j.query.resultio.BooleanQueryResultWriterRegistry;
-import org.eclipse.rdf4j.query.resultio.TupleQueryResultWriterFactory;
-import org.eclipse.rdf4j.query.resultio.TupleQueryResultWriterRegistry;
-import org.eclipse.rdf4j.rio.RDFWriterFactory;
-import org.eclipse.rdf4j.rio.RDFWriterRegistry;
-import org.eclipse.rdf4j.rio.Rio;
+import org.openrdf.model.Model;
+import org.openrdf.model.Resource;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.TreeModel;
+import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.SD;
+import org.openrdf.query.*;
+import org.openrdf.query.resultio.BooleanQueryResultWriterFactory;
+import org.openrdf.query.resultio.BooleanQueryResultWriterRegistry;
+import org.openrdf.query.resultio.TupleQueryResultWriterFactory;
+import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
+import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.RDFWriterFactory;
+import org.openrdf.rio.RDFWriterRegistry;
+import org.openrdf.rio.Rio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import us.askplatyp.kb.lucene.lucene.LuceneIndex;
-import us.askplatyp.kb.lucene.lucene.sparql.LuceneTripleSource;
-import us.askplatyp.kb.lucene.lucene.sparql.SimpleQueryPreparer;
-import us.askplatyp.kb.lucene.model.Namespaces;
+import us.askplatyp.kb.lucene.CompositeIndex;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -62,17 +60,11 @@ import java.util.stream.Collectors;
 @Api
 public class SPARQLActions {
 
-    private static final int QUERY_TIMOUT_IN_S = 30;
     private static final Logger LOGGER = LoggerFactory.getLogger(SPARQLActions.class);
 
-    private static final String PREFIX = Namespaces.NAMESPACES.entrySet().stream()
-            .map(namespace -> "PREFIX " + namespace.getKey() + ": <" + namespace.getValue() + ">")
-            .collect(Collectors.joining("\n"));
     @Inject
-    private LuceneIndex index;
+    private CompositeIndex index;
 
-    private QueryParser queryParser = new SPARQLParserFactory().getParser();
-    private QueryPreparer queryPreparer;
     @GET
     @ApiOperation(value = "Executes SPARQL query. If the 'query' query parameter is not set, returns a description of the endpoint.")
     public Response get(
@@ -96,65 +88,86 @@ public class SPARQLActions {
     private Response executeDescription(Request request) {
         FormatService<RDFWriterFactory> format = getServiceForFormat(RDFWriterRegistry.getInstance(), request);
         return Response.ok(
-                (StreamingOutput) outputStream -> Rio.write(getServiceDescription(), format.getService().getWriter(outputStream)),
+                (StreamingOutput) outputStream -> {
+                    try {
+                        Rio.write(getServiceDescription(), format.getService().getWriter(outputStream));
+                    } catch (RDFHandlerException e) {
+                        LOGGER.warn(e.getMessage(), e);
+                        throw new InternalServerErrorException(e.getMessage(), e);
+                    }
+                },
                 variantForFormat(format.getFormat())
         ).build();
     }
 
     private Response executeQuery(String query, String baseIRI, Request request) {
-        ParsedQuery parsedQuery = parseQuery(query, baseIRI);
         try {
-            if (parsedQuery instanceof ParsedBooleanQuery) {
-                return evaluateBooleanQuery((ParsedBooleanQuery) parsedQuery, request);
-            } else if (parsedQuery instanceof ParsedGraphQuery) {
-                return evaluateGraphQuery((ParsedGraphQuery) parsedQuery, request);
-            } else if (parsedQuery instanceof ParsedTupleQuery) {
-                return evaluateTupleQuery((ParsedTupleQuery) parsedQuery, request);
-            } else {
-                throw new BadRequestException("Unsupported kind of query: " + parsedQuery.toString());
+            RepositoryConnection connection = index.getSesameSailRepository().getReadOnlyConnection();
+            try {
+                Query preparedQuery = connection.prepareQuery(QueryLanguage.SPARQL, query, baseIRI);
+                if (preparedQuery instanceof BooleanQuery) {
+                    return evaluateBooleanQuery((BooleanQuery) preparedQuery, request);
+                } else if (preparedQuery instanceof GraphQuery) {
+                    return evaluateGraphQuery((GraphQuery) preparedQuery, request);
+                } else if (preparedQuery instanceof TupleQuery) {
+                    return evaluateTupleQuery((TupleQuery) preparedQuery, request);
+                } else {
+                    throw new BadRequestException("Unsupported kind of query: " + preparedQuery.toString());
+                }
+            } catch (MalformedQueryException e) {
+                throw new BadRequestException(e.getMessage(), e);
+            } finally {
+                connection.close();
             }
-        } catch (QueryEvaluationException e) {
-            LOGGER.info(e.getMessage(), e);
-            throw new BadRequestException(e.getMessage(), e);
+        } catch (RepositoryException e) {
+            LOGGER.warn(e.getMessage(), e);
+            throw new InternalServerErrorException(e.getMessage(), e);
         }
     }
 
-    private Response evaluateBooleanQuery(ParsedBooleanQuery parsedQuery, Request request) {
-        BooleanQuery query = getQueryPreparer().prepare(parsedQuery);
-        query.setMaxExecutionTime(QUERY_TIMOUT_IN_S);
+    private Response evaluateBooleanQuery(BooleanQuery query, Request request) {
         FormatService<BooleanQueryResultWriterFactory> format = getServiceForFormat(BooleanQueryResultWriterRegistry.getInstance(), request);
         return Response.ok(
-                (StreamingOutput) outputStream -> format.getService().getWriter(outputStream).handleBoolean(query.evaluate()),
+                (StreamingOutput) outputStream -> {
+                    try {
+                        format.getService().getWriter(outputStream).handleBoolean(query.evaluate());
+                    } catch (QueryResultHandlerException | QueryEvaluationException e) {
+                        LOGGER.warn(e.getMessage(), e);
+                        throw new InternalServerErrorException(e.getMessage(), e);
+                    }
+                },
                 variantForFormat(format.getFormat())
         ).build();
     }
 
-    private Response evaluateGraphQuery(ParsedGraphQuery parsedQuery, Request request) {
-        GraphQuery query = getQueryPreparer().prepare(parsedQuery);
-        query.setMaxExecutionTime(QUERY_TIMOUT_IN_S);
+    private Response evaluateGraphQuery(GraphQuery query, Request request) {
         FormatService<RDFWriterFactory> format = getServiceForFormat(RDFWriterRegistry.getInstance(), request);
         return Response.ok(
-                (StreamingOutput) outputStream -> query.evaluate(format.getService().getWriter(outputStream)),
+                (StreamingOutput) outputStream -> {
+                    try {
+                        query.evaluate(format.getService().getWriter(outputStream));
+                    } catch (QueryEvaluationException | RDFHandlerException e) {
+                        LOGGER.warn(e.getMessage(), e);
+                        throw new InternalServerErrorException(e.getMessage(), e);
+                    }
+                },
                 variantForFormat(format.getFormat())
         ).build();
     }
 
-    private Response evaluateTupleQuery(ParsedTupleQuery parsedQuery, Request request) {
-        TupleQuery query = getQueryPreparer().prepare(parsedQuery);
-        query.setMaxExecutionTime(QUERY_TIMOUT_IN_S);
+    private Response evaluateTupleQuery(TupleQuery query, Request request) {
         FormatService<TupleQueryResultWriterFactory> format = getServiceForFormat(TupleQueryResultWriterRegistry.getInstance(), request);
         return Response.ok(
-                (StreamingOutput) outputStream -> query.evaluate(format.getService().getWriter(outputStream)),
+                (StreamingOutput) outputStream -> {
+                    try {
+                        query.evaluate(format.getService().getWriter(outputStream));
+                    } catch (QueryEvaluationException | TupleQueryResultHandlerException e) {
+                        LOGGER.warn(e.getMessage(), e);
+                        throw new InternalServerErrorException(e.getMessage(), e);
+                    }
+                },
                 variantForFormat(format.getFormat())
         ).build();
-    }
-
-    private ParsedQuery parseQuery(String query, String baseIRI) {
-        try {
-            return queryParser.parseQuery(PREFIX + "\n" + query, baseIRI);
-        } catch (MalformedQueryException e) {
-            throw new BadRequestException(e.getMessage(), e);
-        }
     }
 
     private <FF extends FileFormat, S> FormatService<S> getServiceForFormat(FileFormatServiceRegistry<FF, S> writerRegistry, Request request) {
@@ -164,11 +177,11 @@ public class SPARQLActions {
             throw new NotAcceptableException("No acceptable result format found. Accepted format are: " +
                     aceptedVariants.stream().map(variant -> variant.getMediaType().toString()).collect(Collectors.joining(", ")));
         }
-        FF fileFormat = writerRegistry.getFileFormatForMIMEType(bestResponseVariant.getMediaType().toString()).orElseThrow(() -> {
+        FF fileFormat = Optional.ofNullable(writerRegistry.getFileFormatForMIMEType(bestResponseVariant.getMediaType().toString())).orElseThrow(() -> {
             LOGGER.error("Not able to retrieve writer for " + bestResponseVariant.getMediaType());
             return new InternalServerErrorException("Not able to retrieve writer for " + bestResponseVariant.getMediaType());
         });
-        return new FormatService<>(fileFormat, writerRegistry.get(fileFormat).orElseThrow(() -> {
+        return new FormatService<>(fileFormat, Optional.ofNullable(writerRegistry.get(fileFormat)).orElseThrow(() -> {
             LOGGER.error("Unable to write " + fileFormat);
             return new InternalServerErrorException("Unable to write " + fileFormat);
         }));
@@ -187,15 +200,8 @@ public class SPARQLActions {
         return new Variant(MediaType.valueOf(format.getDefaultMIMEType()), (Locale) null, null);
     }
 
-    private QueryPreparer getQueryPreparer() {
-        if (queryPreparer == null) {
-            queryPreparer = new SimpleQueryPreparer(new LuceneTripleSource(index));
-        }
-        return queryPreparer;
-    }
-
     private Model getServiceDescription() {
-        ValueFactory valueFactory = SimpleValueFactory.getInstance();
+        ValueFactory valueFactory = ValueFactoryImpl.getInstance();
         Model model = new TreeModel();
 
         Resource service = valueFactory.createBNode();
@@ -206,7 +212,7 @@ public class SPARQLActions {
         model.add(service, SD.SUPPORTED_LANGUAGE, SD.SPARQL_10_QUERY);
         model.add(service, SD.SUPPORTED_LANGUAGE, SD.SPARQL_11_QUERY);
 
-        for (TupleQueryResultWriterFactory queryResultWriterFactory : TupleQueryResultWriterRegistry.getInstance().getAll()) {
+        /*TODO for (TupleQueryResultWriterFactory queryResultWriterFactory : TupleQueryResultWriterRegistry.getInstance().getAll()) {
             Resource formatIRI = queryResultWriterFactory.getTupleQueryResultFormat().getStandardURI();
             if (formatIRI != null) {
                 model.add(service, SD.RESULT_FORMAT, formatIRI);
@@ -223,7 +229,7 @@ public class SPARQLActions {
             if (formatIRI != null) {
                 model.add(service, SD.RESULT_FORMAT, formatIRI);
             }
-        }
+        }*/
 
         return model;
     }

@@ -28,27 +28,51 @@
     <properties>
         <jdkVersion>1.8</jdkVersion>
         <activationVersion>1.1.1</activationVersion>
+        <blazegraphVersion>2.1.4</blazegraphVersion>
+        <commonsIOVersion>2.5</commonsIOVersion>
         <commonsValidatorVersion>1.6</commonsValidatorVersion>
+        <jacksonVersion>2.8.4</jacksonVersion> <!-- Problem with @JsonUnwrapped and Jackson 2.9 -->
         <jaxbVersion>2.3.0</jaxbVersion>
-        <jerseyVersion>2.25.1</jerseyVersion>
+        <jerseyVersion>2.26</jerseyVersion>
         <jtsVersion>1.14.0</jtsVersion>
         <junitVersion>4.12</junitVersion>
-        <luceneVersion>6.6.1</luceneVersion>
+        <luceneVersion>7.2.0</luceneVersion>
         <mapDbVersion>3.0.5</mapDbVersion>
-        <owlapiVersion>5.1.1</owlapiVersion>
-        <rdf4jVersion>2.1.4
-        </rdf4jVersion><!-- Warning: should be synchronized with the version number used by OWL API -->
-        <servletVersion>3.1.0</servletVersion>
+        <owlapiVersion>4.5.1</owlapiVersion>
         <swaggerVersion>1.5.13</swaggerVersion><!-- Warning: issues with Guava dependency version with 1.5.16 -->
-        <slf4jVersion>1.7.25</slf4jVersion>
         <wdtkVersion>0.8.0</wdtkVersion>
     </properties>
 
     <dependencies>
         <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commonsIOVersion}</version>
+        </dependency>
+        <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
             <version>${commonsValidatorVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.blazegraph</groupId>
+            <artifactId>bigdata-core</artifactId>
+            <version>${blazegraphVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jacksonVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jacksonVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jacksonVersion}</version>
         </dependency>
         <dependency>
             <groupId>com.vividsolutions</groupId>
@@ -60,11 +84,6 @@
             <artifactId>swagger-jersey2-jaxrs</artifactId>
             <version>${swaggerVersion}</version>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>${servletVersion}</version>
         </dependency>
         <dependency>
             <groupId>javax.xml.bind</groupId>
@@ -103,46 +122,6 @@
             <version>${luceneVersion}</version>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.rdf4j</groupId>
-            <artifactId>rdf4j-queryparser-sparql</artifactId>
-            <version>${rdf4jVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.rdf4j</groupId>
-            <artifactId>rdf4j-queryalgebra-evaluation</artifactId>
-            <version>${rdf4jVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.rdf4j</groupId>
-            <artifactId>rdf4j-queryresultio-sparqlxml</artifactId>
-            <version>${rdf4jVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.rdf4j</groupId>
-            <artifactId>rdf4j-queryresultio-sparqljson</artifactId>
-            <version>${rdf4jVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.rdf4j</groupId>
-            <artifactId>rdf4j-queryresultio-text</artifactId>
-            <version>${rdf4jVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.rdf4j</groupId>
-            <artifactId>rdf4j-rio-n3</artifactId>
-            <version>${rdf4jVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.rdf4j</groupId>
-            <artifactId>rdf4j-rio-rdfxml</artifactId>
-            <version>${rdf4jVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.rdf4j</groupId>
-            <artifactId>rdf4j-rio-turtle</artifactId>
-            <version>${rdf4jVersion}</version>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-server</artifactId>
             <version>${jerseyVersion}</version>
@@ -155,6 +134,11 @@
         <dependency>
             <groupId>org.glassfish.jersey.ext</groupId>
             <artifactId>jersey-entity-filtering</artifactId>
+            <version>${jerseyVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
             <version>${jerseyVersion}</version>
         </dependency>
         <dependency>
@@ -172,11 +156,6 @@
             <groupId>org.mapdb</groupId>
             <artifactId>mapdb</artifactId>
             <version>${mapDbVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
-            <version>${slf4jVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.wikidata.wdtk</groupId>

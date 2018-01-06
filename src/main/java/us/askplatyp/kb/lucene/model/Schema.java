@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,20 +40,20 @@ public class Schema {
     private static final Logger LOGGER = LoggerFactory.getLogger(Schema.class);
     private static final OWLDataFactory DATA_FACTORY = OWLManager.getOWLDataFactory();
     private static final OWLDataRange CALENDAR_DATARANGE = DATA_FACTORY.getOWLDataUnionOf(
-            DATA_FACTORY.getOWLDatatype(XSDVocabulary.DATE_TIME),
-            DATA_FACTORY.getOWLDatatype(XSDVocabulary.DATE),
-            DATA_FACTORY.getOWLDatatype(XSDVocabulary.G_YEAR_MONTH),
-            DATA_FACTORY.getOWLDatatype(XSDVocabulary.G_YEAR)
+            DATA_FACTORY.getOWLDatatype(XSDVocabulary.DATE_TIME.getIRI()),
+            DATA_FACTORY.getOWLDatatype(XSDVocabulary.DATE.getIRI()),
+            DATA_FACTORY.getOWLDatatype(XSDVocabulary.G_YEAR_MONTH.getIRI()),
+            DATA_FACTORY.getOWLDatatype(XSDVocabulary.G_YEAR.getIRI())
     );
-    private static final OWLDatatype LOCAL_STRING_DATARANGE = DATA_FACTORY.getOWLDatatype(
+    private static final OWLDatatype LOCAL_STRING_DATARANGE = DATA_FACTORY.getOWLDatatype(IRI.create(
             "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
-    );
-    private static final OWLDatatype STRING_DATARANGE = DATA_FACTORY.getStringOWLDatatype();
+    ));
+    private static final OWLDatatype STRING_DATARANGE = DATA_FACTORY.getOWLDatatype(XSDVocabulary.STRING.getIRI());
     private static final OWLClassExpression GEO_CLASS = DATA_FACTORY.getOWLObjectUnionOf(
-            DATA_FACTORY.getOWLClass("http://schema.org/GeoCoordinates"),
-            DATA_FACTORY.getOWLClass("http://schema.org/GeoShape")
+            DATA_FACTORY.getOWLClass(IRI.create("http://schema.org/GeoCoordinates")),
+            DATA_FACTORY.getOWLClass(IRI.create("http://schema.org/GeoShape"))
     );
-    private static final OWLDatatype ANY_URI_DATARANGE = DATA_FACTORY.getOWLDatatype(XSDVocabulary.ANY_URI);
+    private static final OWLDatatype ANY_URI_DATARANGE = DATA_FACTORY.getOWLDatatype(XSDVocabulary.ANY_URI.getIRI());
     private OWLOntology ontology;
 
     private static Schema SCHEMA;
@@ -84,9 +84,9 @@ public class Schema {
     }
 
     private void loadProperties() {
-        ontology.dataPropertiesInSignature().map(DataProperty::new)
+        ontology.getDataPropertiesInSignature().stream().map(DataProperty::new)
                 .forEach(property -> properties.put(property.getIRI(), property));
-        ontology.objectPropertiesInSignature().map(ObjectProperty::new)
+        ontology.getObjectPropertiesInSignature().stream().map(ObjectProperty::new)
                 .forEach(property -> properties.put(property.getIRI(), property));
     }
 
@@ -123,11 +123,11 @@ public class Schema {
         }
 
         public String getIRI() {
-            return Namespaces.reduce(self.getIRI().getIRIString());
+            return Namespaces.reduce(self.getIRI().toString());
         }
 
         public boolean isSubClassOf(Class other) {
-            return reasoner.getSubClasses(other.self).containsEntity(self);
+            return reasoner.getSubClasses(other.self, false).containsEntity(self);
         }
     }
 
@@ -140,12 +140,13 @@ public class Schema {
 
         @Override
         public String getIRI() {
-            return Namespaces.reduce(self.getIRI().getIRIString());
+            return Namespaces.reduce(self.getIRI().toString());
         }
 
         @Override
         public Range getSimpleRange() {
-            OWLClassExpression range = ontology.objectPropertyRangeAxioms(self)
+            OWLClassExpression range = ontology.getObjectPropertyRangeAxioms(self)
+                    .stream()
                     .map(OWLObjectPropertyRangeAxiom::getRange)
                     .findAny().orElseGet(() -> {
                         LOGGER.warn("The object property " + self.toStringID() + " has no range in the schema");
@@ -160,7 +161,7 @@ public class Schema {
 
         @Override
         public boolean isFunctionalProperty() {
-            return ontology.functionalObjectPropertyAxioms(self).count() > 0;
+            return ontology.getFunctionalObjectPropertyAxioms(self).size() > 0;
         }
     }
 
@@ -173,12 +174,13 @@ public class Schema {
 
         @Override
         public String getIRI() {
-            return Namespaces.reduce(self.getIRI().getIRIString());
+            return Namespaces.reduce(self.getIRI().toString());
         }
 
         @Override
         public Range getSimpleRange() {
-            OWLDataRange range = ontology.dataPropertyRangeAxioms(self)
+            OWLDataRange range = ontology.getDataPropertyRangeAxioms(self)
+                    .stream()
                     .map(OWLDataPropertyRangeAxiom::getRange)
                     .findAny().orElseGet(() -> {
                         LOGGER.warn("The data property " + self.toStringID() + " has no range in the schema");
@@ -201,7 +203,7 @@ public class Schema {
 
         @Override
         public boolean isFunctionalProperty() {
-            return reasoner.getRootOntology().functionalDataPropertyAxioms(self).count() > 0;
+            return (long) reasoner.getRootOntology().getFunctionalDataPropertyAxioms(self).size() > 0;
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,34 +18,34 @@
 package us.askplatyp.kb.lucene.http;
 
 import com.google.common.collect.Sets;
-import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.resultio.TupleQueryResultParser;
-import org.eclipse.rdf4j.query.resultio.helpers.QueryResultCollector;
-import org.eclipse.rdf4j.query.resultio.sparqljson.SPARQLResultsJSONParserFactory;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Assert;
 import org.junit.Test;
-import us.askplatyp.kb.lucene.lucene.LuceneIndex;
+import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.resultio.TupleQueryResultParser;
+import org.openrdf.query.resultio.helpers.QueryResultCollector;
+import org.openrdf.query.resultio.sparqljson.SPARQLResultsJSONParserFactory;
+import us.askplatyp.kb.lucene.CompositeIndex;
 import us.askplatyp.kb.lucene.wikidata.FakeWikidataLuceneIndexFactory;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class SPARQLActionsTest extends JerseyTest {
 
-    private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
+    private static final ValueFactory VALUE_FACTORY = ValueFactoryImpl.getInstance();
 
     @Override
     protected Application configure() {
@@ -53,38 +53,50 @@ public class SPARQLActionsTest extends JerseyTest {
                 .register(new AbstractBinder() {
                     @Override
                     protected void configure() {
-                        bindFactory(FakeWikidataLuceneIndexFactory.class).to(LuceneIndex.class);
+                        bindFactory(FakeWikidataLuceneIndexFactory.class).to(CompositeIndex.class);
                     }
                 });
     }
 
     @Test
-    public void testGetSubject() throws IOException {
+    public void testGetPeople() throws Exception {
         Assert.assertEquals(
-                Sets.newHashSet(
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q42"),
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q222"),
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q111"),
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q91"),
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q90"),
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q2108")
-                ),
-                doSparqlQuerySingleSelect("SELECT DISTINCT ?s WHERE { ?s ?p ?o }")
+                Collections.singleton(VALUE_FACTORY.createURI("http://www.wikidata.org/entity/Q42")),
+                doSparqlQuerySingleSelect("SELECT DISTINCT ?s WHERE { ?s <http://www.wikidata.org/prop/direct/P31>/<http://www.wikidata.org/prop/direct/P279>* <http://www.wikidata.org/entity/Q5> }")
         );
     }
 
     @Test
-    public void testGetIndividuals() throws IOException {
+    public void testGetByGooglePlus() throws Exception {
+        Assert.assertEquals(
+                Collections.singleton(VALUE_FACTORY.createURI("http://www.wikidata.org/entity/Q42")),
+                doSparqlQuerySingleSelect("SELECT DISTINCT ?s WHERE { ?s <http://www.wikidata.org/prop/direct/P2847> \"+BarackObama\" }")
+        );
+    }
+
+    @Test
+    public void testGetValues() throws Exception {
         Assert.assertEquals(
                 Sets.newHashSet(
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q42"),
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q222"),
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q111"),
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q91"),
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q90"),
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q2108")
+                        VALUE_FACTORY.createURI("http://www.wikidata.org/entity/Q515"),
+                        VALUE_FACTORY.createURI("geo:48.85657777777817,2.3518277777777965")
                 ),
-                doSparqlQuerySingleSelect("SELECT DISTINCT ?s WHERE { ?s a owl:Individual }")
+                doSparqlQuerySingleSelect("SELECT DISTINCT ?o WHERE { <http://www.wikidata.org/entity/Q90> ?p ?o }")
+        );
+    }
+
+    /*@Test
+    public void testGetSubject() throws Exception {
+        Assert.assertEquals(
+                Sets.newHashSet(
+                        VALUE_FACTORY.createURI("http://www.wikidata.org/entity/Q42"),
+                        VALUE_FACTORY.createURI("http://www.wikidata.org/entity/Q222"),
+                        VALUE_FACTORY.createURI("http://www.wikidata.org/entity/Q111"),
+                        VALUE_FACTORY.createURI("http://www.wikidata.org/entity/Q91"),
+                        VALUE_FACTORY.createURI("http://www.wikidata.org/entity/Q90"),
+                        VALUE_FACTORY.createURI("http://www.wikidata.org/entity/Q2108")
+                ),
+                doSparqlQuerySingleSelect("SELECT DISTINCT ?s WHERE { ?s ?p ?o }")
         );
     }
 
@@ -92,7 +104,7 @@ public class SPARQLActionsTest extends JerseyTest {
     public void testGetPeople() throws IOException {
         Assert.assertEquals(
                 Sets.newHashSet(
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q42")
+                        VALUE_FACTORY.createURI("http://www.wikidata.org/entity/Q42")
                 ),
                 doSparqlQuerySingleSelect("SELECT DISTINCT ?s WHERE { ?s a schema:Person }")
         );
@@ -102,7 +114,7 @@ public class SPARQLActionsTest extends JerseyTest {
     public void testGetByBirthDate() throws IOException {
         Assert.assertEquals(
                 Sets.newHashSet(
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q42")
+                        VALUE_FACTORY.createURI("http://www.wikidata.org/entity/Q42")
                 ),
                 doSparqlQuerySingleSelect("SELECT DISTINCT ?s WHERE { ?s schema:birthDate \"1952-03-11Z\"^^xsd:date }")
         );
@@ -112,7 +124,7 @@ public class SPARQLActionsTest extends JerseyTest {
     public void testGetBySameAs() throws IOException {
         Assert.assertEquals(
                 Sets.newHashSet(
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q42")
+                        VALUE_FACTORY.createURI("http://www.wikidata.org/entity/Q42")
                 ),
                 doSparqlQuerySingleSelect("SELECT DISTINCT ?s WHERE { ?s schema:sameAs \"http://fr.wikipedia.org/wiki/Douglas_Adams\" }")
         );
@@ -122,7 +134,7 @@ public class SPARQLActionsTest extends JerseyTest {
     public void testGetByName() throws IOException {
         Assert.assertEquals(
                 Sets.newHashSet(
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q42")
+                        VALUE_FACTORY.createURI("http://www.wikidata.org/entity/Q42")
                 ),
                 doSparqlQuerySingleSelect("SELECT DISTINCT ?s WHERE { ?s schema:name \"super de test\"@fr }")
         );
@@ -132,7 +144,7 @@ public class SPARQLActionsTest extends JerseyTest {
     public void testGetByNameAndType() throws IOException {
         Assert.assertEquals(
                 Sets.newHashSet(
-                        VALUE_FACTORY.createIRI("http://www.wikidata.org/entity/Q42")
+                        VALUE_FACTORY.createURI("http://www.wikidata.org/entity/Q42")
                 ),
                 doSparqlQuerySingleSelect("SELECT DISTINCT ?s WHERE { ?s schema:name \"Foo bar\"@en ; a schema:Person }")
         );
@@ -159,13 +171,13 @@ public class SPARQLActionsTest extends JerseyTest {
         );
     }*/
 
-    private Set<Value> doSparqlQuerySingleSelect(String query) throws IOException {
+    private Set<Value> doSparqlQuerySingleSelect(String query) throws Exception {
         return doSparqlQuery(query).stream()
                 .map(bindings -> bindings.getValue(bindings.getBindingNames().iterator().next()))
                 .collect(Collectors.toSet());
     }
 
-    private List<BindingSet> doSparqlQuery(String query) throws IOException {
+    private List<BindingSet> doSparqlQuery(String query) throws Exception {
         InputStream result = target("/api/v1/sparql")
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .post(Entity.entity(query, "application/sparql-query"), InputStream.class);

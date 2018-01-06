@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,6 @@ import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -94,7 +93,7 @@ public class KartographerAPI {
 
     private Geometry geoGeoJSONRequest(URL targetURL) throws IOException, ParseException {
         try (InputStream inputStream = targetURL.openStream()) {
-            String geoJSON = IOUtils.toString(inputStream, Charset.defaultCharset());
+            String geoJSON = IOUtils.toString(inputStream, "UTF-8");
             if (geoJSON.equals(EMPTY_FEATURE_COLLECTION)) {
                 return EMPTY_GEOMETRY;
             }

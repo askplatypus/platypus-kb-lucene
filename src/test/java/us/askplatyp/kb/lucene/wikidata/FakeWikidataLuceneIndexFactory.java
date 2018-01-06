@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,11 +17,17 @@
 
 package us.askplatyp.kb.lucene.wikidata;
 
+import com.bigdata.rdf.sail.BigdataSailRepository;
 import org.apache.commons.compress.utils.IOUtils;
 import org.glassfish.hk2.api.Factory;
 import org.junit.rules.TemporaryFolder;
+import org.openrdf.repository.RepositoryConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
 import org.wikidata.wdtk.dumpfiles.MwLocalDumpFile;
+import us.askplatyp.kb.lucene.CompositeIndex;
+import us.askplatyp.kb.lucene.blazegraph.SailFactory;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
 import us.askplatyp.kb.lucene.lucene.LuceneLoader;
 
@@ -31,34 +37,45 @@ import java.util.zip.GZIPOutputStream;
 /**
  * @author Thomas Pellissier Tanon
  */
-public class FakeWikidataLuceneIndexFactory implements Factory<LuceneIndex> {
+public class FakeWikidataLuceneIndexFactory implements Factory<CompositeIndex> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FakeWikidataLuceneIndexFactory.class);
 
     private LuceneIndex index;
+    private BigdataSailRepository repository;
 
-    public FakeWikidataLuceneIndexFactory() throws IOException {
-        TemporaryFolder temporaryFolder = new TemporaryFolder();
-        temporaryFolder.create();
+    public FakeWikidataLuceneIndexFactory() {
+        try {
+            TemporaryFolder temporaryFolder = new TemporaryFolder();
+            temporaryFolder.create();
 
-        File fakeDumpFile = temporaryFolder.newFile("wikidata-20160829-all.json.gz");
-        compressFileToGzip(new File(FakeWikidataLuceneIndexFactory.class.getResource("/wikidata-20160829-all.json").getPath()), fakeDumpFile);
-        MwLocalDumpFile fakeDump = new MwLocalDumpFile(fakeDumpFile.getPath());
+            File fakeDumpFile = temporaryFolder.newFile("wikidata-20160829-all.json.gz");
+            compressFileToGzip(new File(FakeWikidataLuceneIndexFactory.class.getResource("/wikidata-20160829-all.json").getPath()), fakeDumpFile);
+            MwLocalDumpFile fakeDump = new MwLocalDumpFile(fakeDumpFile.getPath());
 
-        File dbFile = temporaryFolder.newFile();
-        dbFile.delete();
-        try (WikidataTypeHierarchy typeHierarchy = new WikidataTypeHierarchy(dbFile.toPath())) {
-            index = new LuceneIndex(temporaryFolder.newFolder().toPath());
-            DumpProcessingController dumpProcessingController = new DumpProcessingController("wikidatawiki");
-            dumpProcessingController.setDownloadDirectory(temporaryFolder.newFolder().toString());
-            dumpProcessingController.registerEntityDocumentProcessor(typeHierarchy.getUpdateProcessor(), null, true);
-            dumpProcessingController.processDump(fakeDump);
+            File dbFile = temporaryFolder.newFile();
+            dbFile.delete(); //THe file should not exist
 
-            dumpProcessingController.registerEntityDocumentProcessor(
-                    new WikidataResourceProcessor(new LuceneLoader(index), dumpProcessingController.getSitesInformation(), typeHierarchy),
-                    null,
-                    true
-            );
-            dumpProcessingController.processDump(fakeDump);
-            index.refreshReaders();
+            try (WikidataTypeHierarchy typeHierarchy = new WikidataTypeHierarchy(dbFile.toPath())) {
+                repository = SailFactory.openNoInferenceTripleRepository(temporaryFolder.newFile().getAbsolutePath());
+                index = new LuceneIndex(temporaryFolder.newFolder().toPath());
+                DumpProcessingController dumpProcessingController = new DumpProcessingController("wikidatawiki");
+                dumpProcessingController.setDownloadDirectory(temporaryFolder.newFolder().toString());
+                dumpProcessingController.registerEntityDocumentProcessor(typeHierarchy.getUpdateProcessor(), null, true);
+                dumpProcessingController.processDump(fakeDump);
+
+                RepositoryConnection connection = repository.getConnection();
+                dumpProcessingController.registerEntityDocumentProcessor(
+                        new WikidataResourceProcessor(new LuceneLoader(index), dumpProcessingController.getSitesInformation(), typeHierarchy, connection),
+                        null,
+                        true
+                );
+                dumpProcessingController.processDump(fakeDump);
+                index.refreshReaders();
+                connection.close();
+            }
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
         }
     }
 
@@ -72,11 +89,11 @@ public class FakeWikidataLuceneIndexFactory implements Factory<LuceneIndex> {
     }
 
     @Override
-    public LuceneIndex provide() {
-        return index;
+    public CompositeIndex provide() {
+        return new CompositeIndex(index, repository);
     }
 
     @Override
-    public void dispose(LuceneIndex luceneIndex) {
+    public void dispose(CompositeIndex luceneIndex) {
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 package us.askplatyp.kb.lucene.http;
 
 import io.swagger.annotations.*;
+import us.askplatyp.kb.lucene.CompositeIndex;
 import us.askplatyp.kb.lucene.jsonld.JsonLdBuilder;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
 import us.askplatyp.kb.lucene.lucene.LuceneLookup;
@@ -37,7 +38,7 @@ import java.io.IOException;
 public class EntityActions {
 
     @Inject
-    private LuceneIndex index;
+    private CompositeIndex index;
 
     @GET
     @ApiOperation(
@@ -55,7 +56,7 @@ public class EntityActions {
             @Context Request request
     ) {
         return ActionUtils.jsonContentNegotiation(request, (locale) -> {
-            try (LuceneIndex.Reader indexReader = index.getReader()) {
+            try (LuceneIndex.Reader indexReader = index.getLuceneIndex().getReader()) {
                 LuceneLookup luceneLookup = new LuceneLookup(indexReader);
                 return luceneLookup.getResourceForIRI(IRI).map(resource ->
                         (new JsonLdBuilder(luceneLookup)).buildEntityInLanguage(resource, locale)

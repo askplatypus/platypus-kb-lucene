@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,12 @@
 package us.askplatyp.kb.lucene.wikidata;
 
 import com.google.common.collect.Sets;
+import org.openrdf.model.Model;
+import org.openrdf.model.URI;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.TreeModel;
+import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
@@ -67,12 +73,14 @@ public class WikidataResourceProcessor implements EntityDocumentProcessor {
     private Sites sites;
     private TypeMapper typeMapper;
     private MapperRegistry mapperRegistry;
+    private RepositoryConnection repositoryConnection;
 
-    public WikidataResourceProcessor(StorageLoader loader, Sites sites, WikidataTypeHierarchy typeHierarchy) {
+    public WikidataResourceProcessor(StorageLoader loader, Sites sites, WikidataTypeHierarchy typeHierarchy, RepositoryConnection repositoryConnection) {
         this.loader = loader;
         this.sites = sites;
         this.typeMapper = new TypeMapper(typeHierarchy);
         this.mapperRegistry = new MapperRegistry(typeHierarchy);
+        this.repositoryConnection = repositoryConnection;
     }
 
     @Override
@@ -87,6 +95,7 @@ public class WikidataResourceProcessor implements EntityDocumentProcessor {
         addStatementsToResource(itemDocument, resource);
         addScoreToResource(itemDocument, resource);
         loader.addResource(resource);
+        addToRepository(itemDocument);
     }
 
     @Override
@@ -173,5 +182,66 @@ public class WikidataResourceProcessor implements EntityDocumentProcessor {
 
     private void addScoreToResource(ItemDocument itemDocument, IndexableResource resource) {
         resource.addToRank(itemDocument.getSiteLinks().size());
+    }
+
+    private void addToRepository(StatementDocument document) {
+        Model newStatements = new TreeModel();
+
+        ValueFactory valueFactory = repositoryConnection.getValueFactory();
+        URI entityURI = valueFactory.createURI(document.getEntityId().getIri());
+        document.getStatementGroups().forEach(statementGroup -> {
+            URI propertyURI = valueFactory.createURI("http://www.wikidata.org/prop/direct/", statementGroup.getProperty().getId());
+            getBestStatements(statementGroup).forEach(statement -> {
+                Object value = statement.getValue();
+                if (value instanceof IriIdentifiedValue) {
+                    newStatements.add(
+                            entityURI,
+                            propertyURI,
+                            valueFactory.createURI(((IriIdentifiedValue) value).getIri())
+                    );
+                } else if (value instanceof StringValue) {
+                    newStatements.add(
+                            entityURI,
+                            propertyURI,
+                            valueFactory.createLiteral(((StringValue) value).getString())
+                    );
+                } else if (value instanceof MonolingualTextValue) {
+                    newStatements.add(
+                            entityURI,
+                            propertyURI,
+                            valueFactory.createLiteral(((MonolingualTextValue) value).getText(), ((MonolingualTextValue) value).getLanguageCode())
+                    );
+                } else if (value instanceof GlobeCoordinatesValue) {
+                    WikibaseValueUtils.toGeoURI((GlobeCoordinatesValue) value).ifPresent(uri ->
+                            newStatements.add(entityURI, propertyURI, valueFactory.createURI(uri))
+                    );
+                } else if (value instanceof TimeValue) {
+                    WikibaseValueUtils.toXmlGregorianCalendar((TimeValue) value).ifPresent(literal ->
+                            newStatements.add(entityURI, propertyURI, valueFactory.createLiteral(literal))
+                    );
+                } else if (value instanceof QuantityValue) {
+                    QuantityValue quantity = (QuantityValue) value;
+                    if (quantity.getUnit().isEmpty() && Objects.equals(quantity.getLowerBound(), quantity.getUpperBound())) {
+                        newStatements.add(entityURI, propertyURI, valueFactory.createLiteral(quantity.getNumericValue().toPlainString()));
+                    }
+                    //TODO: support more quantities
+                } else if (value != null) {
+                    LOGGER.warn("Unsupported value type: " + value);
+                }
+            });
+        });
+
+        //TODO: do batches and use named graphs
+        if (!newStatements.isEmpty()) {
+            try {
+                repositoryConnection.begin();
+                repositoryConnection.remove(entityURI, null, null);
+                repositoryConnection.add(newStatements);
+                repositoryConnection.commit();
+            } catch (RepositoryException e) {
+                LOGGER.warn(e.getMessage(), e);
+            }
+        }
+
     }
 }

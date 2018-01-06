@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,10 +30,10 @@ import java.util.List;
 public class Collection<T> {
 
     private List<T> elements;
-    private int totalNumber;
+    private long totalNumber;
 
     @JsonCreator
-    Collection(@JsonProperty("member") List<T> elements, @JsonProperty("totalItems") int totalNumber) {
+    Collection(@JsonProperty("member") List<T> elements, @JsonProperty("totalItems") long totalNumber) {
         this.elements = elements;
         this.totalNumber = totalNumber;
     }
@@ -49,7 +49,7 @@ public class Collection<T> {
     }
 
     @JsonProperty("totalItems")
-    public int getTotalNumber() {
+    public long getTotalNumber() {
         return this.totalNumber;
     }
 }
