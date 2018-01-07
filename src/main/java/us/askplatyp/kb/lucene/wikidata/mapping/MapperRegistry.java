@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -124,7 +124,7 @@ public class MapperRegistry {
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P2205"), new ExternalIdentifierStatementMapper("http://open.spotify.com/album/$1", "[0-9A-Za-z]{22}"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P2207"), new ExternalIdentifierStatementMapper("http://open.spotify.com/track/$1", "[0-9A-Za-z]{22}"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P2397"), new ExternalIdentifierStatementMapper("http://www.youtube.com/channel/$1", "UC([A-Za-z0-9_\\-]){22}"));
-        mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P2671"), new ExternalIdentifierStatementMapper("http://g.co/kg$1", "\\/g\\/[0-9a-zA-Z]+"));
+        mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P2671"), new ExternalIdentifierStatementMapper("http://g.co/kg$1", "\\/g\\/[0-9a-zA-Z_]+"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P2847"), new ExternalIdentifierStatementMapper("http://plus.google.com/$1", "\\d{22}|\\+[-\\w_\\u00C0-\\u00FF]+"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P2360"), new ItemIdStatementMapper("audience"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P2860"), new ItemIdStatementMapper("citation"));
