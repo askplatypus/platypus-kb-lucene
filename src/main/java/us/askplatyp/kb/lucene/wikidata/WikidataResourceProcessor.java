@@ -18,16 +18,14 @@
 package us.askplatyp.kb.lucene.wikidata;
 
 import com.google.common.collect.Sets;
-import org.openrdf.model.Model;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.TreeModel;
-import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
 import org.wikidata.wdtk.datamodel.interfaces.*;
+import us.askplatyp.kb.lucene.blazegraph.RepositoryBatchLoader;
 import us.askplatyp.kb.lucene.model.Claim;
 import us.askplatyp.kb.lucene.model.IndexableResource;
 import us.askplatyp.kb.lucene.model.StorageLoader;
@@ -73,14 +71,14 @@ public class WikidataResourceProcessor implements EntityDocumentProcessor {
     private Sites sites;
     private TypeMapper typeMapper;
     private MapperRegistry mapperRegistry;
-    private RepositoryConnection repositoryConnection;
+    private RepositoryBatchLoader repositoryLoader;
 
-    public WikidataResourceProcessor(StorageLoader loader, Sites sites, WikidataTypeHierarchy typeHierarchy, RepositoryConnection repositoryConnection) {
+    public WikidataResourceProcessor(StorageLoader loader, Sites sites, WikidataTypeHierarchy typeHierarchy, RepositoryBatchLoader repositoryLoader) {
         this.loader = loader;
         this.sites = sites;
         this.typeMapper = new TypeMapper(typeHierarchy);
         this.mapperRegistry = new MapperRegistry(typeHierarchy);
-        this.repositoryConnection = repositoryConnection;
+        this.repositoryLoader = repositoryLoader;
     }
 
     @Override
@@ -185,44 +183,75 @@ public class WikidataResourceProcessor implements EntityDocumentProcessor {
     }
 
     private void addToRepository(StatementDocument document) {
-        Model newStatements = new TreeModel();
-
-        ValueFactory valueFactory = repositoryConnection.getValueFactory();
+        ValueFactory valueFactory = repositoryLoader.getValueFactory();
         URI entityURI = valueFactory.createURI(document.getEntityId().getIri());
+
+        try {
+            repositoryLoader.remove(entityURI, null, null);
+        } catch (RepositoryException e) {
+            LOGGER.warn(e.getMessage(), e);
+        }
+
         document.getStatementGroups().forEach(statementGroup -> {
             URI propertyURI = valueFactory.createURI("http://www.wikidata.org/prop/direct/", statementGroup.getProperty().getId());
             getBestStatements(statementGroup).forEach(statement -> {
                 Object value = statement.getValue();
                 if (value instanceof IriIdentifiedValue) {
-                    newStatements.add(
-                            entityURI,
-                            propertyURI,
-                            valueFactory.createURI(((IriIdentifiedValue) value).getIri())
-                    );
+                    try {
+                        repositoryLoader.add(
+                                entityURI,
+                                propertyURI,
+                                valueFactory.createURI(((IriIdentifiedValue) value).getIri())
+                        );
+                    } catch (RepositoryException e) {
+                        LOGGER.warn(e.getMessage(), e);
+                    }
                 } else if (value instanceof StringValue) {
-                    newStatements.add(
-                            entityURI,
-                            propertyURI,
-                            valueFactory.createLiteral(((StringValue) value).getString())
-                    );
+                    try {
+                        repositoryLoader.add(
+                                entityURI,
+                                propertyURI,
+                                valueFactory.createLiteral(((StringValue) value).getString())
+                        );
+                    } catch (RepositoryException e) {
+                        LOGGER.warn(e.getMessage(), e);
+                    }
                 } else if (value instanceof MonolingualTextValue) {
-                    newStatements.add(
-                            entityURI,
-                            propertyURI,
-                            valueFactory.createLiteral(((MonolingualTextValue) value).getText(), ((MonolingualTextValue) value).getLanguageCode())
-                    );
+                    try {
+                        repositoryLoader.add(
+                                entityURI,
+                                propertyURI,
+                                valueFactory.createLiteral(((MonolingualTextValue) value).getText(), ((MonolingualTextValue) value).getLanguageCode())
+                        );
+                    } catch (RepositoryException e) {
+                        LOGGER.warn(e.getMessage(), e);
+                    }
                 } else if (value instanceof GlobeCoordinatesValue) {
-                    WikibaseValueUtils.toGeoURI((GlobeCoordinatesValue) value).ifPresent(uri ->
-                            newStatements.add(entityURI, propertyURI, valueFactory.createURI(uri))
+                    WikibaseValueUtils.toGeoURI((GlobeCoordinatesValue) value).ifPresent(uri -> {
+                                try {
+                                    repositoryLoader.add(entityURI, propertyURI, valueFactory.createURI(uri));
+                                } catch (RepositoryException e) {
+                                    LOGGER.warn(e.getMessage(), e);
+                                }
+                            }
                     );
                 } else if (value instanceof TimeValue) {
-                    WikibaseValueUtils.toXmlGregorianCalendar((TimeValue) value).ifPresent(literal ->
-                            newStatements.add(entityURI, propertyURI, valueFactory.createLiteral(literal))
+                    WikibaseValueUtils.toXmlGregorianCalendar((TimeValue) value).ifPresent(literal -> {
+                                try {
+                                    repositoryLoader.add(entityURI, propertyURI, valueFactory.createLiteral(literal));
+                                } catch (RepositoryException e) {
+                                    LOGGER.warn(e.getMessage(), e);
+                                }
+                            }
                     );
                 } else if (value instanceof QuantityValue) {
                     QuantityValue quantity = (QuantityValue) value;
                     if (quantity.getUnit().isEmpty() && Objects.equals(quantity.getLowerBound(), quantity.getUpperBound())) {
-                        newStatements.add(entityURI, propertyURI, valueFactory.createLiteral(quantity.getNumericValue().toPlainString()));
+                        try {
+                            repositoryLoader.add(entityURI, propertyURI, valueFactory.createLiteral(quantity.getNumericValue().toPlainString()));
+                        } catch (RepositoryException e) {
+                            LOGGER.warn(e.getMessage(), e);
+                        }
                     }
                     //TODO: support more quantities
                 } else if (value != null) {
@@ -230,18 +259,5 @@ public class WikidataResourceProcessor implements EntityDocumentProcessor {
                 }
             });
         });
-
-        //TODO: do batches and use named graphs
-        if (!newStatements.isEmpty()) {
-            try {
-                repositoryConnection.begin();
-                repositoryConnection.remove(entityURI, null, null);
-                repositoryConnection.add(newStatements);
-                repositoryConnection.commit();
-            } catch (RepositoryException e) {
-                LOGGER.warn(e.getMessage(), e);
-            }
-        }
-
     }
 }

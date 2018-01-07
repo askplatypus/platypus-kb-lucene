@@ -19,7 +19,6 @@ package us.askplatyp.kb.lucene;
 
 import com.bigdata.rdf.sail.BigdataSailRepository;
 import org.glassfish.hk2.api.Factory;
-import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +26,7 @@ import org.wikidata.wdtk.dumpfiles.DumpContentType;
 import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
 import org.wikidata.wdtk.dumpfiles.MwDumpFile;
 import org.wikidata.wdtk.dumpfiles.wmf.WmfDumpFileManager;
+import us.askplatyp.kb.lucene.blazegraph.RepositoryBatchLoader;
 import us.askplatyp.kb.lucene.blazegraph.SailFactory;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
 import us.askplatyp.kb.lucene.lucene.LuceneLoader;
@@ -51,6 +51,7 @@ import java.util.stream.Stream;
  */
 public class WikidataLuceneIndexFactory implements Factory<CompositeIndex> {
 
+    private static final int BATCH_SIZE = 10000;
     private static final Logger LOGGER = LoggerFactory.getLogger(WikidataLuceneIndexFactory.class);
     private static final LastProcessedDumpInfo LAST_PROCESSED_DUMP_INFO = new LastProcessedDumpInfo();
 
@@ -83,17 +84,12 @@ public class WikidataLuceneIndexFactory implements Factory<CompositeIndex> {
         doInitialLoading();
 
         registerAtThreePM(() -> {
-            try {
-                RepositoryConnection connection = repository.getConnection();
-                try {
-                    DumpProcessingController dumpProcessingController = buildRegularProcessingControler(connection);
+            try (RepositoryBatchLoader batchLoader = new RepositoryBatchLoader(repository.getConnection(), BATCH_SIZE)) {
+                DumpProcessingController dumpProcessingController = buildRegularProcessingControler(batchLoader);
                     MwDumpFile dump = dumpProcessingController.getMostRecentDump(DumpContentType.DAILY);
                     dumpProcessingController.processDump(dump);
                     LAST_PROCESSED_DUMP_INFO.setDateStamp(dump.getDateStamp());
                     index.refreshReaders();
-                } finally {
-                    connection.close();
-                }
             } catch (Exception e) {
                 LOGGER.error(e.getMessage(), e);
             }
@@ -110,9 +106,8 @@ public class WikidataLuceneIndexFactory implements Factory<CompositeIndex> {
     }
 
     private static void doInitialLoading() throws IOException, RepositoryException {
-        RepositoryConnection connection = repository.getConnection();
-        try {
-            DumpProcessingController dumpProcessingController = buildRegularProcessingControler(connection);
+        try (RepositoryBatchLoader batchLoader = new RepositoryBatchLoader(repository.getConnection(), BATCH_SIZE)) {
+            DumpProcessingController dumpProcessingController = buildRegularProcessingControler(batchLoader);
             for (MwDumpFile dump : getNewDumpsToProcess(dumpProcessingController.getWmfDumpFileManager()).toArray(MwDumpFile[]::new)) {
                 LOGGER.info("Processing " + dump.getProjectName() + " " + dump.getDumpContentType() + " of the " + dump.getDateStamp());
                 try {
@@ -123,17 +118,15 @@ public class WikidataLuceneIndexFactory implements Factory<CompositeIndex> {
                     LOGGER.error(e.getMessage(), e);
                 }
             }
-        } finally {
-            connection.close();
         }
     }
 
-    private static DumpProcessingController buildRegularProcessingControler(RepositoryConnection connection) throws IOException {
+    private static DumpProcessingController buildRegularProcessingControler(RepositoryBatchLoader loader) throws IOException {
         DumpProcessingController dumpProcessingController = new DumpProcessingController("wikidatawiki");
         dumpProcessingController.setDownloadDirectory(Configuration.getInstance().getWikidataDirectory());
         dumpProcessingController.setLanguageFilter(WikidataResourceProcessor.SUPPORTED_LANGUAGES);
         dumpProcessingController.registerEntityDocumentProcessor(
-                new WikidataResourceProcessor(new LuceneLoader(index), dumpProcessingController.getSitesInformation(), typeHierarchy, connection),
+                new WikidataResourceProcessor(new LuceneLoader(index), dumpProcessingController.getSitesInformation(), typeHierarchy, loader),
                 null, true
         );
         return dumpProcessingController;

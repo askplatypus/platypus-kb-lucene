@@ -21,12 +21,12 @@ import com.bigdata.rdf.sail.BigdataSailRepository;
 import org.apache.commons.compress.utils.IOUtils;
 import org.glassfish.hk2.api.Factory;
 import org.junit.rules.TemporaryFolder;
-import org.openrdf.repository.RepositoryConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
 import org.wikidata.wdtk.dumpfiles.MwLocalDumpFile;
 import us.askplatyp.kb.lucene.CompositeIndex;
+import us.askplatyp.kb.lucene.blazegraph.RepositoryBatchLoader;
 import us.askplatyp.kb.lucene.blazegraph.SailFactory;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
 import us.askplatyp.kb.lucene.lucene.LuceneLoader;
@@ -56,23 +56,25 @@ public class FakeWikidataLuceneIndexFactory implements Factory<CompositeIndex> {
             File dbFile = temporaryFolder.newFile();
             dbFile.delete(); //THe file should not exist
 
-            try (WikidataTypeHierarchy typeHierarchy = new WikidataTypeHierarchy(dbFile.toPath())) {
-                repository = SailFactory.openNoInferenceTripleRepository(temporaryFolder.newFile().getAbsolutePath());
-                index = new LuceneIndex(temporaryFolder.newFolder().toPath());
+            repository = SailFactory.openNoInferenceTripleRepository(temporaryFolder.newFile().getAbsolutePath());
+            index = new LuceneIndex(temporaryFolder.newFolder().toPath());
+
+            try (
+                    WikidataTypeHierarchy typeHierarchy = new WikidataTypeHierarchy(dbFile.toPath());
+                    RepositoryBatchLoader batchLoader = new RepositoryBatchLoader(repository.getConnection(), 100)
+            ) {
                 DumpProcessingController dumpProcessingController = new DumpProcessingController("wikidatawiki");
                 dumpProcessingController.setDownloadDirectory(temporaryFolder.newFolder().toString());
                 dumpProcessingController.registerEntityDocumentProcessor(typeHierarchy.getUpdateProcessor(), null, true);
                 dumpProcessingController.processDump(fakeDump);
 
-                RepositoryConnection connection = repository.getConnection();
                 dumpProcessingController.registerEntityDocumentProcessor(
-                        new WikidataResourceProcessor(new LuceneLoader(index), dumpProcessingController.getSitesInformation(), typeHierarchy, connection),
+                        new WikidataResourceProcessor(new LuceneLoader(index), dumpProcessingController.getSitesInformation(), typeHierarchy, batchLoader),
                         null,
                         true
                 );
                 dumpProcessingController.processDump(fakeDump);
                 index.refreshReaders();
-                connection.close();
             }
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
