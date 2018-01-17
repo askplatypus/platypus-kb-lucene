@@ -51,7 +51,7 @@ import java.util.stream.Stream;
  */
 public class WikidataLuceneIndexFactory implements Factory<CompositeIndex> {
 
-    private static final int BATCH_SIZE = 10000;
+    private static final int BATCH_SIZE = 50000;
     private static final Logger LOGGER = LoggerFactory.getLogger(WikidataLuceneIndexFactory.class);
     private static final LastProcessedDumpInfo LAST_PROCESSED_DUMP_INFO = new LastProcessedDumpInfo();
 

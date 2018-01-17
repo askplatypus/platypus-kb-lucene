@@ -17,73 +17,63 @@
 
 package us.askplatyp.kb.lucene.blazegraph;
 
-import org.openrdf.model.*;
+import org.openrdf.model.Resource;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.RepositoryResult;
-
-import java.util.HashSet;
-import java.util.Set;
 
 public class RepositoryBatchLoader implements AutoCloseable {
     private RepositoryConnection connection;
-    private ValueFactory valueFactory;
-    private int batchSize;
-    private Set<Statement> toAdd = new HashSet<>();
-    private Set<Statement> toRemove = new HashSet<>();
+    private int maxBatchSize;
+    private int currentBatchSize = 0;
 
-    public RepositoryBatchLoader(RepositoryConnection connection, int batchSize) {
+    public RepositoryBatchLoader(RepositoryConnection connection, int maxBatchSize) throws RepositoryException {
         this.connection = connection;
-        this.valueFactory = connection.getValueFactory();
-        this.batchSize = batchSize;
+        this.maxBatchSize = maxBatchSize;
+        connection.begin();
     }
 
     public ValueFactory getValueFactory() {
-        return valueFactory;
+        return connection.getValueFactory();
     }
 
     public void add(Resource subject, URI predicate, Value object) throws RepositoryException {
-        Statement statement = valueFactory.createStatement(subject, predicate, object);
-        toRemove.remove(statement);
-        toAdd.add(statement);
+        connection.add(subject, predicate, object);
+        currentBatchSize++;
         commitIfNeeded();
     }
 
     public void remove(Resource subject, URI predicate, Value object) throws RepositoryException {
-        RepositoryResult<Statement> statements = connection.getStatements(subject, predicate, object, false);
-        while (statements.hasNext()) {
-            Statement statement = statements.next();
-            toAdd.remove(statement);
-            toRemove.add(statement);
-        }
-        statements.close();
+        connection.remove(subject, predicate, object);
+        currentBatchSize++;
+        commitIfNeeded();
     }
 
     private void commitIfNeeded() throws RepositoryException {
-        if (toAdd.size() + toRemove.size() > batchSize) {
-            commit();
-        }
-    }
-
-    private void commit() throws RepositoryException {
-        if (toRemove.isEmpty() && toAdd.isEmpty()) {
-            return;
-        }
-
-        connection.begin();
-        try {
-            connection.remove(toRemove);
-            connection.add(toAdd);
-            connection.commit();
-        } catch (Exception e) {
-            connection.rollback();
-            throw e;
+        if (currentBatchSize >= maxBatchSize) {
+            try {
+                connection.commit();
+            } catch (Exception e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.begin();
+            }
         }
     }
 
     @Override
     public void close() throws RepositoryException {
-        commit();
-        connection.close();
+        //Last commit
+        try {
+            connection.commit();
+        } catch (Exception e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.close();
+        }
     }
 }
