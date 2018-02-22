@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@ import java.util.TreeMap;
 public class Context {
 
     private static final Map<String, Object> ID_CONTEXT = Collections.singletonMap("@type", "@id");
+    private static final Map<String, Object> URI_CONTEXT = Collections.singletonMap("@type", "xsd:anyURI");
     private static final Map<String, Object> BASIC_CONTEXT = new TreeMap<>();
 
     static {
@@ -41,7 +42,7 @@ public class Context {
         BASIC_CONTEXT.put("EntitySearchResult", "goog:EntitySearchResult");
         BASIC_CONTEXT.put("Class", "owl:Class");
         BASIC_CONTEXT.put("DatatypeProperty", "owl:DatatypeProperty");
-        BASIC_CONTEXT.put("contentUrl", ID_CONTEXT);
+        BASIC_CONTEXT.put("contentUrl", URI_CONTEXT);
         BASIC_CONTEXT.put("geo:asWKT", Collections.singletonMap("@type", "geo:wktLiteral"));
         BASIC_CONTEXT.put("hydra:first", ID_CONTEXT);
         BASIC_CONTEXT.put("inLanguage", Collections.singletonMap("@type", "xsd:language"));
@@ -52,9 +53,9 @@ public class Context {
         BASIC_CONTEXT.put("ObjectProperty", "owl:ObjectProperty");
         BASIC_CONTEXT.put("Property", "rdf:Property");
         BASIC_CONTEXT.put("resultScore", "goog:resultScore");
-        BASIC_CONTEXT.put("sameAs", ID_CONTEXT);
+        BASIC_CONTEXT.put("sameAs", URI_CONTEXT);
         BASIC_CONTEXT.put("totalItems", "hydra:totalItems");
-        BASIC_CONTEXT.put("url", ID_CONTEXT);
+        BASIC_CONTEXT.put("url", URI_CONTEXT);
     }
 
     private Locale locale;
