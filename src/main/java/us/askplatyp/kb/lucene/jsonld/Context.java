@@ -40,18 +40,13 @@ public class Context {
         BASIC_CONTEXT.putAll(Namespaces.NAMESPACES);
         BASIC_CONTEXT.put("detailedDescription", "goog:detailedDescription");
         BASIC_CONTEXT.put("EntitySearchResult", "goog:EntitySearchResult");
-        BASIC_CONTEXT.put("Class", "owl:Class");
-        BASIC_CONTEXT.put("DatatypeProperty", "owl:DatatypeProperty");
         BASIC_CONTEXT.put("contentUrl", URI_CONTEXT);
         BASIC_CONTEXT.put("geo:asWKT", Collections.singletonMap("@type", "geo:wktLiteral"));
         BASIC_CONTEXT.put("hydra:first", ID_CONTEXT);
         BASIC_CONTEXT.put("inLanguage", Collections.singletonMap("@type", "xsd:language"));
         BASIC_CONTEXT.put("license", ID_CONTEXT);
         BASIC_CONTEXT.put("member", "hydra:member");
-        BASIC_CONTEXT.put("NamedIndividual", "owl:NamedIndividual");
         BASIC_CONTEXT.put("hydra:next", ID_CONTEXT);
-        BASIC_CONTEXT.put("ObjectProperty", "owl:ObjectProperty");
-        BASIC_CONTEXT.put("Property", "rdf:Property");
         BASIC_CONTEXT.put("resultScore", "goog:resultScore");
         BASIC_CONTEXT.put("sameAs", URI_CONTEXT);
         BASIC_CONTEXT.put("totalItems", "hydra:totalItems");
