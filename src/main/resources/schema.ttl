@@ -41,6 +41,11 @@ schema:CreativeWork a rdfs:Class ;
     rdfs:label "CreativeWork" ;
     rdfs:comment "A work" .
 
+schema:GenderType a rdfs:Class ;
+    rdfs:label "Gender" ;
+    rdfs:comment "An enumeration of genders" ;
+    rdfs:subClassOf schema:Enumeration .
+
 schema:Organization a rdfs:Class ;
     rdfs:label "Organization" ;
     rdfs:comment "An organization" .
@@ -114,6 +119,12 @@ schema:editor a owl:ObjectProperty ;
     rdfs:comment "Specifies the Person who edited the CreativeWork" ;
     rdfs:domain schema:CreativeWork ;
     rdfs:range schema:Person .
+
+schema:gender a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "gender" ;
+    rdfs:comment "Gender of the person" ;
+    rdfs:domain schema:Person ;
+    rdfs:range schema:GenderType .
 
 schema:genre a owl:ObjectProperty ;
     rdfs:label "genre" ;

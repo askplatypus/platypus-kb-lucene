@@ -39,6 +39,11 @@ public class ResourceValue implements Value {
 
     @Override
     @JsonProperty("@id")
+    public String getValue() {
+        return IRI;
+    }
+
+    @Override
     public String toString() {
         return IRI;
     }

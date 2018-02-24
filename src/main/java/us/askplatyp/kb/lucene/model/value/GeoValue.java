@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 
 package us.askplatyp.kb.lucene.model.value;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
@@ -51,6 +52,12 @@ public abstract class GeoValue implements Value {
         } else {
             return new GeoShapeValue(geometry);
         }
+    }
+
+    @Override
+    @JsonIgnore
+    public Geometry getValue() {
+        return geometry;
     }
 
     @Override

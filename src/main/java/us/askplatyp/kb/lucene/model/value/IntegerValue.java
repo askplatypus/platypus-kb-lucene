@@ -17,7 +17,6 @@
 
 package us.askplatyp.kb.lucene.model.value;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.math.BigInteger;
@@ -33,19 +32,23 @@ public class IntegerValue implements Value {
         this.value = value;
     }
 
+    public IntegerValue(String value) {
+        this(new BigInteger(value));
+    }
+
     @Override
     @JsonProperty("@type")
     public String getType() {
         return "xsd:integer";
     }
 
+    @Override
     @JsonProperty("@value")
     public BigInteger getValue() {
         return value;
     }
 
     @Override
-    @JsonIgnore
     public String toString() {
         return value.toString();
     }

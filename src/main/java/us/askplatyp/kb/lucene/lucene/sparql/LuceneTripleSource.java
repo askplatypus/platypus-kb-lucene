@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -263,15 +263,17 @@ public class LuceneTripleSource implements TripleSource {
             switch (property.getSimpleRange()) {
                 case CALENDAR:
                     return Optional.of(VALUE_FACTORY.createLiteral(DATATYPE_FACTORY.newXMLGregorianCalendar(value)));
+                case INTEGER:
+                    return Optional.of(VALUE_FACTORY.createLiteral(value, XMLSchema.INTEGER));
                 case LOCAL_STRING:
                     return Optional.of(VALUE_FACTORY.createLiteral(value, name.split("@")[1]));
+                case CONSTANT:
                 case RESOURCE:
                     return Optional.of(VALUE_FACTORY.createIRI(Namespaces.expand(value)));
                 case STRING:
                     return Optional.of(VALUE_FACTORY.createLiteral(value));
                 case IRI:
                     return Optional.of(VALUE_FACTORY.createLiteral(value, XMLSchema.ANYURI));
-                case GEO:
                 default:
                     //TODO: add missing fields
                     LOGGER.warn("Unsupported simple range type: " + property.getSimpleRange().toString());

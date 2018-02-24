@@ -74,6 +74,10 @@ public class Context {
         return context;
     }
 
+    void propertyRangeIsId(String property) {
+        context.put(property, ID_CONTEXT);
+    }
+
     void propertyRangeIsXsdAnyUri(String property) {
         context.put(property, URI_CONTEXT);
     }

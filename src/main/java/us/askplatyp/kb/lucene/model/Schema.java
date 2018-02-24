@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,6 +45,7 @@ public class Schema {
             DATA_FACTORY.getOWLDatatype(XSDVocabulary.G_YEAR_MONTH),
             DATA_FACTORY.getOWLDatatype(XSDVocabulary.G_YEAR)
     );
+    private static final OWLDatatype INTEGER_DATARANGE = DATA_FACTORY.getIntegerOWLDatatype();
     private static final OWLDatatype LOCAL_STRING_DATARANGE = DATA_FACTORY.getOWLDatatype(
             "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
     );
@@ -53,6 +54,7 @@ public class Schema {
             DATA_FACTORY.getOWLClass("http://schema.org/GeoCoordinates"),
             DATA_FACTORY.getOWLClass("http://schema.org/GeoShape")
     );
+    private static final OWLClassExpression ENUMERATION_CLASS = DATA_FACTORY.getOWLClass("http://schema.org/Enumeration");
     private static final OWLDatatype ANY_URI_DATARANGE = DATA_FACTORY.getOWLDatatype(XSDVocabulary.ANY_URI);
     private OWLOntology ontology;
 
@@ -100,6 +102,8 @@ public class Schema {
 
     public enum Range {
         CALENDAR,
+        CONSTANT,
+        INTEGER,
         GEO,
         LOCAL_STRING,
         RESOURCE,
@@ -153,6 +157,8 @@ public class Schema {
                     });
             if (range.equals(GEO_CLASS)) {
                 return Range.GEO;
+            } else if (reasoner.superClasses(range).anyMatch(ENUMERATION_CLASS::equals)) {
+                return Range.CONSTANT;
             } else {
                 return Range.RESOURCE;
             }
@@ -187,6 +193,8 @@ public class Schema {
 
             if (range.equals(CALENDAR_DATARANGE)) {
                 return Range.CALENDAR;
+            } else if (range.equals(INTEGER_DATARANGE)) {
+                return Range.INTEGER;
             } else if (range.equals(LOCAL_STRING_DATARANGE)) {
                 return Range.LOCAL_STRING;
             } else if (range.equals(ANY_URI_DATARANGE)) {

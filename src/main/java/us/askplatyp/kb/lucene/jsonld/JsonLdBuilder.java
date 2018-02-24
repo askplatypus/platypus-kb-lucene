@@ -139,8 +139,14 @@ public class JsonLdBuilder {
             List<Object> results = resource.getValuesForProperty(propertyIRI).flatMap(value -> {
                 switch (property.getSimpleRange()) {
                     case CALENDAR:
+                        return Stream.of(value);
+                    case CONSTANT:
+                        context.propertyRangeIsId(propertyIRI);
+                        return Stream.of(value.getValue());
                     case GEO:
                         return Stream.of(value);
+                    case INTEGER:
+                        return Stream.of(value.getValue());
                     case LOCAL_STRING:
                         if (value instanceof LocaleStringValue && ((LocaleStringValue) value).getLocale().equals(locale)) {
                             return Stream.of(value);
@@ -159,10 +165,10 @@ public class JsonLdBuilder {
                         }
                         return Stream.empty();
                     case STRING:
-                        return Stream.of(value.toString());
+                        return Stream.of(value.getValue());
                     case IRI:
                         context.propertyRangeIsXsdAnyUri(propertyIRI);
-                        return Stream.of(value.toString());
+                        return Stream.of(value.getValue());
                     default:
                         LOGGER.warn("Unsupported simple range type: " + property.getSimpleRange().toString());
                         return Stream.empty();

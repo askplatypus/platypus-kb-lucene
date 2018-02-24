@@ -57,6 +57,7 @@ public class EntityActionsTest extends JerseyTest {
         assertEnglishIndividual(result.getContent());
         Assert.assertEquals(Optional.of("xsd:anyURI"), result.getContext().getRange("url"));
         Assert.assertEquals(Optional.of("xsd:anyURI"), result.getContext().getRange("sameAs"));
+        Assert.assertEquals(Optional.of("@id"), result.getContext().getRange("gender"));
     }
 
     @Test
@@ -73,6 +74,7 @@ public class EntityActionsTest extends JerseyTest {
         assertFrenchIndividual(result.getContent());
         Assert.assertEquals(Optional.of("xsd:anyURI"), result.getContext().getRange("url"));
         Assert.assertEquals(Optional.of("xsd:anyURI"), result.getContext().getRange("sameAs"));
+        Assert.assertEquals(Optional.of("@id"), result.getContext().getRange("gender"));
     }
 
     @Test
@@ -156,6 +158,7 @@ public class EntityActionsTest extends JerseyTest {
         ), Sets.newHashSet((List<String>) result.getPropertyValue("sameAs")));
         Assert.assertEquals("1952-03-11Z", ((Map) result.getPropertyValue("birthDate")).get("@value"));
         Assert.assertEquals("xsd:date", ((Map) result.getPropertyValue("birthDate")).get("@type"));
+        Assert.assertEquals("Male", result.getPropertyValue("gender"));
     }
 
     private void assertEnglishDummy(Entity result) {

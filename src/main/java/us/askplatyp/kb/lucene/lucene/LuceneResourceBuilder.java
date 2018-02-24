@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,9 +24,7 @@ import us.askplatyp.kb.lucene.Configuration;
 import us.askplatyp.kb.lucene.model.Claim;
 import us.askplatyp.kb.lucene.model.Resource;
 import us.askplatyp.kb.lucene.model.Schema;
-import us.askplatyp.kb.lucene.model.value.CalendarValue;
-import us.askplatyp.kb.lucene.model.value.GeoValue;
-import us.askplatyp.kb.lucene.model.value.ResourceValue;
+import us.askplatyp.kb.lucene.model.value.*;
 
 import java.util.Locale;
 
@@ -55,9 +53,19 @@ class LuceneResourceBuilder {
                         resource.addClaim(new Claim(property.getIRI(), new CalendarValue(value)));
                     }
                     break;
+                case CONSTANT:
+                    for (String value : document.getValues(property.getIRI())) {
+                        resource.addClaim(new Claim(property.getIRI(), new ConstantValue(value)));
+                    }
+                    break;
                 case GEO:
                     for (String value : document.getValues(property.getIRI())) {
                         resource.addClaim(new Claim(property.getIRI(), GeoValue.buildGeoValue(value)));
+                    }
+                    break;
+                case INTEGER:
+                    for (String value : document.getValues(property.getIRI())) {
+                        resource.addClaim(new Claim(property.getIRI(), new IntegerValue(value)));
                     }
                     break;
                 case LOCAL_STRING:

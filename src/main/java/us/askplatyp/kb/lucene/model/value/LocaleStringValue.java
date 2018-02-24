@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,6 +54,11 @@ public class LocaleStringValue implements Value {
 
     @Override
     @JsonProperty("@value")
+    public String getValue() {
+        return value;
+    }
+
+    @Override
     public String toString() {
         return value;
     }

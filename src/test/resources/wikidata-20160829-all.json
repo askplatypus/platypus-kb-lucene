@@ -36,6 +36,26 @@
     },
     "aliases": [],
     "claims": {
+      "P21": [
+        {
+          "mainsnak": {
+            "snaktype": "value",
+            "property": "P21",
+            "datavalue": {
+              "value": {
+                "entity-type": "item",
+                "numeric-id": 6581097,
+                "id": "Q6581097"
+              },
+              "type": "wikibase-entityid"
+            },
+            "datatype": "wikibase-item"
+          },
+          "type": "statement",
+          "rank": "normal",
+          "id": "Q222-gender"
+        }
+      ],
       "P31": [
         {
           "mainsnak": {

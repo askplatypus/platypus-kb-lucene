@@ -39,6 +39,11 @@ public class ConstantValue implements Value {
 
     @Override
     @JsonProperty("@id")
+    public String getValue() {
+        return IRI;
+    }
+
+    @Override
     public String toString() {
         return IRI;
     }
