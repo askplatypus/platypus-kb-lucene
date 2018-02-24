@@ -32,10 +32,7 @@ import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 public class EntityActionsTest extends JerseyTest {
 
@@ -58,6 +55,8 @@ public class EntityActionsTest extends JerseyTest {
         JsonLdRoot<Entity> result =
                 target("/api/v1/entity/wd:Q42").request().get(RESULT_TYPE);
         assertEnglishIndividual(result.getContent());
+        Assert.assertEquals(Optional.of("xsd:anyURI"), result.getContext().getRange("url"));
+        Assert.assertEquals(Optional.of("xsd:anyURI"), result.getContext().getRange("sameAs"));
     }
 
     @Test
@@ -72,6 +71,8 @@ public class EntityActionsTest extends JerseyTest {
         JsonLdRoot<Entity> result =
                 target("/api/v1/entity/wd:Q42").request().acceptLanguage(Locale.FRANCE).get(RESULT_TYPE);
         assertFrenchIndividual(result.getContent());
+        Assert.assertEquals(Optional.of("xsd:anyURI"), result.getContext().getRange("url"));
+        Assert.assertEquals(Optional.of("xsd:anyURI"), result.getContext().getRange("sameAs"));
     }
 
     @Test
@@ -87,7 +88,8 @@ public class EntityActionsTest extends JerseyTest {
                 target("/api/v1/entity/wd:Q90").request().get(RESULT_TYPE);
         Assert.assertNotNull(result.getContent().getPropertyValue("geo"));
         Map geoValue = (Map) result.getContent().getPropertyValue("geo");
-        Assert.assertEquals(geoValue.get("@type"), "GeoShape");
+        Assert.assertEquals("GeoShape", geoValue.get("@type"));
+        Assert.assertEquals(Optional.of("geo:wktLiteral"), result.getContext().getRange("geo:asWKT"));
     }
 
     @Test
@@ -96,7 +98,7 @@ public class EntityActionsTest extends JerseyTest {
                 target("/api/v1/entity/wd:Q2108").request().get(RESULT_TYPE);
         Assert.assertNotNull(result.getContent().getPropertyValue("geo"));
         Map geoValue = (Map) result.getContent().getPropertyValue("geo");
-        Assert.assertEquals(geoValue.get("@type"), "GeoShape");
+        Assert.assertEquals("GeoShape", geoValue.get("@type"));
     }
 
     @Test
@@ -104,7 +106,7 @@ public class EntityActionsTest extends JerseyTest {
         JsonLdRoot<Entity> result =
                 target("/api/v1/entity/wd:Q91").request().get(RESULT_TYPE);
         Map geoValue = (Map) result.getContent().getPropertyValue("geo");
-        Assert.assertEquals(geoValue.get("@type"), "GeoCoordinates");
+        Assert.assertEquals("GeoCoordinates", geoValue.get("@type"));
     }
 
     @Test

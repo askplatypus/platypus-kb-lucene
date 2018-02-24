@@ -99,32 +99,34 @@ public class JsonLdBuilder {
     }
 
     public JsonLdRoot<Entity> buildEntityInLanguage(Resource resource, Locale locale) {
+        Context context = Context.buildBasicContext();
         return new JsonLdRoot<>(
-                new Context(),
-                buildEntity(resource, locale, true)
+                context,
+                buildEntity(resource, locale, context, true)
         );
     }
 
     public JsonLdRoot<Collection<EntitySearchResult<Entity>>> buildEntitySearchResultInLanguage(
             ResourceSearchResult searchResult, String baseURI, Locale locale
     ) {
-        return new JsonLdRoot<>(new Context(), new PartialCollection<>(
+        Context context = Context.buildCollectionContext();
+        return new JsonLdRoot<>(context, new PartialCollection<>(
                 searchResult.getResources().stream().map(resource -> new EntitySearchResult<>(
-                        buildEntity(resource.getResource(), locale, false), resource.getScore()
+                        buildEntity(resource.getResource(), locale, context, false), resource.getScore()
                 )).collect(Collectors.toList()),
                 searchResult.getTotalHits(), baseURI, searchResult.getCurrentContinue(), searchResult.getNextContinue()
         ));
     }
 
-    private Entity buildEntity(Resource resource, Locale locale, boolean fullEntity) {
+    private Entity buildEntity(Resource resource, Locale locale, Context context, boolean fullEntity) {
         return new Entity(
                 resource.getIRI(),
                 resource.getTypes().collect(Collectors.toList()),
-                buildPropertiesValues(resource, locale, fullEntity)
+                buildPropertiesValues(resource, locale, context, fullEntity)
         );
     }
 
-    private Map<String, Object> buildPropertiesValues(Resource resource, Locale locale, boolean fullEntity) {
+    private Map<String, Object> buildPropertiesValues(Resource resource, Locale locale, Context context, boolean fullEntity) {
         Map<String, Object> propertyValues = new HashMap<>();
 
         SCHEMA.getProperties().forEach(property -> {
@@ -149,7 +151,7 @@ public class JsonLdBuilder {
                         if (value instanceof ResourceValue && fullEntity) {
                             try {
                                 return storageLookup.getResourceForIRI(value.toString())
-										.map(object -> buildEntity(object, locale, false))
+                                        .map(object -> buildEntity(object, locale, context, false))
 										.map(Stream::of).orElseGet(Stream::empty);
 							} catch (IOException e) {
                                 LOGGER.warn("Error when retirving the resource: " + value.toString());
@@ -157,7 +159,9 @@ public class JsonLdBuilder {
                         }
                         return Stream.empty();
                     case STRING:
+                        return Stream.of(value.toString());
                     case IRI:
+                        context.propertyRangeIsXsdAnyUri(propertyIRI);
                         return Stream.of(value.toString());
                     default:
                         LOGGER.warn("Unsupported simple range type: " + property.getSimpleRange().toString());
