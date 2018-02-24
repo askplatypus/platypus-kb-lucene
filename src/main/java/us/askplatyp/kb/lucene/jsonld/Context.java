@@ -17,11 +17,12 @@
 
 package us.askplatyp.kb.lucene.jsonld;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import us.askplatyp.kb.lucene.model.Namespaces;
 
 import java.util.Collections;
-import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -29,7 +30,7 @@ import java.util.TreeMap;
  * @author Thomas Pellissier Tanon
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Context {
+class Context {
 
     private static final Map<String, Object> ID_CONTEXT = Collections.singletonMap("@type", "@id");
     private static final Map<String, Object> URI_CONTEXT = Collections.singletonMap("@type", "xsd:anyURI");
@@ -53,29 +54,12 @@ public class Context {
         BASIC_CONTEXT.put("url", URI_CONTEXT);
     }
 
-    private Locale locale;
-
-    Context(Locale locale) {
-        this.locale = locale;
-    }
-
     @JsonCreator
-    public Context(@JsonProperty("@language") String languageCode) {
-        this(Locale.forLanguageTag(languageCode));
-    }
-
-    @JsonIgnore
-    public Locale getLocale() {
-        return this.locale;
-    }
-
-    @JsonProperty("@language")
-    public String getLanguageCode() {
-        return this.locale.toLanguageTag();
+    Context() {
     }
 
     @JsonAnyGetter
-    public Map<String, Object> getBasicContext() {
+    Map<String, Object> getBasicContext() {
         return BASIC_CONTEXT;
     }
 }

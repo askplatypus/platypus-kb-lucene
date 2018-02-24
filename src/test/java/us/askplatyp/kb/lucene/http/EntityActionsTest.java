@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,7 +57,6 @@ public class EntityActionsTest extends JerseyTest {
     public void testDefaultShortIRI() {
         JsonLdRoot<Entity> result =
                 target("/api/v1/entity/wd:Q42").request().get(RESULT_TYPE);
-        Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
         assertEnglishIndividual(result.getContent());
     }
 
@@ -65,7 +64,6 @@ public class EntityActionsTest extends JerseyTest {
     public void testDefaultFullIRI() {
         JsonLdRoot<Entity> result =
                 target("/api/v1/entity/http%3A%2F%2Fwww.wikidata.org%2Fentity%2FQ42").request().get(RESULT_TYPE);
-        Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
         assertEnglishIndividual(result.getContent());
     }
 
@@ -73,7 +71,6 @@ public class EntityActionsTest extends JerseyTest {
     public void testFrenchWithContentNegotiation() {
         JsonLdRoot<Entity> result =
                 target("/api/v1/entity/wd:Q42").request().acceptLanguage(Locale.FRANCE).get(RESULT_TYPE);
-        Assert.assertEquals(Locale.FRANCE, result.getContext().getLocale());
         assertFrenchIndividual(result.getContent());
     }
 
@@ -81,7 +78,6 @@ public class EntityActionsTest extends JerseyTest {
     public void testDummy() {
         JsonLdRoot<Entity> result =
                 target("/api/v1/entity/wd:Q111").request().get(RESULT_TYPE);
-        Assert.assertEquals(Locale.ENGLISH, result.getContext().getLocale());
         assertEnglishDummy(result.getContent());
     }
 
@@ -124,15 +120,17 @@ public class EntityActionsTest extends JerseyTest {
     }
 
     private void assertEnglishIndividual(Entity result) {
-        Assert.assertEquals(result.getPropertyValue("name"), "Foo bar");
+        Assert.assertEquals(((Map) result.getPropertyValue("name")).get("@value"), "Foo bar");
+        Assert.assertEquals(((Map) result.getPropertyValue("name")).get("@language"), "en");
         Assert.assertNull(result.getPropertyValue("description"));
         Assert.assertNull(result.getPropertyValue("detailedDescription"));
         assertNotLanguageBaseIndividual(result);
     }
 
     private void assertFrenchIndividual(Entity result) {
-        Assert.assertEquals("super de test", result.getPropertyValue("name"));
-        Assert.assertEquals("Un test", result.getPropertyValue("description"));
+        Assert.assertEquals("super de test", ((Map) result.getPropertyValue("name")).get("@value"));
+        Assert.assertEquals("fr-FR", ((Map) result.getPropertyValue("name")).get("@language"));
+        Assert.assertEquals("Un test", ((Map) result.getPropertyValue("description")).get("@value"));
         Map detailedDescription = (Map) result.getPropertyValue("detailedDescription");
         Assert.assertEquals("http://fr.wikipedia.org/wiki/Douglas_Adams", detailedDescription.get("@id"));
         Assert.assertEquals("fr", detailedDescription.get("inLanguage"));
@@ -159,7 +157,7 @@ public class EntityActionsTest extends JerseyTest {
     }
 
     private void assertEnglishDummy(Entity result) {
-        Assert.assertEquals("dummy", result.getPropertyValue("name"));
+        Assert.assertEquals("dummy", ((Map) result.getPropertyValue("name")).get("@value"));
         Assert.assertNull(result.getPropertyValue("description"));
         assertNotLanguageBaseDummy(result);
     }

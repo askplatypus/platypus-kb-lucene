@@ -100,7 +100,7 @@ public class JsonLdBuilder {
 
     public JsonLdRoot<Entity> buildEntityInLanguage(Resource resource, Locale locale) {
         return new JsonLdRoot<>(
-                new Context(locale),
+                new Context(),
                 buildEntity(resource, locale, true)
         );
     }
@@ -108,7 +108,7 @@ public class JsonLdBuilder {
     public JsonLdRoot<Collection<EntitySearchResult<Entity>>> buildEntitySearchResultInLanguage(
             ResourceSearchResult searchResult, String baseURI, Locale locale
     ) {
-        return new JsonLdRoot<>(new Context(locale), new PartialCollection<>(
+        return new JsonLdRoot<>(new Context(), new PartialCollection<>(
                 searchResult.getResources().stream().map(resource -> new EntitySearchResult<>(
                         buildEntity(resource.getResource(), locale, false), resource.getScore()
                 )).collect(Collectors.toList()),
@@ -141,7 +141,7 @@ public class JsonLdBuilder {
                         return Stream.of(value);
                     case LOCAL_STRING:
                         if (value instanceof LocaleStringValue && ((LocaleStringValue) value).getLocale().equals(locale)) {
-                            return Stream.of(value.toString());
+                            return Stream.of(value);
                         } else {
                             return Stream.empty();
                         }
