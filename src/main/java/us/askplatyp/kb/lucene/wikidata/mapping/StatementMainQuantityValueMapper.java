@@ -17,25 +17,24 @@
 
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
-import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
+import org.wikidata.wdtk.datamodel.interfaces.QuantityValue;
+import org.wikidata.wdtk.datamodel.interfaces.Value;
 import us.askplatyp.kb.lucene.model.Claim;
-import us.askplatyp.kb.lucene.model.value.ResourceValue;
 
 import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-class ItemIdStatementMapper implements StatementMainItemIdValueMapper {
-
-    private String targetFieldName;
-
-    ItemIdStatementMapper(String targetFieldName) {
-        this.targetFieldName = targetFieldName;
-    }
+interface StatementMainQuantityValueMapper extends StatementMainValueMapper {
 
     @Override
-    public Stream<Claim> mapMainItemIdValue(ItemIdValue value) {
-        return Stream.of(new Claim(targetFieldName, new ResourceValue(value.getIri())));
+    default Stream<Claim> mapMainValue(Value value) throws InvalidWikibaseValueException {
+        if (!(value instanceof QuantityValue)) {
+            throw new InvalidWikibaseValueException(value + " should be a QuantityValue");
+        }
+        return mapMainQuantityValue((QuantityValue) value);
     }
+
+    Stream<Claim> mapMainQuantityValue(QuantityValue value) throws InvalidWikibaseValueException;
 }

@@ -17,25 +17,31 @@
 
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
-import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
+import org.wikidata.wdtk.datamodel.interfaces.Value;
 import us.askplatyp.kb.lucene.model.Claim;
-import us.askplatyp.kb.lucene.model.value.ResourceValue;
+import us.askplatyp.kb.lucene.model.value.ConstantValue;
 
+import java.util.Map;
 import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-class ItemIdStatementMapper implements StatementMainItemIdValueMapper {
+class ConstantValueStatementMapper implements StatementMainValueMapper {
 
     private String targetFieldName;
+    private Map<Value, String> conversion;
 
-    ItemIdStatementMapper(String targetFieldName) {
+    ConstantValueStatementMapper(String targetFieldName, Map<Value, String> conversion) {
         this.targetFieldName = targetFieldName;
+        this.conversion = conversion;
     }
 
     @Override
-    public Stream<Claim> mapMainItemIdValue(ItemIdValue value) {
-        return Stream.of(new Claim(targetFieldName, new ResourceValue(value.getIri())));
+    public Stream<Claim> mapMainValue(Value value) throws InvalidWikibaseValueException {
+        if (!conversion.containsKey(value)) {
+            throw new InvalidWikibaseValueException("Not expected constant for property " + targetFieldName + ": " + value);
+        }
+        return Stream.of(new Claim(targetFieldName, new ConstantValue(conversion.get(value))));
     }
 }

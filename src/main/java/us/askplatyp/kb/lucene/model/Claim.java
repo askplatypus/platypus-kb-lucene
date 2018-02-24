@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Platypus Knowledge Base developers.
+ * Copyright (c) 2018 Platypus Knowledge Base developers.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,12 +17,10 @@
 
 package us.askplatyp.kb.lucene.model;
 
-import us.askplatyp.kb.lucene.model.value.CalendarValue;
-import us.askplatyp.kb.lucene.model.value.LocaleStringValue;
-import us.askplatyp.kb.lucene.model.value.StringValue;
-import us.askplatyp.kb.lucene.model.value.Value;
+import us.askplatyp.kb.lucene.model.value.*;
 
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.math.BigInteger;
 import java.util.Locale;
 
 public class Claim {
@@ -48,6 +46,10 @@ public class Claim {
 
     public Claim(String property, XMLGregorianCalendar value) {
         this(property, new CalendarValue(value));
+    }
+
+    public Claim(String property, BigInteger value) {
+        this(property, new IntegerValue(value));
     }
 
     public String getProperty() {

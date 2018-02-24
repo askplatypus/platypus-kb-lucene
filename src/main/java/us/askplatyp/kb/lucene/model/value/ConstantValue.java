@@ -15,27 +15,41 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package us.askplatyp.kb.lucene.wikidata.mapping;
+package us.askplatyp.kb.lucene.model.value;
 
-import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
-import us.askplatyp.kb.lucene.model.Claim;
-import us.askplatyp.kb.lucene.model.value.ResourceValue;
-
-import java.util.stream.Stream;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import us.askplatyp.kb.lucene.model.Namespaces;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-class ItemIdStatementMapper implements StatementMainItemIdValueMapper {
+public class ConstantValue implements Value {
 
-    private String targetFieldName;
+    private String IRI;
 
-    ItemIdStatementMapper(String targetFieldName) {
-        this.targetFieldName = targetFieldName;
+    public ConstantValue(String IRI) {
+        this.IRI = Namespaces.reduce(IRI);
     }
 
     @Override
-    public Stream<Claim> mapMainItemIdValue(ItemIdValue value) {
-        return Stream.of(new Claim(targetFieldName, new ResourceValue(value.getIri())));
+    @JsonProperty("@type")
+    public String getType() {
+        return "@id";
+    }
+
+    @Override
+    @JsonProperty("@id")
+    public String toString() {
+        return IRI;
+    }
+
+    @Override
+    public int hashCode() {
+        return IRI.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object value) {
+        return (value instanceof ConstantValue) && ((ConstantValue) value).IRI.equals(value);
     }
 }

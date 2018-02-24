@@ -17,39 +17,46 @@
 
 package us.askplatyp.kb.lucene.model.value;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import us.askplatyp.kb.lucene.model.Namespaces;
+
+import java.math.BigInteger;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-public class ResourceValue implements Value {
+public class IntegerValue implements Value {
 
-    private String IRI;
+    private BigInteger value;
 
-    public ResourceValue(String IRI) {
-        this.IRI = Namespaces.reduce(IRI);
+    public IntegerValue(BigInteger value) {
+        this.value = value;
     }
 
     @Override
     @JsonProperty("@type")
     public String getType() {
-        return "@id";
+        return "xsd:integer";
+    }
+
+    @JsonProperty("@value")
+    public BigInteger getValue() {
+        return value;
     }
 
     @Override
-    @JsonProperty("@id")
+    @JsonIgnore
     public String toString() {
-        return IRI;
+        return value.toString();
     }
 
     @Override
     public int hashCode() {
-        return IRI.hashCode();
+        return value.hashCode();
     }
 
     @Override
-    public boolean equals(Object value) {
-        return (value instanceof ResourceValue) && ((ResourceValue) value).IRI.equals(value);
+    public boolean equals(Object other) {
+        return (other instanceof IntegerValue) && ((IntegerValue) other).value.equals(value);
     }
 }
