@@ -6,258 +6,433 @@
 
 
 <http://kb.askplatyp.us/api/v1/schema> a owl:Ontology ;
-    rdfs:label "Platypus knowledge base ontology" ;
-    rdfs:comment "Ontology used by Platypus knowledge base. It is a restricted version of schema.org." .
+    rdfs:label "Platypus knowledge base ontology"@en ;
+    rdfs:comment "Ontology used by Platypus knowledge base. It is a restricted version of schema.org."@en .
 
 
 # classes
 
 schema:Airline a rdfs:Class ;
-    rdfs:label "Airline" ;
-    rdfs:comment "An airline company" ;
+    rdfs:label "airline"@en ;
+    rdfs:comment "An airline company"@en ;
     rdfs:subClassOf schema:Organization .
 
 schema:Airport a rdfs:Class ;
-    rdfs:label "Airport" ;
-    rdfs:comment "An airport" ;
+    rdfs:label "airport"@en ;
+    rdfs:comment "An airport"@en ;
     rdfs:subClassOf schema:Place .
 
 schema:Book a rdfs:Class ;
-    rdfs:label "Book" ;
-    rdfs:comment "A book" ;
+    rdfs:label "book"@en ;
+    rdfs:comment "A book"@en ;
     rdfs:subClassOf schema:CreativeWork .
 
 schema:City a rdfs:Class ;
-    rdfs:label "City" ;
-    rdfs:comment "A city or town" ;
+    rdfs:label "city"@en ;
+    rdfs:comment "A city or town"@en ;
     rdfs:subClassOf schema:Place .
 
 schema:Country a rdfs:Class ;
-    rdfs:label "Country" ;
-    rdfs:comment "A country (past or present)" ;
+    rdfs:label "country"@en ;
+    rdfs:comment "A country (past or present)"@en ;
     rdfs:subClassOf schema:Place .
 
 schema:CreativeWork a rdfs:Class ;
-    rdfs:label "CreativeWork" ;
-    rdfs:comment "A work" .
+    rdfs:label "creative work"@en ;
+    rdfs:comment "A work"@en .
+
+schema:CreativeWorkSeason a rdfs:Class ;
+     rdfs:label "creative work season"@en ;
+     rdfs:comment "A media season (TV, radio...)."@en ;
+     rdfs:subClassOf schema:Episode .
+
+schema:Episode a rdfs:Class ;
+     rdfs:label "episode"@en ;
+     rdfs:comment "A TV or radio episode."@en ;
+     rdfs:subClassOf schema:CreativeWork .
+
+schema:Event a rdfs:Class ;
+     rdfs:label "event"@en ;
+     rdfs:comment "An event of any kind."@en .
 
 schema:GenderType a rdfs:Class ;
-    rdfs:label "Gender" ;
-    rdfs:comment "An enumeration of genders" ;
+    rdfs:label "gender"@en ;
+    rdfs:comment "An enumeration of genders"@en ;
     rdfs:subClassOf schema:Enumeration .
 
+schema:Language a rdfs:Class ;
+    rdfs:label "language"@en ;
+    rdfs:comment "A human language."@en .
+
+schema:Movie a rdfs:Class ;
+    rdfs:label "movie"@en ;
+    rdfs:comment "A movie."@en ;
+    rdfs:subClassOf schema:CreativeWork .
+
 schema:Organization a rdfs:Class ;
-    rdfs:label "Organization" ;
-    rdfs:comment "An organization" .
+    rdfs:label "organization"@en ;
+    rdfs:comment "An organization"@en .
 
 schema:Periodical a rdfs:Class ;
-    rdfs:label "Periodical" ;
-    rdfs:comment "A publication issued in successive parts" ;
+    rdfs:label "Periodical"@en ;
+    rdfs:comment "A publication issued in successive parts"@en ;
     rdfs:subClassOf schema:CreativeWork .
 
 schema:Person a rdfs:Class ;
-    rdfs:label "Person" ;
-    rdfs:comment "A person (real or fictional)" .
+    rdfs:label "Person"@en ;
+    rdfs:comment "A person (real or fictional)"@en .
 
 schema:Place a rdfs:Class ;
-    rdfs:label "Place" ;
-    rdfs:comment "Entities that have a somewhat fixed, physical extension" .
+    rdfs:label "Place"@en ;
+    rdfs:comment "Entities that have a somewhat fixed, physical extension"@en .
+
+schema:TVEpisode a rdfs:Class ;
+    rdfs:label "television episode"@en ;
+    rdfs:comment "A TV episode."@en ;
+    rdfs:subClassOf schema:Episode .
+
+schema:TVSeason a rdfs:Class ;
+    rdfs:label "television season"@en ;
+    rdfs:comment "A TV season."@en ;
+    rdfs:subClassOf schema:CreativeWorkSeason .
 
 
 # object properties
 
+schema:actor a owl:ObjectProperty ;
+    rdfs:label "actor"@en ;
+    rdfs:comment "Actor in a movie or a TV show."@en ;
+    rdfs:domain schema:CreativeWork ;
+    rdfs:range schema:Person .
+
 schema:author a owl:ObjectProperty ;
-    rdfs:label "author" ;
-    rdfs:comment "Agent that has created this work" ;
+    rdfs:label "author"@en ;
+    rdfs:comment "Agent that has created this work"@en ;
     rdfs:domain schema:CreativeWork ;
     rdfs:range [ a rdfs:Class ; owl:unionOf ( schema:Person schema:Organization ) ] .
 
+schema:award a owl:ObjectProperty ;
+    rdfs:label "award"@en ;
+    rdfs:comment "An award won by or for this item."@en ;
+    rdfs:domain schema:CreativeWork .
+
 schema:birthPlace a owl:ObjectProperty, owl:FunctionalProperty ;
-    rdfs:label "birthPlace" ;
-    rdfs:comment "Birth place of the person" ;
+    rdfs:label "birth place"@en ;
+    rdfs:comment "Birth place of the person"@en ;
     rdfs:domain schema:Person ;
     rdfs:range schema:Place .
 
 schema:character a owl:ObjectProperty ;
-    rdfs:label "character" ;
-    rdfs:comment "Fictional person connected with a creative work" ;
+    rdfs:label "character"@en ;
+    rdfs:comment "Fictional person connected with a creative work"@en ;
     rdfs:domain schema:CreativeWork ;
     rdfs:range schema:Person .
 
 schema:children a owl:ObjectProperty ;
-    rdfs:label "children" ;
-    rdfs:comment "Children of the person" ;
+    rdfs:label "children"@en ;
+    rdfs:comment "Children of the person"@en ;
     rdfs:domain schema:Person ;
     rdfs:range schema:Person .
 
+schema:composer a owl:ObjectProperty ;
+    rdfs:label "composer"@en ;
+    rdfs:comment "The composer of the music of a creative work."@en ;
+    rdfs:domain schema:CreativeWork ;
+    rdfs:range schema:Person .
+
 schema:contentLocation a owl:ObjectProperty ;
-    rdfs:label "contentLocation" ;
-    rdfs:comment "The location depicted or described in the content" ;
+    rdfs:label "content location"@en ;
+    rdfs:comment "The location depicted or described in the content"@en ;
     rdfs:domain schema:CreativeWork ;
     rdfs:range schema:Place .
 
 schema:contributor a owl:ObjectProperty ;
-    rdfs:label "contributor" ;
-    rdfs:comment "A secondary contributor to the CreativeWork" ;
+    rdfs:label "contributor"@en ;
+    rdfs:comment "A secondary contributor to the CreativeWork"@en ;
     rdfs:domain schema:CreativeWork ;
     rdfs:range [ a rdfs:Class ; owl:unionOf ( schema:Person schema:Organization ) ] .
+
+schema:copyrightHolder a owl:ObjectProperty ;
+    rdfs:label "copyright holder"@en ;
+    rdfs:comment "A copyright holder."@en ;
+    rdfs:domain schema:CreativeWork ;
+    rdfs:range [ owl:unionOf ( schema:Person schema:Organization ) ] .
+
+schema:countryOfOrigin a owl:ObjectProperty ;
+    rdfs:label "country of origin"@en ;
+    rdfs:comment "The country of the principal offices of the production company or individual responsible for the movie or program."@en ;
+    rdfs:domain schema:CreativeWork ;
+    rdfs:range schema:Place .
 
 schema:creator a owl:ObjectProperty ;
-    rdfs:label "creator" ;
-    rdfs:comment "The creator/author of this CreativeWork" ;
+    rdfs:label "creator"@en ;
+    rdfs:comment "The creator/author of this CreativeWork"@en ;
     rdfs:domain schema:CreativeWork ;
     rdfs:range [ a rdfs:Class ; owl:unionOf ( schema:Person schema:Organization ) ] .
 
+schema:director a owl:ObjectProperty ;
+    rdfs:label "director"@en ;
+    rdfs:comment "The director of acreative work."@en ;
+    rdfs:domain schema:CreativeWork ;
+    rdfs:range schema:Person .
+
 schema:deathPlace a owl:ObjectProperty, owl:FunctionalProperty ;
-    rdfs:label "deathPlace" ;
-    rdfs:comment "Death place of the person" ;
+    rdfs:label "death place"@en ;
+    rdfs:comment "Death place of the person"@en ;
     rdfs:domain schema:Person ;
     rdfs:range schema:Place .
 
 schema:editor a owl:ObjectProperty ;
-    rdfs:label "editor" ;
-    rdfs:comment "Specifies the Person who edited the CreativeWork" ;
+    rdfs:label "editor"@en ;
+    rdfs:comment "Specifies the Person who edited the CreativeWork"@en ;
     rdfs:domain schema:CreativeWork ;
     rdfs:range schema:Person .
 
+schema:exampleOfWork a owl:ObjectProperty ;
+    rdfs:label "example of work"@en ;
+    rdfs:comment "A creative work that this work is an example/instance/realization/derivation of."@en ;
+    rdfs:domain schema:CreativeWork ;
+    rdfs:range schema:CreativeWork ;
+    owl:inverseOf schema:workExample .
+
 schema:gender a owl:ObjectProperty, owl:FunctionalProperty ;
-    rdfs:label "gender" ;
-    rdfs:comment "Gender of the person" ;
+    rdfs:label "gender"@en ;
+    rdfs:comment "Gender of the person"@en ;
     rdfs:domain schema:Person ;
     rdfs:range schema:GenderType .
 
 schema:genre a owl:ObjectProperty ;
-    rdfs:label "genre" ;
-    rdfs:comment "Genre of the creative work" ;
-    rdfs:domain schema:CreativeWork ;
-    rdfs:range owl:Thing .
+    rdfs:label "genre"@en ;
+    rdfs:comment "Genre of the creative work"@en ;
+    rdfs:domain schema:CreativeWork .
 
 schema:geo a owl:ObjectProperty, owl:FunctionalProperty ;
-    rdfs:label "geo" ;
-    rdfs:comment "The geographic localisation of a place" ;
+    rdfs:label "geo"@en ;
+    rdfs:comment "The geographic localisation of a place"@en ;
     rdfs:domain schema:Place ;
     rdfs:range [ a rdfs:Class ; owl:unionOf ( schema:GeoCoordinates schema:GeoShape ) ] .
 
 schema:hasPart a owl:ObjectProperty ;
-    rdfs:label "hasPart" ;
-    rdfs:comment "Indicates a CreativeWork that is (in some sense) a part of this CreativeWork" ;
+    rdfs:label "has part"@en ;
+    rdfs:comment "Indicates a CreativeWork that is (in some sense) a part of this CreativeWork"@en ;
     rdfs:domain schema:CreativeWork ;
     rdfs:range schema:CreativeWork ;
     owl:inverseOf schema:isPartOf .
 
 schema:illustrator a owl:ObjectProperty ;
-    rdfs:label "illustrator" ;
-    rdfs:comment "Agent that have illustrated this work" ;
+    rdfs:label "illustrator"@en ;
+    rdfs:comment "Agent that have illustrated this work"@en ;
     rdfs:domain schema:Book ;
     rdfs:range [ a rdfs:Class ; owl:unionOf ( schema:Person schema:Organization ) ] .
 
+schema:inLanguage a owl:ObjectProperty ;
+    rdfs:label "in language"@en ;
+    rdfs:comment "The language of the creative work."@en ;
+    rdfs:domain schema:CreativeWork ;
+    rdfs:range schema:Language .
+
+schema:isBasedOn a owl:ObjectProperty ;
+    rdfs:label "is based on"@en ;
+    rdfs:comment "A resource that was used in the creation of this resource."@en ;
+    rdfs:domain schema:CreativeWork ;
+    rdfs:range schema:CreativeWork .
+
 schema:isPartOf a owl:ObjectProperty ;
-    rdfs:label "isPartOf" ;
-    rdfs:comment "Indicates a CreativeWork that this CreativeWork is (in some sense) part of" ;
+    rdfs:label "is part of"@en ;
+    rdfs:comment "Indicates a CreativeWork that this CreativeWork is (in some sense) part of"@en ;
     rdfs:domain schema:CreativeWork ;
     rdfs:range schema:CreativeWork ;
     owl:inverseOf schema:hasPart .
 
+schema:locationCreated a owl:ObjectProperty ;
+    rdfs:label "location created"@en ;
+    rdfs:comment "The location where the CreativeWork was created."@en ;
+    rdfs:domain schema:CreativeWork ;
+    rdfs:range schema:Place .
+
 schema:nationality a owl:ObjectProperty ;
-    rdfs:label "nationality" ;
-    rdfs:comment "Nationality of the person" ;
+    rdfs:label "nationality"@en ;
+    rdfs:comment "Nationality of the person"@en ;
     rdfs:domain schema:Person ;
     rdfs:range schema:Place .
 
 schema:parent a owl:ObjectProperty ;
-    rdfs:label "parent" ;
-    rdfs:comment "Parents of the person" ;
+    rdfs:label "parent"@en ;
+    rdfs:comment "Parents of the person"@en ;
     rdfs:domain schema:Person ;
     rdfs:range schema:Person .
 
+schema:partOfSeason a owl:ObjectProperty ;
+    rdfs:label "is part of season"@en ;
+    rdfs:comment "The season to which this episode belongs."@en ;
+    rdfs:domain schema:Episode ;
+    rdfs:range schema:CreativeWorkSeason ;
+    rdfs:subPropertyOf schema:isPartOf .
+
+schema:partOfSeries a owl:ObjectProperty ;
+    rdfs:label "is part of series"@en ;
+    rdfs:comment "The series to which this episode or season belongs."@en ;
+    rdfs:domain [ a rdfs:Class ; owl:unionOf ( schema:Episode schema:CreativeWorkSeason ) ] ;
+    rdfs:range schema:CreativeWorkSeries ;
+    rdfs:subPropertyOf schema:isPartOf .
+
+schema:performer a owl:ObjectProperty ;
+    rdfs:label "performer"@en ;
+    rdfs:comment "Specifies the Person who performed during the CreativeWork."@en ;
+    rdfs:domain schema:CreativeWork ;
+    rdfs:range schema:Person .
+
+schema:producer a owl:ObjectProperty ;
+    rdfs:label "producer"@en ;
+    rdfs:comment "The person who producted the creative Work."@en ;
+    rdfs:domain schema:CreativeWork ;
+    rdfs:range schema:Person .
+
+schema:productionCompany a owl:ObjectProperty ;
+    rdfs:label "production company"@en ;
+    rdfs:comment "The production company or studio responsible for the item e.g. series, video game, episode etc."@en ;
+    rdfs:domain schema:CreativeWork ;
+    rdfs:range schema:Organization .
+
 schema:publisher a owl:ObjectProperty ;
-    rdfs:label "publisher" ;
-    rdfs:comment "The publisher of the creative work" ;
+    rdfs:label "publisher"@en ;
+    rdfs:comment "The publisher of the creative work"@en ;
     rdfs:domain schema:CreativeWork ;
     rdfs:range [ a rdfs:Class ; owl:unionOf ( schema:Person schema:Organization ) ] .
 
 schema:translator a owl:ObjectProperty ;
-    rdfs:label "translator" ;
-    rdfs:comment "Agent that have translated this work" ;
+    rdfs:label "translator"@en ;
+    rdfs:comment "Agent that have translated this work"@en ;
     rdfs:domain schema:CreativeWork ;
     rdfs:range [ a rdfs:Class ; owl:unionOf ( schema:Person schema:Organization ) ] .
+
+schema:workExample a owl:ObjectProperty ;
+    rdfs:label "example of work"@en ;
+    rdfs:comment "Example/instance/realization/derivation of the concept of this creative work. eg. The paperback edition, first edition, or eBook."@en ;
+    rdfs:domain schema:CreativeWork ;
+    rdfs:range schema:CreativeWork ;
+    owl:inverseOf schema:exampleOfWork .
+
 
 # datatype properties
 
 schema:alternateName a owl:DatatypeProperty ;
-    rdfs:label "alternateName" ;
-    rdfs:comment "Alternative names for the entity" ;
-    rdfs:domain owl:Thing ;
+    rdfs:label "alternate name"@en ;
+    rdfs:comment "Alternative names for the entity"@en ;
     rdfs:range rdf:langString .
 
 schema:birthDate a owl:DatatypeProperty, owl:FunctionalProperty ;
-    rdfs:label "birthDate" ;
-    rdfs:comment "Birth date of the person" ;
+    rdfs:label "birth date"@en ;
+    rdfs:comment "Birth date of the person"@en ;
     rdfs:domain schema:Person ;
     rdfs:range [ a rdfs:Datatype ; owl:unionOf ( xsd:dateTime xsd:date xsd:gYearMonth xsd:gYear ) ] .
 
 schema:dateCreated a owl:DatatypeProperty, owl:FunctionalProperty ;
-    rdfs:label "dateCreated" ;
-    rdfs:comment "The date on which the CreativeWork was created" ;
+    rdfs:label "date created"@en ;
+    rdfs:comment "The date on which the CreativeWork was created"@en ;
     rdfs:domain schema:CreativeWork ;
     rdfs:range [ a rdfs:Datatype ; owl:unionOf ( xsd:dateTime xsd:date xsd:gYearMonth xsd:gYear ) ] .
 
 schema:datePublished a owl:DatatypeProperty, owl:FunctionalProperty ;
-    rdfs:label "datePublished" ;
-    rdfs:comment "Date of first broadcast/publication" ;
+    rdfs:label "date published"@en ;
+    rdfs:comment "Date of first broadcast/publication"@en ;
     rdfs:domain schema:CreativeWork ;
     rdfs:range [ a rdfs:Datatype ; owl:unionOf ( xsd:dateTime xsd:date xsd:gYearMonth xsd:gYear ) ] .
 
 schema:deathDate a owl:DatatypeProperty, owl:FunctionalProperty ;
-    rdfs:label "deathDate" ;
-    rdfs:comment "Death date of the person" ;
+    rdfs:label "death date"@en ;
+    rdfs:comment "Death date of the person"@en ;
     rdfs:domain schema:Person ;
     rdfs:range [ a rdfs:Datatype ; owl:unionOf ( xsd:dateTime xsd:date xsd:gYearMonth xsd:gYear ) ] .
 
 schema:description a owl:DatatypeProperty, owl:FunctionalProperty ;
-    rdfs:label "description" ;
-    rdfs:comment "A description of the entity" ;
-    rdfs:domain owl:Thing ;
+    rdfs:label "description"@en ;
+    rdfs:comment "A description of the entity"@en ;
+    rdfs:range rdf:langString .
+
+schema:duration a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "duration"@en ;
+    rdfs:comment "The event duration."@en ;
+    rdfs:domain schema:Event ;
+    rdfs:range xsd:duration .
+
+schema:endDate a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "end date"@en ;
+    rdfs:comment "The point in time of the end of the event."@en ;
+    rdfs:domain schema:Event ;
+    rdfs:range [ a rdfs:Datatype ; owl:unionOf ( xsd:dateTime xsd:date xsd:gYearMonth xsd:gYear ) ] .
+
+schema:episodeNumber a owl:DatatypeProperty ;
+    rdfs:label "episode number"@en ;
+    rdfs:comment "The positional number of the episode in the season."@en ;
+    rdfs:domain schema:Episode ;
+    rdfs:range xsd:integer .
+
+schema:headline a owl:DatatypeProperty ;
+    rdfs:label "headline"@en ;
+    rdfs:comment "A specifier for the title of a creative work."@en ;
+    rdfs:domain schema:CreativeWork ;
     rdfs:range rdf:langString .
 
 schema:iataCode a owl:DatatypeProperty, owl:FunctionalProperty ;
-    rdfs:label "iataCode" ;
-    rdfs:comment "IATA code of a company, an airport or a city" ;
+    rdfs:label "iata code"@en ;
+    rdfs:comment "IATA code of a company, an airport or a city"@en ;
     rdfs:domain [ a rdfs:Class ; owl:unionOf ( schema:Airline schema:Airport schema:City ) ] ;
     rdfs:range xsd:string .
 
 schema:icaoCode a owl:DatatypeProperty, owl:FunctionalProperty ;
-    rdfs:label "icaoCode" ;
-    rdfs:comment "ICAO code of an airport of a company" ;
+    rdfs:label "icao code"@en ;
+    rdfs:comment "ICAO code of an airport of a company"@en ;
     rdfs:domain [ a rdfs:Class ; owl:unionOf ( schema:Airline schema:Airport ) ] ;
     rdfs:range xsd:string .
 
 schema:isbn a owl:DatatypeProperty ;
-    rdfs:label "isbn" ;
-    rdfs:comment "The ISBN of a book" ;
+    rdfs:label "isbn"@en ;
+    rdfs:comment "The ISBN of a book"@en ;
     rdfs:domain schema:Book ;
     rdfs:range xsd:string .
 
 schema:issn a owl:DatatypeProperty ;
-    rdfs:label "issn" ;
-    rdfs:comment "The International Standard Serial Number (ISSN) that identifies this periodical" ;
+    rdfs:label "issn"@en ;
+    rdfs:comment "The International Standard Serial Number (ISSN) that identifies this periodical"@en ;
     rdfs:domain schema:Periodical ;
     rdfs:range xsd:string .
 
 schema:name a owl:DatatypeProperty, owl:FunctionalProperty ;
-    rdfs:label "name" ;
-    rdfs:comment "The entity name" ;
-    rdfs:domain owl:Thing ;
+    rdfs:label "name"@en ;
+    rdfs:comment "The entity name"@en ;
     rdfs:range rdf:langString .
 
+schema:numberOfEpisodes a owl:DatatypeProperty ;
+    rdfs:label "number of episodes"@en ;
+    rdfs:comment "The number of episodes in the season."@en ;
+    rdfs:domain schema:CreativeWorkSeason ;
+    rdfs:range xsd:integer .
+
 schema:sameAs a owl:DatatypeProperty ;
-    rdfs:label "sameAs" ;
-    rdfs:comment "URL of the official website of the entity" ;
-    rdfs:domain owl:Thing ;
+    rdfs:label "same as"@en ;
+    rdfs:comment "URL of other websites relating to the entity"@en ;
     rdfs:range xsd:anyURI .
 
+schema:seasonNumber a owl:DatatypeProperty ;
+    rdfs:label "season number"@en ;
+    rdfs:comment "The position of the season within an ordered group of seasons."@en ;
+    rdfs:domain schema:CreativeWorkSeason ;
+    rdfs:range xsd:integer .
+
+schema:startDate a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "start date"@en ;
+    rdfs:comment "The point in time of the beginning of the event."@en ;
+    rdfs:domain schema:Event ;
+    rdfs:range [ a rdfs:Datatype ; owl:unionOf ( xsd:dateTime xsd:date xsd:gYearMonth xsd:gYear ) ] .
+
+schema:superEvent a owl:ObjectProperty ;
+    rdfs:label "super event"@en ;
+    rdfs:comment "An event that this event is a part of."@en ;
+    rdfs:domain schema:Event ;
+    rdfs:range schema:Event .
+
 schema:url a owl:DatatypeProperty, owl:FunctionalProperty ;
-    rdfs:label "url" ;
-    rdfs:comment "URL of the official website of the entity" ;
-    rdfs:domain owl:Thing ;
+    rdfs:label "url"@en ;
+    rdfs:comment "URL of the official website of the entity"@en ;
     rdfs:range xsd:anyURI .
