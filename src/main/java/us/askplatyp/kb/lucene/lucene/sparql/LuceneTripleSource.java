@@ -185,7 +185,7 @@ public class LuceneTripleSource implements TripleSource {
         //TODO: does not seems to work
         BooleanQuery.Builder booleanQueryBuilder = new BooleanQuery.Builder();
         fieldsFromPropertyIRI(pred).forEach(field ->
-                booleanQueryBuilder.add(new BooleanClause(new FieldValueQuery(field), BooleanClause.Occur.SHOULD))
+                booleanQueryBuilder.add(new BooleanClause(new DocValuesFieldExistsQuery(field), BooleanClause.Occur.SHOULD))
         );
         return new QueryIteration(
                 index.getReader(),
