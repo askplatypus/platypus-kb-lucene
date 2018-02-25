@@ -41,6 +41,7 @@ public class Context {
 
     static {
         BASIC_CONTEXT.put("@vocab", Namespaces.DEFAULT_NAMESPACE);
+        BASIC_CONTEXT.put("@base", Namespaces.DEFAULT_NAMESPACE);
         BASIC_CONTEXT.putAll(Namespaces.NAMESPACES);
         BASIC_CONTEXT.put("detailedDescription", "goog:detailedDescription");
         BASIC_CONTEXT.put("geo:asWKT", Collections.singletonMap("@type", "geo:wktLiteral"));
