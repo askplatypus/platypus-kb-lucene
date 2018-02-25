@@ -19,7 +19,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Platypus knowledge base</title>
-    <link href="//tools-static.wmflabs.org/cdnjs/ajax/libs/swagger-ui/3.8.1/swagger-ui.css" rel="stylesheet">
+    <link href="//tools-static.wmflabs.org/cdnjs/ajax/libs/swagger-ui/3.9.3/swagger-ui.css" rel="stylesheet">
 
     <style>
         html {
@@ -45,14 +45,14 @@
 
 <div id="swagger-ui"></div>
 
-<script src="//tools-static.wmflabs.org/cdnjs/ajax/libs/swagger-ui/3.8.1/swagger-ui-bundle.js"
+<script src="//tools-static.wmflabs.org/cdnjs/ajax/libs/swagger-ui/3.9.3/swagger-ui-bundle.js"
         type="text/javascript"></script>
-<script src="//tools-static.wmflabs.org/cdnjs/ajax/libs/swagger-ui/3.8.1/swagger-ui-standalone-preset.js"
+<script src="//tools-static.wmflabs.org/cdnjs/ajax/libs/swagger-ui/3.9.3/swagger-ui-standalone-preset.js"
         type="text/javascript"></script>
 <script>
     window.onload = function () {
         SwaggerUIBundle({
-            url: "//" + window.location.hostname + "/swagger.json",
+            url: window.location.protocol + "//" + window.location.hostname + ':' + window.location.port + "/swagger.json",
             dom_id: "#swagger-ui",
             deepLinking: true,
             presets: [

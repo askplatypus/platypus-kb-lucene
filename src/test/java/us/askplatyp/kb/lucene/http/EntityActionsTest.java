@@ -17,7 +17,7 @@
 
 package us.askplatyp.kb.lucene.http;
 
-import jersey.repackaged.com.google.common.collect.Sets;
+import com.google.common.collect.Sets;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
