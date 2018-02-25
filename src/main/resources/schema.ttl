@@ -362,7 +362,7 @@ schema:endDate a owl:DatatypeProperty, owl:FunctionalProperty ;
     rdfs:domain schema:Event ;
     rdfs:range [ a rdfs:Datatype ; owl:unionOf ( xsd:dateTime xsd:date xsd:gYearMonth xsd:gYear ) ] .
 
-schema:episodeNumber a owl:DatatypeProperty ;
+schema:episodeNumber a owl:DatatypeProperty, owl:FunctionalProperty ;
     rdfs:label "episode number"@en ;
     rdfs:comment "The positional number of the episode in the season."@en ;
     rdfs:domain schema:Episode ;
@@ -403,7 +403,7 @@ schema:name a owl:DatatypeProperty, owl:FunctionalProperty ;
     rdfs:comment "The entity name"@en ;
     rdfs:range rdf:langString .
 
-schema:numberOfEpisodes a owl:DatatypeProperty ;
+schema:numberOfEpisodes a owl:DatatypeProperty, owl:FunctionalProperty ;
     rdfs:label "number of episodes"@en ;
     rdfs:comment "The number of episodes in the season."@en ;
     rdfs:domain schema:CreativeWorkSeason ;
@@ -414,7 +414,7 @@ schema:sameAs a owl:DatatypeProperty ;
     rdfs:comment "URL of other websites relating to the entity"@en ;
     rdfs:range xsd:anyURI .
 
-schema:seasonNumber a owl:DatatypeProperty ;
+schema:seasonNumber a owl:DatatypeProperty, owl:FunctionalProperty ;
     rdfs:label "season number"@en ;
     rdfs:comment "The position of the season within an ordered group of seasons."@en ;
     rdfs:domain schema:CreativeWorkSeason ;
