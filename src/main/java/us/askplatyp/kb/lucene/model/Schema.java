@@ -152,7 +152,7 @@ public class Schema {
             OWLClassExpression range = ontology.objectPropertyRangeAxioms(self)
                     .map(OWLObjectPropertyRangeAxiom::getRange)
                     .findAny().orElseGet(() -> {
-                        LOGGER.warn("The object property " + self.toStringID() + " has no range in the schema");
+                        LOGGER.info("The object property " + self.toStringID() + " has no range in the schema");
                         return DATA_FACTORY.getOWLThing();
                     });
             if (range.equals(GEO_CLASS)) {
@@ -187,7 +187,7 @@ public class Schema {
             OWLDataRange range = ontology.dataPropertyRangeAxioms(self)
                     .map(OWLDataPropertyRangeAxiom::getRange)
                     .findAny().orElseGet(() -> {
-                        LOGGER.warn("The data property " + self.toStringID() + " has no range in the schema");
+                        LOGGER.info("The data property " + self.toStringID() + " has no range in the schema");
                         return STRING_DATARANGE;
                     });
 

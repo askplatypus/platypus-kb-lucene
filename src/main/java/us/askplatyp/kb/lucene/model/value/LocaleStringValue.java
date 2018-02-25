@@ -17,6 +17,7 @@
 
 package us.askplatyp.kb.lucene.model.value;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Locale;
@@ -39,10 +40,12 @@ public class LocaleStringValue implements Value {
         this(value, Locale.forLanguageTag(languageCode));
     }
 
+    @JsonIgnore
     public String getType() {
         return "rdf:langString";
     }
 
+    @JsonIgnore
     public Locale getLocale() {
         return locale;
     }

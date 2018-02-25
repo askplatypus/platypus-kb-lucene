@@ -124,17 +124,15 @@ public class EntityActionsTest extends JerseyTest {
     }
 
     private void assertEnglishIndividual(Entity result) {
-        Assert.assertEquals(((Map) result.getPropertyValue("name")).get("@value"), "Foo bar");
-        Assert.assertEquals(((Map) result.getPropertyValue("name")).get("@language"), "en");
+        Assert.assertEquals(buildLanguageTaggedLiteral("Foo bar", "en"), result.getPropertyValue("name"));
         Assert.assertNull(result.getPropertyValue("description"));
         Assert.assertNull(result.getPropertyValue("detailedDescription"));
         assertNotLanguageBaseIndividual(result);
     }
 
     private void assertFrenchIndividual(Entity result) {
-        Assert.assertEquals("super de test", ((Map) result.getPropertyValue("name")).get("@value"));
-        Assert.assertEquals("fr-FR", ((Map) result.getPropertyValue("name")).get("@language"));
-        Assert.assertEquals("Un test", ((Map) result.getPropertyValue("description")).get("@value"));
+        Assert.assertEquals(buildLanguageTaggedLiteral("super de test", "fr-FR"), result.getPropertyValue("name"));
+        Assert.assertEquals(buildLanguageTaggedLiteral("Un test", "fr-FR"), result.getPropertyValue("description"));
         Map detailedDescription = (Map) result.getPropertyValue("detailedDescription");
         Assert.assertEquals("http://fr.wikipedia.org/wiki/Douglas_Adams", detailedDescription.get("@id"));
         Assert.assertEquals("fr", detailedDescription.get("inLanguage"));
@@ -156,13 +154,12 @@ public class EntityActionsTest extends JerseyTest {
                 "http://www.youtube.com/channel/UCdn86UYrf54lXfVli9CB6Aw",
                 "http://plus.google.com/+BarackObama"
         ), Sets.newHashSet((List<String>) result.getPropertyValue("sameAs")));
-        Assert.assertEquals("1952-03-11Z", ((Map) result.getPropertyValue("birthDate")).get("@value"));
-        Assert.assertEquals("xsd:date", ((Map) result.getPropertyValue("birthDate")).get("@type"));
+        Assert.assertEquals(builTypedLiteral("1952-03-11Z", "xsd:date"), result.getPropertyValue("birthDate"));
         Assert.assertEquals("Male", result.getPropertyValue("gender"));
     }
 
     private void assertEnglishDummy(Entity result) {
-        Assert.assertEquals("dummy", ((Map) result.getPropertyValue("name")).get("@value"));
+        Assert.assertEquals(buildLanguageTaggedLiteral("dummy", "en"), result.getPropertyValue("name"));
         Assert.assertNull(result.getPropertyValue("description"));
         assertNotLanguageBaseDummy(result);
     }
@@ -172,5 +169,19 @@ public class EntityActionsTest extends JerseyTest {
         Assert.assertEquals(Collections.emptyList(), result.getTypes());
         Assert.assertNull(result.getPropertyValue("url"));
         Assert.assertNull(result.getPropertyValue("sameAs"));
+    }
+
+    private Map<String, Object> buildLanguageTaggedLiteral(String value, String language) {
+        Map<String, Object> map = new TreeMap<>();
+        map.put("@value", value);
+        map.put("@language", language);
+        return map;
+    }
+
+    private Map<String, Object> builTypedLiteral(String value, String type) {
+        Map<String, Object> map = new TreeMap<>();
+        map.put("@value", value);
+        map.put("@type", type);
+        return map;
     }
 }

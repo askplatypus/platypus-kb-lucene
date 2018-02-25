@@ -34,10 +34,7 @@ import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 public class SearchActionsTest extends JerseyTest {
 
@@ -156,16 +153,14 @@ public class SearchActionsTest extends JerseyTest {
     }
 
     private void assertEnglishIndividual(Entity result) {
-        Assert.assertEquals("Foo bar", ((Map) result.getPropertyValue("name")).get("@value"));
-        Assert.assertEquals("en", ((Map) result.getPropertyValue("name")).get("@language"));
+        Assert.assertEquals(buildLanguageTaggedLiteral("Foo bar", "en"), result.getPropertyValue("name"));
         Assert.assertNull(result.getPropertyValue("description"));
         assertNotLanguageBaseIndividual(result);
     }
 
     private void assertFrenchIndividual(Entity result) {
-        Assert.assertEquals("super de test", ((Map) result.getPropertyValue("name")).get("@value"));
-        Assert.assertEquals("fr-FR", ((Map) result.getPropertyValue("name")).get("@language"));
-        Assert.assertEquals("Un test", ((Map) result.getPropertyValue("description")).get("@value"));
+        Assert.assertEquals(buildLanguageTaggedLiteral("super de test", "fr-FR"), result.getPropertyValue("name"));
+        Assert.assertEquals(buildLanguageTaggedLiteral("Un test", "fr-FR"), result.getPropertyValue("description"));
         assertNotLanguageBaseIndividual(result);
     }
 
@@ -210,5 +205,12 @@ public class SearchActionsTest extends JerseyTest {
         Assert.assertEquals(Collections.emptyList(), result.getTypes());
         Assert.assertNull(result.getPropertyValue("url"));
         Assert.assertNull(result.getPropertyValue("sameAs"));
+    }
+
+    private Map<String, Object> buildLanguageTaggedLiteral(String value, String language) {
+        Map<String, Object> map = new TreeMap<>();
+        map.put("@value", value);
+        map.put("@language", language);
+        return map;
     }
 }
