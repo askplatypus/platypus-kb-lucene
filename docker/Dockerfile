@@ -1,4 +1,4 @@
-FROM openjdk:8-jre-alpine
+FROM openjdk:9-jre-slim
 
 ENV PORT 4567
 EXPOSE $PORT
