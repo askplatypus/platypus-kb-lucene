@@ -18,9 +18,7 @@
 package us.askplatyp.kb.lucene.lucene;
 
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.CustomScoreQuery;
-import org.apache.lucene.queries.function.FunctionQuery;
-import org.apache.lucene.queries.function.valuesource.LongFieldSource;
+import org.apache.lucene.queries.function.FunctionScoreQuery;
 import org.apache.lucene.search.*;
 import us.askplatyp.kb.lucene.model.*;
 
@@ -109,7 +107,7 @@ public class LuceneLookup implements StorageLookup {
     }
 
     private Query addScoreBoostToQuery(Query query) {
-        return new CustomScoreQuery(query, new FunctionQuery(new LongFieldSource("score")));
+        return new FunctionScoreQuery(query, DoubleValuesSource.fromIntField("score"));
     }
 
     private ResourceSearchResult buildSearchResult(TopDocs topDocs, ScoreDoc currentContinue, ScoreDoc nextContinue, int fuziness) throws IOException {
