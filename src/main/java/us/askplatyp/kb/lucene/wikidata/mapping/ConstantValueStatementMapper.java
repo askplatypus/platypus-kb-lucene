@@ -17,6 +17,9 @@
 
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
+import io.swagger.annotations.SwaggerDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.interfaces.Value;
 import us.askplatyp.kb.lucene.model.Claim;
 import us.askplatyp.kb.lucene.model.value.ConstantValue;
@@ -29,6 +32,8 @@ import java.util.stream.Stream;
  */
 class ConstantValueStatementMapper implements StatementMainValueMapper {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConstantValueStatementMapper.class);
+
     private String targetFieldName;
     private Map<Value, String> conversion;
 
@@ -38,9 +43,10 @@ class ConstantValueStatementMapper implements StatementMainValueMapper {
     }
 
     @Override
-    public Stream<Claim> mapMainValue(Value value) throws InvalidWikibaseValueException {
+    public Stream<Claim> mapMainValue(Value value) {
         if (!conversion.containsKey(value)) {
-            throw new InvalidWikibaseValueException("Not expected constant for property " + targetFieldName + ": " + value);
+            LOGGER.info("Not expected constant for property " + targetFieldName + ": " + value);
+            return Stream.empty();
         }
         return Stream.of(new Claim(targetFieldName, new ConstantValue(conversion.get(value))));
     }

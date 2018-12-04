@@ -17,6 +17,8 @@
 
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.interfaces.TimeValue;
 import us.askplatyp.kb.lucene.model.Claim;
 
@@ -32,8 +34,8 @@ import java.util.stream.Stream;
  */
 class TimeStatementMapper implements StatementMainTimeValueMapper {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(TimeStatementMapper.class);
     private static DatatypeFactory DATATYPE_FACTORY;
-
     static {
         try {
             DATATYPE_FACTORY = DatatypeFactory.newInstance();
@@ -57,7 +59,7 @@ class TimeStatementMapper implements StatementMainTimeValueMapper {
 
     private Stream<XMLGregorianCalendar> convertTimeValue(TimeValue value) throws InvalidWikibaseValueException {
         if (value.getBeforeTolerance() != 0 || value.getAfterTolerance() != 0) {
-            throw new InvalidWikibaseValueException("Time values with before/after tolerances are not supported.");
+            LOGGER.info("Time values with before/after tolerances are not supported.");
         }
 
         BigInteger year;
@@ -87,7 +89,8 @@ class TimeStatementMapper implements StatementMainTimeValueMapper {
         try {
             return Stream.of(DATATYPE_FACTORY.newXMLGregorianCalendar(year, month, day, hour, minute, second, null, 0));
         } catch (IllegalArgumentException e) {
-            throw new InvalidWikibaseValueException("Calendar value not supported by Java", e);
+            LOGGER.error("Calendar value not supported by Java", e);
+            return Stream.empty();
         }
     }
 }

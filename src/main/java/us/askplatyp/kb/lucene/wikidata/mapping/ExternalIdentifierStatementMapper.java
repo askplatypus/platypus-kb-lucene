@@ -17,6 +17,8 @@
 
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.interfaces.StringValue;
 import us.askplatyp.kb.lucene.model.Claim;
 
@@ -27,6 +29,8 @@ import java.util.stream.Stream;
  * @author Thomas Pellissier Tanon
  */
 class ExternalIdentifierStatementMapper implements StatementMainStringValueMapper {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExternalIdentifierStatementMapper.class);
+
     private String URITemplate;
     private Pattern pattern;
 
@@ -36,9 +40,10 @@ class ExternalIdentifierStatementMapper implements StatementMainStringValueMappe
     }
 
     @Override
-    public Stream<Claim> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
+    public Stream<Claim> mapMainStringValue(StringValue value) {
         if (!pattern.matcher(value.getString()).matches()) {
-            throw new InvalidWikibaseValueException(value + " is not a valid identifier. It does not matches the pattern " + pattern);
+            LOGGER.info(value + " is not a valid identifier. It does not matches the pattern " + pattern);
+            return Stream.empty();
         }
         return Stream.of(new Claim("sameAs", URITemplate.replace("$1", value.getString())));
     }

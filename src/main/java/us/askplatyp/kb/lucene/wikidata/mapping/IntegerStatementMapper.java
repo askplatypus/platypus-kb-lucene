@@ -17,6 +17,8 @@
 
 package us.askplatyp.kb.lucene.wikidata.mapping;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wikidata.wdtk.datamodel.interfaces.QuantityValue;
 import us.askplatyp.kb.lucene.model.Claim;
 
@@ -27,6 +29,8 @@ import java.util.stream.Stream;
  * @author Thomas Pellissier Tanon
  */
 class IntegerStatementMapper implements StatementMainQuantityValueMapper {
+    private static final Logger LOGGER = LoggerFactory.getLogger(IntegerStatementMapper.class);
+
 
     private String targetFieldName;
 
@@ -35,20 +39,23 @@ class IntegerStatementMapper implements StatementMainQuantityValueMapper {
     }
 
     @Override
-    public Stream<Claim> mapMainQuantityValue(QuantityValue value) throws InvalidWikibaseValueException {
+    public Stream<Claim> mapMainQuantityValue(QuantityValue value) {
         if (!value.getUnit().isEmpty()) {
-            throw new InvalidWikibaseValueException("Integers should not have a unit");
+            LOGGER.info("Integers should not have a unit: " + value);
+            return Stream.empty();
         }
         if (
                 (value.getLowerBound() != null && !value.getLowerBound().equals(BigDecimal.ZERO)) ||
                         (value.getUpperBound() != null && !value.getUpperBound().equals(BigDecimal.ZERO))
                 ) {
-            throw new InvalidWikibaseValueException("Integers should be exact");
+            LOGGER.info("Integers should be exact: " + value);
+            return Stream.empty();
         }
         try {
             return Stream.of(new Claim(targetFieldName, value.getNumericValue().toBigIntegerExact()));
         } catch (ArithmeticException e) {
-            throw new InvalidWikibaseValueException(value + " is not an integer.");
+            LOGGER.info(value + " is not an integer.");
+            return Stream.empty();
         }
     }
 }
