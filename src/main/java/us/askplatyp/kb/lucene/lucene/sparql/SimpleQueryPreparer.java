@@ -28,9 +28,9 @@ import org.eclipse.rdf4j.query.algebra.UpdateExpr;
 import org.eclipse.rdf4j.query.algebra.evaluation.AbstractQueryPreparer;
 import org.eclipse.rdf4j.query.algebra.evaluation.EvaluationStrategy;
 import org.eclipse.rdf4j.query.algebra.evaluation.TripleSource;
-import org.eclipse.rdf4j.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
 import org.eclipse.rdf4j.query.algebra.evaluation.impl.*;
 import org.eclipse.rdf4j.query.impl.EmptyBindingSet;
+import org.eclipse.rdf4j.repository.sparql.federation.SPARQLServiceResolver;
 
 /**
  * @author Thomas Pellissier Tanon
@@ -53,7 +53,7 @@ public class SimpleQueryPreparer extends AbstractQueryPreparer {
         }
 
         EvaluationStrategy strategy = new ExtendedEvaluationStrategy(
-                getTripleSource(), dataset, new FederatedServiceResolverImpl(), 0L
+                getTripleSource(), dataset, new SPARQLServiceResolver(), 0L
         );
 
         new BindingAssigner().optimize(tupleExpr, dataset, bindings);

@@ -71,7 +71,7 @@ public class WikidataTypeHierarchy implements AutoCloseable {
                                 }
                             }).collect(Collectors.joining(" "));
                     if (!parents.equals("")) {
-                        typeHierarchy.put(itemDocument.getItemId().getId(), parents);
+                        typeHierarchy.put(itemDocument.getEntityId().getId(), parents);
                     }
                 }
             }

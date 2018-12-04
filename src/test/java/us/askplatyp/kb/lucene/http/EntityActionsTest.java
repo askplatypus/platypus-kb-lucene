@@ -24,21 +24,16 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Assert;
 import org.junit.Test;
 import us.askplatyp.kb.lucene.jsonld.Entity;
-import us.askplatyp.kb.lucene.jsonld.JsonLdRoot;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
 import us.askplatyp.kb.lucene.wikidata.FakeWikidataLuceneIndexFactory;
 
 import javax.ws.rs.core.Application;
-import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.*;
 
 public class EntityActionsTest extends JerseyTest {
-
-    private static final GenericType<JsonLdRoot<Entity>> RESULT_TYPE = new GenericType<JsonLdRoot<Entity>>() {
-    };
-
+    
     @Override
     protected Application configure() {
         return new ResourceConfig(EntityActions.class)
@@ -52,62 +47,51 @@ public class EntityActionsTest extends JerseyTest {
 
     @Test
     public void testDefaultShortIRI() {
-        JsonLdRoot<Entity> result =
-                target("/api/v1/entity/wd:Q42").request().get(RESULT_TYPE);
-        assertEnglishIndividual(result.getContent());
-        Assert.assertEquals(Optional.of("xsd:anyURI"), result.getContext().getRange("url"));
-        Assert.assertEquals(Optional.of("xsd:anyURI"), result.getContext().getRange("sameAs"));
-        Assert.assertEquals(Optional.of("@id"), result.getContext().getRange("gender"));
+        Entity result = target("/api/v1/entity/wd:Q42").request().get(Entity.class);
+        assertEnglishIndividual(result);
     }
 
     @Test
     public void testDefaultFullIRI() {
-        JsonLdRoot<Entity> result =
-                target("/api/v1/entity/http%3A%2F%2Fwww.wikidata.org%2Fentity%2FQ42").request().get(RESULT_TYPE);
-        assertEnglishIndividual(result.getContent());
+        Entity result = target("/api/v1/entity/http%3A%2F%2Fwww.wikidata.org%2Fentity%2FQ42").request().get(Entity.class);
+        assertEnglishIndividual(result);
     }
 
     @Test
     public void testFrenchWithContentNegotiation() {
-        JsonLdRoot<Entity> result =
-                target("/api/v1/entity/wd:Q42").request().acceptLanguage(Locale.FRANCE).get(RESULT_TYPE);
-        assertFrenchIndividual(result.getContent());
-        Assert.assertEquals(Optional.of("xsd:anyURI"), result.getContext().getRange("url"));
-        Assert.assertEquals(Optional.of("xsd:anyURI"), result.getContext().getRange("sameAs"));
-        Assert.assertEquals(Optional.of("@id"), result.getContext().getRange("gender"));
+        Entity result = target("/api/v1/entity/wd:Q42").request().acceptLanguage(Locale.FRANCE).get(Entity.class);
+        assertFrenchIndividual(result);
     }
 
     @Test
     public void testDummy() {
-        JsonLdRoot<Entity> result =
-                target("/api/v1/entity/wd:Q111").request().get(RESULT_TYPE);
-        assertEnglishDummy(result.getContent());
+        Entity result = target("/api/v1/entity/wd:Q111").request().get(Entity.class);
+        assertEnglishDummy(result);
     }
 
     @Test
     public void testPlaceGeoShape() {
-        JsonLdRoot<Entity> result =
-                target("/api/v1/entity/wd:Q90").request().get(RESULT_TYPE);
-        Assert.assertNotNull(result.getContent().getPropertyValue("geo"));
-        Map geoValue = (Map) result.getContent().getPropertyValue("geo");
+        Entity result =
+                target("/api/v1/entity/wd:Q90").request().get(Entity.class);
+        Assert.assertNotNull(result.getPropertyValue("geo"));
+        Map geoValue = (Map) result.getPropertyValue("geo");
         Assert.assertEquals("GeoShape", geoValue.get("@type"));
-        Assert.assertEquals(Optional.of("geo:wktLiteral"), result.getContext().getRange("geo:asWKT"));
     }
 
     @Test
     public void testPlaceGeoLine() {
-        JsonLdRoot<Entity> result =
-                target("/api/v1/entity/wd:Q2108").request().get(RESULT_TYPE);
-        Assert.assertNotNull(result.getContent().getPropertyValue("geo"));
-        Map geoValue = (Map) result.getContent().getPropertyValue("geo");
+        Entity result =
+                target("/api/v1/entity/wd:Q2108").request().get(Entity.class);
+        Assert.assertNotNull(result.getPropertyValue("geo"));
+        Map geoValue = (Map) result.getPropertyValue("geo");
         Assert.assertEquals("GeoShape", geoValue.get("@type"));
     }
 
     @Test
     public void testPlaceCoordinates() {
-        JsonLdRoot<Entity> result =
-                target("/api/v1/entity/wd:Q91").request().get(RESULT_TYPE);
-        Map geoValue = (Map) result.getContent().getPropertyValue("geo");
+        Entity result =
+                target("/api/v1/entity/wd:Q91").request().get(Entity.class);
+        Map geoValue = (Map) result.getPropertyValue("geo");
         Assert.assertEquals("GeoCoordinates", geoValue.get("@type"));
     }
 

@@ -39,7 +39,7 @@ class GlobeCoordinatesStatementMapper implements StatementMainGlobeCoordinatesVa
     }
 
     @Override
-    public Stream<Claim> mapMainGlobeCoordinatesValue(GlobeCoordinatesValue value) throws InvalidWikibaseValueException {
+    public Stream<Claim> mapMainGlobeCoordinatesValue(GlobeCoordinatesValue value) {
         if (!value.getGlobe().equals(GlobeCoordinatesValue.GLOBE_EARTH)) {
             return Stream.empty(); //TODO: support other globes
         }
@@ -58,7 +58,7 @@ class GlobeCoordinatesStatementMapper implements StatementMainGlobeCoordinatesVa
 
     private double roundDegrees(double degrees, double precision) {
         if (precision <= 0) {
-            precision = 1 / 3600;
+            precision = 1 / 3600d;
         }
         double sign = degrees > 0 ? 1 : -1;
         double reduced = Math.round(Math.abs(degrees) / precision);

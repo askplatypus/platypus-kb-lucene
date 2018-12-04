@@ -24,7 +24,6 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.QueryBuilder;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -38,14 +37,13 @@ import java.util.Set;
  */
 public class LuceneIndex implements Closeable {
 
-    private KnowledgeBaseAnalyzer analyzer = new KnowledgeBaseAnalyzer();
-    private QueryBuilder queryBuilder = new QueryBuilder(analyzer);
     private IndexWriter indexWriter;
     private SearcherManager searcherManager;
 
     public LuceneIndex(Path luceneDirectoryPath) throws IOException {
         Directory luceneDirectory = FSDirectory.open(luceneDirectoryPath);
-        this.indexWriter = new IndexWriter(luceneDirectory, new IndexWriterConfig(this.analyzer));
+        KnowledgeBaseAnalyzer analyzer = new KnowledgeBaseAnalyzer();
+        this.indexWriter = new IndexWriter(luceneDirectory, new IndexWriterConfig(analyzer));
         indexWriter.commit(); //Makes sure that the index is created
         this.searcherManager = new SearcherManager(luceneDirectory, new SearcherFactory());
     }
@@ -56,10 +54,6 @@ public class LuceneIndex implements Closeable {
 
     void putDocument(Document document, Term identifier) throws IOException {
         indexWriter.updateDocument(identifier, document); //TODO use revision
-    }
-
-    public KnowledgeBaseAnalyzer getAnalyzer() {
-        return analyzer;
     }
 
     /**
@@ -82,14 +76,6 @@ public class LuceneIndex implements Closeable {
 
         private Reader() throws IOException {
             indexSearcher = searcherManager.acquire();
-        }
-
-        public QueryBuilder getQueryBuilder() {
-            return queryBuilder;
-        }
-
-        KnowledgeBaseAnalyzer getAnalyzer() {
-            return analyzer;
         }
 
         public Optional<Document> getDocumentForTerm(Term term) throws IOException {

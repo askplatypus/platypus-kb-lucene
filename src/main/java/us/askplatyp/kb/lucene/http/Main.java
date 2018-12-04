@@ -83,19 +83,16 @@ public class Main extends ResourceConfig {
         configureSwagger();
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         HttpServer server = startServer();
 
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    WikidataLuceneIndexFactory.init(Configuration.getInstance().getLuceneDirectory());
-                } catch (IOException e) {
-                    LOGGER.error(e.getMessage(), e);
-                }
+        new Thread(() -> {
+            try {
+                WikidataLuceneIndexFactory.init(Configuration.getInstance().getLuceneDirectory());
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
             }
-        }.run();
+        }).run();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> server.stop(0)));
     }

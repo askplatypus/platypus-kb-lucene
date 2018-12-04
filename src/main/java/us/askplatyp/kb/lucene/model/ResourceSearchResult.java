@@ -30,6 +30,7 @@ public class ResourceSearchResult {
         this.resources = resources;
         this.totalHits = totalHits;
         this.currentContinue = currentContinue;
+        this.nextContinue = nextContinue;
     }
 
     public List<ScoredResource> getResources() {

@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 class ISBNStatementMapper implements StatementMainStringValueMapper {
 
     @Override
-    public Stream<Claim> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
+    public Stream<Claim> mapMainStringValue(StringValue value) {
         String ISBN = ISBNValidator.getInstance().validate(value.getString());
         if (ISBN == null) {
             return Stream.empty();

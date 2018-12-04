@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 class ISSNStatementMapper implements StatementMainStringValueMapper {
 
     @Override
-    public Stream<Claim> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
+    public Stream<Claim> mapMainStringValue(StringValue value) {
         String ISSN = (String) ISSNValidator.getInstance().validate(value.getString());
         if (ISSN == null) {
             return Stream.empty();

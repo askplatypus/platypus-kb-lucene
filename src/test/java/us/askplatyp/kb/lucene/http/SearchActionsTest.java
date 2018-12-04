@@ -26,7 +26,6 @@ import org.junit.Test;
 import us.askplatyp.kb.lucene.jsonld.Collection;
 import us.askplatyp.kb.lucene.jsonld.Entity;
 import us.askplatyp.kb.lucene.jsonld.EntitySearchResult;
-import us.askplatyp.kb.lucene.jsonld.JsonLdRoot;
 import us.askplatyp.kb.lucene.lucene.LuceneIndex;
 import us.askplatyp.kb.lucene.wikidata.FakeWikidataLuceneIndexFactory;
 
@@ -38,8 +37,7 @@ import java.util.*;
 
 public class SearchActionsTest extends JerseyTest {
 
-    private static final GenericType<JsonLdRoot<Collection<EntitySearchResult<Entity>>>> RESULT_TYPE =
-            new GenericType<JsonLdRoot<Collection<EntitySearchResult<Entity>>>>() {
+    private static final GenericType<Collection<EntitySearchResult<Entity>>> RESULT_TYPE = new GenericType<Collection<EntitySearchResult<Entity>>>() {
             };
 
     @Override
@@ -55,90 +53,81 @@ public class SearchActionsTest extends JerseyTest {
 
     @Test
     public void testDefault() {
-        JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
-                target("/api/v1/search/simple").request().get(RESULT_TYPE);
-        assertElementCount(result.getContent(), 6);
-        assertEnglishIndividual(result.getContent().getElements().get(0).getResult());
-        assertEnglishSmallFoo(result.getContent().getElements().get(1).getResult());
-        assertEnglishDummy(result.getContent().getElements().get(2).getResult());
+        Collection<EntitySearchResult<Entity>> result = target("/api/v1/search/simple").request().get(RESULT_TYPE);
+        assertElementCount(result, 6);
+        assertEnglishIndividual(result.getElements().get(0).getResult());
+        assertEnglishSmallFoo(result.getElements().get(1).getResult());
+        assertEnglishDummy(result.getElements().get(2).getResult());
 
     }
 
     @Test
     public void testTopTypeSearch() {
-        JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
-                target("/api/v1/search/simple").queryParam("type", "Thing").request().get(RESULT_TYPE);
-        assertElementCount(result.getContent(), 6);
-        assertEnglishIndividual(result.getContent().getElements().get(0).getResult());
-        assertEnglishSmallFoo(result.getContent().getElements().get(1).getResult());
-        assertEnglishDummy(result.getContent().getElements().get(2).getResult());
+        Collection<EntitySearchResult<Entity>> result = target("/api/v1/search/simple").queryParam("type", "Thing").request().get(RESULT_TYPE);
+        assertElementCount(result, 6);
+        assertEnglishIndividual(result.getElements().get(0).getResult());
+        assertEnglishSmallFoo(result.getElements().get(1).getResult());
+        assertEnglishDummy(result.getElements().get(2).getResult());
 
     }
 
     @Test
     public void testKeywordSearch() {
-        JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
-                target("/api/v1/search/simple").queryParam("q", "Foo Bar").request().get(RESULT_TYPE);
-        assertElementCount(result.getContent(), 2);
-        assertEnglishIndividual(result.getContent().getElements().get(0).getResult());
-        assertEnglishSmallFoo(result.getContent().getElements().get(1).getResult());
+        Collection<EntitySearchResult<Entity>> result = target("/api/v1/search/simple").queryParam("q", "Foo Bar").request().get(RESULT_TYPE);
+        assertElementCount(result, 2);
+        assertEnglishIndividual(result.getElements().get(0).getResult());
+        assertEnglishSmallFoo(result.getElements().get(1).getResult());
     }
 
     @Test
     public void testKeywordSearchFuzzyAndCaseInsensitive() {
-        JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
-                target("/api/v1/search/simple").queryParam("q", "fooo barr").request().get(RESULT_TYPE);
-        assertElementCount(result.getContent(), 2);
-        assertEnglishIndividual(result.getContent().getElements().get(0).getResult());
-        assertEnglishSmallFoo(result.getContent().getElements().get(1).getResult());
+        Collection<EntitySearchResult<Entity>> result = target("/api/v1/search/simple").queryParam("q", "fooo barr").request().get(RESULT_TYPE);
+        assertElementCount(result, 2);
+        assertEnglishIndividual(result.getElements().get(0).getResult());
+        assertEnglishSmallFoo(result.getElements().get(1).getResult());
     }
 
     @Test
     public void testKeywordAndTypeSearch() {
-        JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
-                target("/api/v1/search/simple").queryParam("q", "Foo Bar").queryParam("type", "Person").request().get(RESULT_TYPE);
-        assertElementCount(result.getContent(), 1);
-        assertEnglishIndividual(result.getContent().getElements().get(0).getResult());
+        Collection<EntitySearchResult<Entity>> result = target("/api/v1/search/simple").queryParam("q", "Foo Bar").queryParam("type", "Person").request().get(RESULT_TYPE);
+        assertElementCount(result, 1);
+        assertEnglishIndividual(result.getElements().get(0).getResult());
     }
 
     @Test
     public void testTypeSearch() {
-        JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
-                target("/api/v1/search/simple").queryParam("type", "Person").request().get(RESULT_TYPE);
-        assertElementCount(result.getContent(), 1);
-        assertEnglishIndividual(result.getContent().getElements().get(0).getResult());
+        Collection<EntitySearchResult<Entity>> result = target("/api/v1/search/simple").queryParam("type", "Person").request().get(RESULT_TYPE);
+        assertElementCount(result, 1);
+        assertEnglishIndividual(result.getElements().get(0).getResult());
     }
 
     @Test
     public void testFullTypeIRISearch() {
-        JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
-                target("/api/v1/search/simple").queryParam("type", "http://schema.org/Person").request().get(RESULT_TYPE);
-        assertElementCount(result.getContent(), 1);
-        assertEnglishIndividual(result.getContent().getElements().get(0).getResult());
+        Collection<EntitySearchResult<Entity>> result = target("/api/v1/search/simple").queryParam("type", "http://schema.org/Person").request().get(RESULT_TYPE);
+        assertElementCount(result, 1);
+        assertEnglishIndividual(result.getElements().get(0).getResult());
     }
 
     @Test
     public void testKeywordAndLanguageSearch() {
-        JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
+        Collection<EntitySearchResult<Entity>> result =
                 target("/api/v1/search/simple").queryParam("q", "super de test").queryParam("lang", "fr-FR").request().get(RESULT_TYPE);
-        assertElementCount(result.getContent(), 1);
-        assertEnglishIndividual(result.getContent().getElements().get(0).getResult());
+        assertElementCount(result, 1);
+        assertEnglishIndividual(result.getElements().get(0).getResult());
     }
 
     @Test
     public void testKeywordSearchWithContentNegotiation() {
-        JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
-                target("/api/v1/search/simple").queryParam("q", "Foo Bar").request().acceptLanguage(Locale.FRANCE).get(RESULT_TYPE);
-        assertElementCount(result.getContent(), 2);
-        assertFrenchIndividual(result.getContent().getElements().get(0).getResult());
-        assertFrenchSmallFoo(result.getContent().getElements().get(1).getResult());
+        Collection<EntitySearchResult<Entity>> result = target("/api/v1/search/simple").queryParam("q", "Foo Bar").request().acceptLanguage(Locale.FRANCE).get(RESULT_TYPE);
+        assertElementCount(result, 2);
+        assertFrenchIndividual(result.getElements().get(0).getResult());
+        assertFrenchSmallFoo(result.getElements().get(1).getResult());
     }
 
     @Test
     public void testSearchWithoutResults() {
-        JsonLdRoot<Collection<EntitySearchResult<Entity>>> result =
-                target("/api/v1/search/simple").queryParam("q", "TitiToto").request().get(RESULT_TYPE);
-        assertElementCount(result.getContent(), 0);
+        Collection<EntitySearchResult<Entity>> result = target("/api/v1/search/simple").queryParam("q", "TitiToto").request().get(RESULT_TYPE);
+        assertElementCount(result, 0);
     }
 
     @Test

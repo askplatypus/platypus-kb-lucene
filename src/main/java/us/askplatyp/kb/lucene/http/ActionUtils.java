@@ -36,7 +36,6 @@ import java.util.Locale;
  */
 class ActionUtils {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ActionUtils.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final MediaType APPLICATION_JSON_LD_TYPE = MediaType.valueOf("application/ld+json");
 

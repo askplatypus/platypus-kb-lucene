@@ -29,19 +29,19 @@
         <jdkVersion>1.8</jdkVersion>
         <activationVersion>1.1.1</activationVersion>
         <commonsValidatorVersion>1.6</commonsValidatorVersion>
-        <jaxbVersion>2.3.0</jaxbVersion>
-        <jerseyVersion>2.26</jerseyVersion>
+        <jaxbVersion>2.3.1</jaxbVersion>
+        <jerseyVersion>2.27</jerseyVersion>
         <jtsVersion>1.14.0</jtsVersion>
         <junitVersion>4.12</junitVersion>
-        <luceneVersion>7.2.1</luceneVersion>
-        <mapDbVersion>3.0.5</mapDbVersion>
-        <owlapiVersion>5.1.4</owlapiVersion>
-        <rdf4jVersion>2.2.2
+        <luceneVersion>7.5.0</luceneVersion>
+        <mapDbVersion>3.0.7</mapDbVersion>
+        <owlapiVersion>5.1.8</owlapiVersion>
+        <rdf4jVersion>2.4.2
         </rdf4jVersion><!-- Warning: should be synchronized with the version number used by OWL API -->
-        <servletVersion>4.0.0</servletVersion>
-        <swaggerVersion>1.5.13</swaggerVersion><!-- Warning: issues with Guava dependency version with 1.5.16 -->
+        <servletVersion>4.0.1</servletVersion>
+        <swaggerVersion>1.5.21</swaggerVersion><!-- Warning: issues with Guava dependency version with 1.5.16 -->
         <slf4jVersion>1.7.25</slf4jVersion>
-        <wdtkVersion>0.8.0</wdtkVersion>
+        <wdtkVersion>0.9.0</wdtkVersion>
     </properties>
 
     <dependencies>

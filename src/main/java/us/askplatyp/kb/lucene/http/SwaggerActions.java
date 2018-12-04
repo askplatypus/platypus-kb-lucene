@@ -33,19 +33,19 @@ import java.net.URI;
 public class SwaggerActions {
 
     @GET
-    public Response main() throws IOException {
+    public Response main() {
         return Response.temporaryRedirect(URI.create("/api/v1/swagger.html")).build();
     }
 
     @Path("/api")
     @GET
-    public Response api() throws IOException {
+    public Response api() {
         return Response.temporaryRedirect(URI.create("/api/v1/swagger.html")).build();
     }
 
     @Path("/api/v1")
     @GET
-    public Response apiV1() throws IOException {
+    public Response apiV1() {
         return Response.temporaryRedirect(URI.create("/api/v1/swagger.html")).build();
     }
 

@@ -43,6 +43,8 @@ public class MapperRegistry {
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P19"), new ItemIdStatementMapper("birthPlace"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P20"), new ItemIdStatementMapper("deathPlace"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P21"), new ConstantValueStatementMapper("gender", ImmutableMap.of(
+                Datamodel.makeWikidataItemIdValue("Q44148"), "Male",
+                Datamodel.makeWikidataItemIdValue("Q43445"), "Female",
                 Datamodel.makeWikidataItemIdValue("Q6581097"), "Male",
                 Datamodel.makeWikidataItemIdValue("Q6581072"), "Female"
         )));

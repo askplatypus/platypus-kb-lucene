@@ -157,7 +157,7 @@ public class TypeMapper implements StatementMainItemIdValueMapper {
     }
 
     @Override
-    public Stream<Claim> mapMainItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException {
+    public Stream<Claim> mapMainItemIdValue(ItemIdValue value) {
         return mapClass(value).stream()
                 .map(type -> new Claim("@type", new ResourceValue(type)));
     }
