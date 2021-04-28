@@ -1,7 +1,7 @@
 Platypus Knowledge Base Lucene Service
 ======================================
 
-[![Build Status](https://travis-ci.org/askplatypus/platypus-kb-lucene.svg?branch=master)](https://travis-ci.org/askplatypus/platypus-kb-lucene)
+[![example branch parameter](https://github.com/askplatypus/platypus-kb-lucene/actions/workflows/build.yml/badge.svg)](https://github.com/askplatypus/platypus-kb-lucene/actions/workflows/build.yml)
 
 This repository contains a Lucene-based service for the knowledge base used by Platypus.
 
