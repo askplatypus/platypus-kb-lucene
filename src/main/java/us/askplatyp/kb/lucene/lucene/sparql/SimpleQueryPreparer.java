@@ -53,7 +53,7 @@ public class SimpleQueryPreparer extends AbstractQueryPreparer {
         }
 
         EvaluationStrategy strategy = new ExtendedEvaluationStrategy(
-                getTripleSource(), dataset, new SPARQLServiceResolver(), 0L
+                getTripleSource(), dataset, new SPARQLServiceResolver(), 0L, evaluationStatistics
         );
 
         new BindingAssigner().optimize(tupleExpr, dataset, bindings);

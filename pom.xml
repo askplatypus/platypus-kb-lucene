@@ -26,22 +26,21 @@
     <version>0.1.1</version>
 
     <properties>
-        <jdkVersion>1.8</jdkVersion>
+        <jdkVersion>11</jdkVersion>
         <activationVersion>1.1.1</activationVersion>
-        <commonsValidatorVersion>1.6</commonsValidatorVersion>
+        <commonsValidatorVersion>1.7</commonsValidatorVersion>
         <jaxbVersion>2.3.1</jaxbVersion>
-        <jerseyVersion>2.27</jerseyVersion>
+        <jerseyVersion>2.34</jerseyVersion>
         <jtsVersion>1.14.0</jtsVersion>
-        <junitVersion>4.12</junitVersion>
-        <luceneVersion>7.5.0</luceneVersion>
-        <mapDbVersion>3.0.7</mapDbVersion>
-        <owlapiVersion>5.1.8</owlapiVersion>
-        <rdf4jVersion>2.4.2
-        </rdf4jVersion><!-- Warning: should be synchronized with the version number used by OWL API -->
+        <junitVersion>4.13.2</junitVersion>
+        <luceneVersion>8.8.2</luceneVersion>
+        <mapDbVersion>3.0.8</mapDbVersion>
+        <owlapiVersion>5.1.17</owlapiVersion>
+        <rdf4jVersion>3.4.3</rdf4jVersion><!-- Warning: should be synchronized with the version number used by OWL API -->
         <servletVersion>4.0.1</servletVersion>
-        <swaggerVersion>1.5.21</swaggerVersion><!-- Warning: issues with Guava dependency version with 1.5.16 -->
-        <slf4jVersion>1.7.25</slf4jVersion>
-        <wdtkVersion>0.9.0</wdtkVersion>
+        <swaggerVersion>1.6.2</swaggerVersion>
+        <slf4jVersion>1.7.30</slf4jVersion>
+        <wdtkVersion>0.11.1</wdtkVersion>
     </properties>
 
     <dependencies>
@@ -215,7 +214,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.1.1</version>
+                <version>3.1.2</version>
                 <executions>
                     <execution>
                         <phase>initialize</phase>
@@ -233,7 +232,7 @@
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>dockerfile-maven-plugin</artifactId>
-                <version>1.4.9</version>
+                <version>1.4.13</version>
                 <executions>
                     <execution>
                         <id>default</id>

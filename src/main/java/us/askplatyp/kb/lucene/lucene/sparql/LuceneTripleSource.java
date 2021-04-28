@@ -30,7 +30,7 @@ import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
+import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.algebra.evaluation.TripleSource;
 import org.slf4j.Logger;
@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
 
 /**
  * @author Thomas Pellissier Tanon
@@ -69,7 +70,7 @@ public class LuceneTripleSource implements TripleSource {
         }
     }
 
-    private LuceneIndex index;
+    private final LuceneIndex index;
 
     public LuceneTripleSource(LuceneIndex index) {
         this.index = index;
@@ -264,7 +265,7 @@ public class LuceneTripleSource implements TripleSource {
                 case CALENDAR:
                     return Optional.of(VALUE_FACTORY.createLiteral(DATATYPE_FACTORY.newXMLGregorianCalendar(value)));
                 case INTEGER:
-                    return Optional.of(VALUE_FACTORY.createLiteral(value, XMLSchema.INTEGER));
+                    return Optional.of(VALUE_FACTORY.createLiteral(value, XSD.INTEGER));
                 case LOCAL_STRING:
                     return Optional.of(VALUE_FACTORY.createLiteral(value, name.split("@")[1]));
                 case CONSTANT:
@@ -273,7 +274,7 @@ public class LuceneTripleSource implements TripleSource {
                 case STRING:
                     return Optional.of(VALUE_FACTORY.createLiteral(value));
                 case IRI:
-                    return Optional.of(VALUE_FACTORY.createLiteral(value, XMLSchema.ANYURI));
+                    return Optional.of(VALUE_FACTORY.createLiteral(value, XSD.ANYURI));
                 default:
                     //TODO: add missing fields
                     LOGGER.warn("Unsupported simple range type: " + property.getSimpleRange().toString());

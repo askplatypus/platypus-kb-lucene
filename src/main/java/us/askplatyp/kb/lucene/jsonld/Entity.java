@@ -30,9 +30,9 @@ import java.util.Map;
  */
 public class Entity {
 
-    private String IRI;
-    private List<String> types;
-    private Map<String, Object> propertyValues;
+    private final String IRI;
+    private final List<String> types;
+    private final Map<String, Object> propertyValues;
 
     Entity(String IRI, List<String> types, Map<String, Object> propertyValues) {
         this.IRI = IRI;

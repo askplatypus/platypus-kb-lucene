@@ -34,7 +34,7 @@ import java.util.Optional;
 public class LuceneLookup implements StorageLookup {
 
     private final static LuceneResourceBuilder RESOURCE_BUILDER = new LuceneResourceBuilder();
-    private final static TopDocs EMPTY_TOP_DOCS = new TopDocs(0, new ScoreDoc[]{}, 0);
+    private final static TopDocs EMPTY_TOP_DOCS = new TopDocs(new TotalHits(0, TotalHits.Relation.EQUAL_TO), new ScoreDoc[]{});
 
     private LuceneIndex.Reader entitiesReader;
 
@@ -57,7 +57,7 @@ public class LuceneLookup implements StorageLookup {
         if (startAfter == null) {
             for (fuziness = 0; fuziness <= 2; fuziness++) {
                 searchResults = entitiesReader.search(buildQueryForPhraseAndOrType(inputLocale, label, type, fuziness), limit);
-                if (searchResults.totalHits > 0) {
+                if (searchResults.totalHits.value > 0) {
                     break;
                 }
             }
@@ -117,7 +117,7 @@ public class LuceneLookup implements StorageLookup {
             searchResults.add(buildScoredResource(scoreDoc));
         }
         return new ResourceSearchResult(
-                searchResults, topDocs.totalHits, serializeContinue(currentContinue, fuziness), serializeContinue(nextContinue, fuziness)
+                searchResults, topDocs.totalHits.value, serializeContinue(currentContinue, fuziness), serializeContinue(nextContinue, fuziness)
         );
     }
 
