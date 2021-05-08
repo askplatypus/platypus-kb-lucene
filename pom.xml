@@ -40,7 +40,7 @@
         <servletVersion>4.0.1</servletVersion>
         <swaggerVersion>1.6.2</swaggerVersion>
         <slf4jVersion>1.7.30</slf4jVersion>
-        <wdtkVersion>0.11.1</wdtkVersion>
+        <wdtkVersion>0.12.0</wdtkVersion>
     </properties>
 
     <dependencies>
